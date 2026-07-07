@@ -8,15 +8,15 @@
                     <span class="font-medium text-accent-600">{{ Auth::user()->getRoleNames()->first() ?? 'No role' }}</span>
                 </p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 @can('sales.create')
-                <button class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                <button class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-3 sm:px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 whitespace-nowrap">
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                     New Invoice
                 </button>
                 @endcan
                 @can('sourcing.create')
-                <button class="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-800 ring-1 ring-slate-200 hover:bg-slate-50">
+                <button class="inline-flex items-center gap-2 rounded-lg bg-white px-3 sm:px-4 py-2 text-sm font-semibold text-brand-800 ring-1 ring-slate-200 hover:bg-slate-50 whitespace-nowrap">
                     Purchase Entry
                 </button>
                 @endcan
@@ -100,41 +100,43 @@
                     <h3 class="font-bold text-brand-900">Recent Invoices</h3>
                     <a href="#" class="text-xs font-semibold text-accent-600 hover:text-accent-500">View all &rarr;</a>
                 </div>
-                <table class="w-full text-sm">
-                    <thead>
-                        <tr class="border-y border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                            <th class="px-5 py-3 font-semibold">Invoice</th>
-                            <th class="px-5 py-3 font-semibold">Customer</th>
-                            <th class="px-5 py-3 font-semibold">Amount</th>
-                            <th class="px-5 py-3 font-semibold">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @php
-                            $statusClasses = [
-                                'Paid' => 'bg-emerald-50 text-emerald-600 ring-emerald-200',
-                                'Partial' => 'bg-amber-50 text-amber-600 ring-amber-200',
-                                'Due' => 'bg-rose-50 text-rose-600 ring-rose-200',
-                            ];
-                        @endphp
-                        @foreach ([
-                            ['INV-00241', 'Rahim Traders', '৳ 45,000', 'Paid'],
-                            ['INV-00240', 'Karim & Sons', '৳ 28,500', 'Partial'],
-                            ['INV-00239', 'Metro Distribution', '৳ 96,200', 'Due'],
-                            ['INV-00238', 'City Mart', '৳ 12,750', 'Paid'],
-                            ['INV-00237', 'Bhuiyan Enterprise', '৳ 61,900', 'Partial'],
-                        ] as [$no, $customer, $amount, $status])
-                        <tr class="hover:bg-slate-50">
-                            <td class="px-5 py-3 font-semibold text-brand-800">{{ $no }}</td>
-                            <td class="px-5 py-3 text-slate-600">{{ $customer }}</td>
-                            <td class="px-5 py-3 font-medium text-slate-800">{{ $amount }}</td>
-                            <td class="px-5 py-3">
-                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 {{ $statusClasses[$status] }}">{{ $status }}</span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[480px] text-sm">
+                        <thead>
+                            <tr class="border-y border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                                <th class="px-5 py-3 font-semibold">Invoice</th>
+                                <th class="px-5 py-3 font-semibold">Customer</th>
+                                <th class="px-5 py-3 font-semibold">Amount</th>
+                                <th class="px-5 py-3 font-semibold">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @php
+                                $statusClasses = [
+                                    'Paid' => 'bg-emerald-50 text-emerald-600 ring-emerald-200',
+                                    'Partial' => 'bg-amber-50 text-amber-600 ring-amber-200',
+                                    'Due' => 'bg-rose-50 text-rose-600 ring-rose-200',
+                                ];
+                            @endphp
+                            @foreach ([
+                                ['INV-00241', 'Rahim Traders', '৳ 45,000', 'Paid'],
+                                ['INV-00240', 'Karim & Sons', '৳ 28,500', 'Partial'],
+                                ['INV-00239', 'Metro Distribution', '৳ 96,200', 'Due'],
+                                ['INV-00238', 'City Mart', '৳ 12,750', 'Paid'],
+                                ['INV-00237', 'Bhuiyan Enterprise', '৳ 61,900', 'Partial'],
+                            ] as [$no, $customer, $amount, $status])
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-5 py-3 font-semibold text-brand-800 whitespace-nowrap">{{ $no }}</td>
+                                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ $customer }}</td>
+                                <td class="px-5 py-3 font-medium text-slate-800 whitespace-nowrap">{{ $amount }}</td>
+                                <td class="px-5 py-3 whitespace-nowrap">
+                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 {{ $statusClasses[$status] }}">{{ $status }}</span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Low stock alerts -->

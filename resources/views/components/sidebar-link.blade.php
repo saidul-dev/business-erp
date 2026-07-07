@@ -6,6 +6,7 @@ $classes = ($active ?? false)
     : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-brand-200 hover:bg-white/5 hover:text-white transition-colors';
 @endphp
 
-<a {{ $attributes->merge(['class' => $classes]) }}>
+<a x-bind:class="$store.sidebar.collapsed && 'lg:justify-center lg:px-0'"
+   {{ $attributes->merge(['class' => $classes]) }}>
     {{ $slot }}
 </a>

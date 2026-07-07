@@ -16,7 +16,8 @@
     </x-slot>
 
     <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto">
+        <table class="w-full min-w-[640px] text-sm">
             <thead>
                 <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                     <th class="px-5 py-3 font-semibold">User</th>
@@ -73,6 +74,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
 
         @if ($users->hasPages())
         <div class="border-t border-slate-100 px-5 py-3">
