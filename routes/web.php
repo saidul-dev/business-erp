@@ -10,21 +10,26 @@ Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Backend/admin panel — kept under /admin so the public company website
+// (and its optional e-commerce storefront, toggled from Settings) can
+// eventually live at the root without colliding with these routes.
+Route::prefix('admin')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::middleware('auth')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Per-action permission checks live in each controller's middleware() method
-    Route::resource('users', UserController::class)->except('show');
-    Route::resource('roles', RoleController::class)->except('show');
+        // Per-action permission checks live in each controller's middleware() method
+        Route::resource('users', UserController::class)->except('show');
+        Route::resource('roles', RoleController::class)->except('show');
 
-    Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
-    Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
+        Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+    });
 });
 
 require __DIR__.'/auth.php';

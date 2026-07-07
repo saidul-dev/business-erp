@@ -42,6 +42,9 @@ class SettingController extends Controller implements HasMiddleware
 
         $company = CompanySetting::current();
 
+        // Checkboxes omit the field entirely when unchecked, so read it directly.
+        $validated['ecommerce_enabled'] = $request->boolean('ecommerce_enabled');
+
         if ($request->boolean('remove_logo') && $company->logo_path) {
             Storage::disk('public')->delete($company->logo_path);
             $validated['logo_path'] = null;

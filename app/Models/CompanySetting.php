@@ -18,6 +18,11 @@ class CompanySetting extends Model
         'vat_registration_no',
         'bin_no',
         'financial_year_start_month',
+        'ecommerce_enabled',
+    ];
+
+    protected $casts = [
+        'ecommerce_enabled' => 'boolean',
     ];
 
     /**
