@@ -114,19 +114,25 @@
                     <div>
                         <p class="px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-brand-300/70">Administration</p>
 
-                        @can('users.view')
-                        <x-sidebar-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                            Users
-                        </x-sidebar-link>
-                        @endcan
+                        @canany(['users.view', 'roles.view'])
+                        <x-sidebar-dropdown title="User Management" :active="request()->routeIs('users.*') || request()->routeIs('roles.*')">
+                            <x-slot name="icon">
+                                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+                            </x-slot>
 
-                        @can('roles.view')
-                        <x-sidebar-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg>
-                            Roles &amp; Permissions
-                        </x-sidebar-link>
-                        @endcan
+                            @can('users.view')
+                            <x-sidebar-sublink :href="route('users.index')" :active="request()->routeIs('users.*')">
+                                Users
+                            </x-sidebar-sublink>
+                            @endcan
+
+                            @can('roles.view')
+                            <x-sidebar-sublink :href="route('roles.index')" :active="request()->routeIs('roles.*')">
+                                Roles &amp; Permissions
+                            </x-sidebar-sublink>
+                            @endcan
+                        </x-sidebar-dropdown>
+                        @endcanany
 
                         @can('settings.view')
                         <x-sidebar-link href="#">
@@ -201,6 +207,25 @@
                         {{ $header }}
                     </div>
                 @endisset
+
+                <!-- Flash messages -->
+                @if (session('success') || session('error'))
+                <div class="px-4 sm:px-6 pt-4" x-data="{ show: true }" x-show="show" x-transition.opacity>
+                    @if (session('success'))
+                    <div class="flex items-center gap-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 ring-1 ring-emerald-200">
+                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                        <span class="flex-1">{{ session('success') }}</span>
+                        <button @click="show = false" class="text-emerald-400 hover:text-emerald-600">&times;</button>
+                    </div>
+                    @else
+                    <div class="flex items-center gap-3 rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 ring-1 ring-rose-200">
+                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg>
+                        <span class="flex-1">{{ session('error') }}</span>
+                        <button @click="show = false" class="text-rose-400 hover:text-rose-600">&times;</button>
+                    </div>
+                    @endif
+                </div>
+                @endif
 
                 <!-- Page Content -->
                 <main class="flex-1 px-4 sm:px-6 py-6">

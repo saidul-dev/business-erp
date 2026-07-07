@@ -18,10 +18,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/users', [UserController::class, 'index'])
-        ->middleware('permission:users.view')->name('users.index');
-    Route::get('/roles', [RoleController::class, 'index'])
-        ->middleware('permission:roles.view')->name('roles.index');
+    // Per-action permission checks live in each controller's middleware() method
+    Route::resource('users', UserController::class)->except('show');
+    Route::resource('roles', RoleController::class)->except('show');
 });
 
 require __DIR__.'/auth.php';
