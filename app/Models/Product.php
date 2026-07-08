@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
@@ -25,6 +26,14 @@ class Product extends Model
         'reorder_level',
         'image_path',
         'status',
+        'has_variants',
+        'track_batch',
+        'track_expiry',
+        'track_serial',
+        'warranty_period',
+        'warranty_unit',
+        'guarantee_period',
+        'guarantee_unit',
     ];
 
     protected $casts = [
@@ -34,6 +43,12 @@ class Product extends Model
         'purchase_unit_conversion' => 'decimal:4',
         'sale_unit_conversion' => 'decimal:4',
         'reorder_level' => 'integer',
+        'has_variants' => 'boolean',
+        'track_batch' => 'boolean',
+        'track_expiry' => 'boolean',
+        'track_serial' => 'boolean',
+        'warranty_period' => 'integer',
+        'guarantee_period' => 'integer',
     ];
 
     public function category(): BelongsTo
@@ -75,5 +90,15 @@ class Product extends Model
     public function getImageUrlAttribute(): ?string
     {
         return $this->image_path ? Storage::disk('public')->url($this->image_path) : null;
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
+    public function isVariable(): bool
+    {
+        return (bool) $this->has_variants;
     }
 }
