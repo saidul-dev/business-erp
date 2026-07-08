@@ -119,7 +119,7 @@
                                 ];
                             @endphp
                             @foreach ([
-                                ['INV-00241', 'Rahim Traders', '৳ 45,000', 'Paid'],
+                                ['INV-00241', 'Nur Traders', '৳ 45,000', 'Paid'],
                                 ['INV-00240', 'Karim & Sons', '৳ 28,500', 'Partial'],
                                 ['INV-00239', 'Metro Distribution', '৳ 96,200', 'Due'],
                                 ['INV-00238', 'City Mart', '৳ 12,750', 'Paid'],

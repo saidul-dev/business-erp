@@ -4,15 +4,17 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return redirect()->route(auth()->check() ? 'dashboard' : 'login');
-});
+// Public company website — the e-commerce storefront link only appears
+// once "Enable E-commerce" is switched on from Admin > Settings.
+Route::get('/', [WebsiteController::class, 'home'])->name('home');
+Route::get('/shop', [WebsiteController::class, 'shop'])->name('shop');
 
 // Backend/admin panel — kept under /admin so the public company website
 // (and its optional e-commerce storefront, toggled from Settings) can
-// eventually live at the root without colliding with these routes.
+// live at the root without colliding with these routes.
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
