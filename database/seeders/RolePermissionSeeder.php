@@ -26,6 +26,7 @@ class RolePermissionSeeder extends Seeder
         'settings'  => ['view', 'edit'],
         'users'     => ['view', 'create', 'edit', 'delete'],
         'roles'     => ['view', 'create', 'edit', 'delete'],
+        'sites'     => ['view', 'create', 'edit', 'delete'],
     ];
 
     public function run(): void
@@ -80,6 +81,22 @@ class RolePermissionSeeder extends Seeder
             'hrm.view', 'hrm.create', 'hrm.edit', 'hrm.approve',
             'tasks.view', 'tasks.create', 'tasks.edit',
             'contacts.view',
+            'reports.view',
+        ]);
+
+        // Starter template for a per-site manager — everything needed to run
+        // one site day-to-day, minus company-wide admin (users/roles/settings/sites).
+        // Admin can clone this into narrower roles (e.g. "Factory Site Manager"
+        // with only production/inventory) per Site type from Roles & Permissions.
+        Role::findOrCreate('Site Manager')->syncPermissions([
+            'sourcing.view', 'sourcing.create', 'sourcing.edit', 'sourcing.approve',
+            'sales.view', 'sales.create', 'sales.edit', 'sales.approve',
+            'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.approve',
+            'contacts.view', 'contacts.create', 'contacts.edit',
+            'accounts.view', 'accounts.create', 'accounts.edit',
+            'delivery.view', 'delivery.create', 'delivery.edit',
+            'tasks.view', 'tasks.create', 'tasks.edit',
+            'hrm.view', 'hrm.create', 'hrm.edit',
             'reports.view',
         ]);
     }

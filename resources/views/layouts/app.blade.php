@@ -121,9 +121,16 @@
                         @endcan
                     </div>
 
-                    @canany(['users.view', 'roles.view', 'settings.view'])
+                    @canany(['users.view', 'roles.view', 'settings.view', 'sites.view'])
                     <div>
                         <p class="nav-label px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-brand-300/70" :class="$store.sidebar.collapsed && 'lg:hidden'">Administration</p>
+
+                        @can('sites.view')
+                        <x-sidebar-link :href="route('sites.index')" :active="request()->routeIs('sites.*')" title="Sites">
+                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6 21v-3.375c0-.621.504-1.125 1.125-1.125h1.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
+                            <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">Sites</span>
+                        </x-sidebar-link>
+                        @endcan
 
                         @canany(['users.view', 'roles.view'])
                         <x-sidebar-dropdown title="User Management" :active="request()->routeIs('users.*') || request()->routeIs('roles.*')">
@@ -184,6 +191,57 @@
                     </div>
 
                     <div class="ml-auto flex items-center gap-1.5 sm:gap-3 shrink-0">
+                        @php
+                            $siteSwitcherOptions = Auth::user()->seesAllSites()
+                                ? \App\Models\Site::where('status', true)->orderBy('name')->get()
+                                : Auth::user()->sites()->where('status', true)->orderBy('name')->get();
+                        @endphp
+                        @if ($siteSwitcherOptions->count() > 1 || Auth::user()->seesAllSites())
+                        <!-- Site selector -->
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="hidden sm:flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-brand-800 ring-1 ring-slate-200 hover:bg-slate-50">
+                                <svg class="h-4 w-4 shrink-0 text-accent-600" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                                <span>{{ Auth::user()->currentSite->name ?? 'All Sites' }}</span>
+                                <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                            </button>
+
+                            <div x-show="open" @click.outside="open = false" x-transition
+                                 class="absolute right-0 mt-2 w-56 rounded-xl bg-white py-1.5 shadow-lg ring-1 ring-slate-200"
+                                 style="display: none;">
+                                <p class="px-4 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Current Site</p>
+                                @foreach ($siteSwitcherOptions as $site)
+                                <form method="POST" action="{{ route('sites.switch') }}">
+                                    @csrf
+                                    <input type="hidden" name="site_id" value="{{ $site->id }}">
+                                    <button type="submit"
+                                            class="flex w-full items-center justify-between px-4 py-2 text-sm hover:bg-slate-50
+                                            {{ Auth::user()->current_site_id === $site->id ? 'text-accent-600 font-semibold' : 'text-slate-700' }}">
+                                        {{ $site->name }}
+                                        @if (Auth::user()->current_site_id === $site->id)
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                        @endif
+                                    </button>
+                                </form>
+                                @endforeach
+
+                                @if (Auth::user()->seesAllSites())
+                                <div class="my-1.5 border-t border-slate-100"></div>
+                                <form method="POST" action="{{ route('sites.switch') }}">
+                                    @csrf
+                                    <button type="submit"
+                                            class="flex w-full items-center justify-between px-4 py-2 text-sm hover:bg-slate-50
+                                            {{ Auth::user()->current_site_id === null ? 'text-accent-600 font-semibold' : 'text-slate-700' }}">
+                                        All Sites
+                                        @if (Auth::user()->current_site_id === null)
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                        @endif
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+
                         <button class="relative rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-brand-800">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg>
                             <span class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-accent-500 ring-2 ring-white"></span>

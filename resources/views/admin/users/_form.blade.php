@@ -71,6 +71,48 @@
         <x-input-error class="mt-2" :messages="$errors->get('roles')" />
         <x-input-error class="mt-2" :messages="$errors->get('roles.*')" />
     </div>
+
+    <!-- Sites -->
+    <div class="lg:col-span-3 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200" x-data="{ checked: {{ json_encode(old('sites', $editing ? $user->sites->pluck('id')->all() : [])) }} }">
+        <div class="mb-4">
+            <h3 class="font-bold text-brand-900">Site Access</h3>
+            <p class="text-xs text-slate-400">Which site(s) this user can work in. Pick a Default Site when more than one is assigned.</p>
+        </div>
+
+        @php
+            $checkedSites = old('sites', $editing ? $user->sites->pluck('id')->all() : []);
+            $defaultSiteId = old('default_site', $editing ? optional($user->sites->firstWhere('pivot.is_default', true))->id : null);
+        @endphp
+
+        @if ($sites->isEmpty())
+            <p class="text-sm text-slate-400">No sites have been created yet. <a href="{{ route('sites.create') }}" class="text-accent-600 font-semibold hover:underline">Add one first.</a></p>
+        @else
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            @foreach ($sites as $site)
+            <label class="flex items-center gap-3 rounded-xl px-4 py-3 ring-1 ring-slate-200 hover:bg-slate-50 cursor-pointer has-[:checked]:ring-accent-500 has-[:checked]:bg-accent-500/5">
+                <input type="checkbox" name="sites[]" value="{{ $site->id }}"
+                       x-model.number="checked"
+                       @checked(in_array($site->id, $checkedSites))
+                       class="rounded border-slate-300 text-brand-700 focus:ring-accent-500">
+                <span class="flex-1">
+                    <span class="block text-sm font-semibold text-slate-800">{{ $site->name }}</span>
+                    <span class="block text-[11px] text-slate-400">{{ $site->type }} &middot; {{ $site->code }}</span>
+                </span>
+                <span class="text-[11px] font-medium text-slate-400" x-show="checked.includes({{ $site->id }})">
+                    <label class="inline-flex items-center gap-1 cursor-pointer">
+                        <input type="radio" name="default_site" value="{{ $site->id }}"
+                               @checked($defaultSiteId === $site->id)
+                               class="text-accent-600 focus:ring-accent-500">
+                        Default
+                    </label>
+                </span>
+            </label>
+            @endforeach
+        </div>
+        @endif
+        <x-input-error class="mt-2" :messages="$errors->get('sites')" />
+        <x-input-error class="mt-2" :messages="$errors->get('sites.*')" />
+    </div>
 </div>
 
 <div class="mt-5 flex items-center gap-3">

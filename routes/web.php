@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\CurrentSiteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
@@ -18,9 +20,12 @@ Route::get('/shop', [WebsiteController::class, 'shop'])->name('shop');
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
-    })->middleware(['auth', 'verified'])->name('dashboard');
+    })->middleware(['auth', 'verified', 'current-site'])->name('dashboard');
 
-    Route::middleware('auth')->group(function () {
+    Route::middleware(['auth', 'current-site'])->group(function () {
+        Route::get('/select-site', [CurrentSiteController::class, 'select'])->name('sites.select');
+        Route::post('/switch-site', [CurrentSiteController::class, 'switch'])->name('sites.switch');
+
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -28,6 +33,8 @@ Route::prefix('admin')->group(function () {
         // Per-action permission checks live in each controller's middleware() method
         Route::resource('users', UserController::class)->except('show');
         Route::resource('roles', RoleController::class)->except('show');
+        Route::resource('sites', SiteController::class)->except('show');
+        Route::patch('/sites/{site}/toggle-status', [SiteController::class, 'toggleStatus'])->name('sites.toggle-status');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
