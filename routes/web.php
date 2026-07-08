@@ -47,6 +47,7 @@ Route::prefix('admin')->group(function () {
         Route::patch('/brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggle-status');
         Route::resource('units', UnitController::class)->except('show');
         Route::patch('/units/{unit}/toggle-status', [UnitController::class, 'toggleStatus'])->name('units.toggle-status');
+        Route::resource('attributes', \App\Http\Controllers\Admin\AttributeController::class)->except('show');
         Route::resource('products', ProductController::class)->except('show');
         Route::patch('/products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggle-status');
         Route::get('/products/barcode', [ProductController::class, 'barcode'])->name('products.barcode');
