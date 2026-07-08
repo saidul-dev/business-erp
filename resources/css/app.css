@@ -5,3 +5,26 @@
 [x-cloak] {
     display: none !important;
 }
+
+/* Slim, brand-colored scrollbar for the dark sidebar nav */
+.sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.brand.400 / 40%') transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background-color: theme('colors.brand.400 / 40%');
+    border-radius: 9999px;
+}
+
+.sidebar-scroll:hover::-webkit-scrollbar-thumb {
+    background-color: theme('colors.brand.300 / 60%');
+}

@@ -45,7 +45,7 @@
                 </a>
 
                 <!-- Navigation -->
-                <nav class="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-6">
+                <nav class="sidebar-scroll flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 space-y-6">
                     <div>
                         <p class="nav-label px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-brand-300/70" :class="$store.sidebar.collapsed && 'lg:hidden'">Main</p>
                         <x-sidebar-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" title="Dashboard">
