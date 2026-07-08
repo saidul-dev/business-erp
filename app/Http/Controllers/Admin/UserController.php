@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\RestrictsPermissionGrants;
 use App\Http\Controllers\Controller;
 use App\Models\Site;
 use App\Models\User;
@@ -15,6 +16,8 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller implements HasMiddleware
 {
+    use RestrictsPermissionGrants;
+
     /**
      * Display order for role lists — not creation order, just presentation.
      */
@@ -59,7 +62,7 @@ class UserController extends Controller implements HasMiddleware
             'sites.*' => ['exists:sites,id'],
             'default_site' => ['nullable', 'integer'],
             'permissions' => ['array'],
-            'permissions.*' => ['exists:permissions,name'],
+            'permissions.*' => [Rule::in($this->grantablePermissionNames())],
         ]);
 
         $user = User::create([
@@ -68,6 +71,8 @@ class UserController extends Controller implements HasMiddleware
             'password' => $validated['password'],
         ]);
 
+        // New user has no prior roles/permissions, so nothing to preserve —
+        // the submission is already validated against the acting user's own grant scope.
         $user->syncRoles($validated['roles'] ?? []);
         $user->syncPermissions($validated['permissions'] ?? []);
         $this->syncSites($user, $validated['sites'] ?? [], $validated['default_site'] ?? null);
@@ -102,8 +107,18 @@ class UserController extends Controller implements HasMiddleware
             'sites.*' => ['exists:sites,id'],
             'default_site' => ['nullable', 'integer'],
             'permissions' => ['array'],
-            'permissions.*' => ['exists:permissions,name'],
+            'permissions.*' => [Rule::in($this->grantablePermissionNames())],
         ]);
+
+        // A restricted editor's form never even shows roles/permissions outside
+        // their own grant scope, so preserve whatever the user already had there
+        // instead of letting an invisible-to-them field get silently wiped.
+        $finalRoles = $this->mergeRestrictedSelection(
+            $user->roles->pluck('name'), $validated['roles'] ?? [], $this->grantableRoles()->pluck('name')
+        );
+        $finalPermissions = $this->mergeRestrictedSelection(
+            $user->getDirectPermissions()->pluck('name'), $validated['permissions'] ?? [], $this->grantablePermissionNames()
+        );
 
         $user->fill([
             'name' => $validated['name'],
@@ -115,8 +130,8 @@ class UserController extends Controller implements HasMiddleware
         }
 
         $user->save();
-        $user->syncRoles($validated['roles'] ?? []);
-        $user->syncPermissions($validated['permissions'] ?? []);
+        $user->syncRoles($finalRoles);
+        $user->syncPermissions($finalPermissions);
         $this->syncSites($user, $validated['sites'] ?? [], $validated['default_site'] ?? null);
 
         return redirect()->route('users.index')->with('success', "User \"{$user->name}\" updated.");
@@ -136,13 +151,13 @@ class UserController extends Controller implements HasMiddleware
     }
 
     /**
-     * Only Super Admins may hand out or touch the Super Admin role.
+     * Roles the acting user may hand out — Super Admin is reserved for
+     * Super Admins, and beyond that nobody can grant a role that carries
+     * permissions they don't themselves hold (see RestrictsPermissionGrants).
      */
     protected function assignableRoles()
     {
-        return Role::all()
-            ->when(! auth()->user()->hasRole('Super Admin'),
-                fn ($roles) => $roles->reject(fn ($role) => $role->name === 'Super Admin'))
+        return $this->grantableRoles()
             ->sortBy(function ($role) {
                 $index = array_search($role->name, self::ROLE_ORDER);
 
@@ -153,10 +168,11 @@ class UserController extends Controller implements HasMiddleware
 
     /**
      * "sales.view" => grouped under "sales", for the Direct Permissions matrix.
+     * Only permissions the acting user themselves holds are offered.
      */
     protected function permissionsByModule()
     {
-        return Permission::orderBy('name')->get()
+        return Permission::whereIn('name', $this->grantablePermissionNames())->orderBy('name')->get()
             ->groupBy(fn ($permission) => explode('.', $permission->name)[0]);
     }
 

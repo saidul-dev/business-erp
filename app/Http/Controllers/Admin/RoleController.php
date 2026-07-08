@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\RestrictsPermissionGrants;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -12,6 +13,8 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller implements HasMiddleware
 {
+    use RestrictsPermissionGrants;
+
     /**
      * Display order for role lists — not creation order, just presentation.
      */
@@ -44,7 +47,7 @@ class RoleController extends Controller implements HasMiddleware
 
     public function create()
     {
-        return view('admin.roles.create', ['permissions' => $this->permissionsByModule()]);
+        return view('admin.roles.create', ['permissions' => $this->assignablePermissionsByModule()]);
     }
 
     public function store(Request $request)
@@ -52,9 +55,11 @@ class RoleController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:125', 'unique:roles,name'],
             'permissions' => ['array'],
-            'permissions.*' => ['exists:permissions,name'],
+            'permissions.*' => [Rule::in($this->grantablePermissionNames())],
         ]);
 
+        // New role has no prior permissions, so nothing to preserve — the
+        // submission is already validated against the acting user's own grant scope.
         $role = Role::create(['name' => $validated['name']]);
         $role->syncPermissions($validated['permissions'] ?? []);
 
@@ -67,7 +72,7 @@ class RoleController extends Controller implements HasMiddleware
 
         return view('admin.roles.edit', [
             'role' => $role,
-            'permissions' => $this->permissionsByModule(),
+            'permissions' => $this->assignablePermissionsByModule(),
         ]);
     }
 
@@ -78,11 +83,18 @@ class RoleController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:125', Rule::unique('roles', 'name')->ignore($role->id)],
             'permissions' => ['array'],
-            'permissions.*' => ['exists:permissions,name'],
+            'permissions.*' => [Rule::in($this->grantablePermissionNames())],
         ]);
 
+        // A restricted editor's form never shows permissions outside their own
+        // grant scope, so preserve whatever the role already had there instead
+        // of letting an invisible-to-them permission get silently wiped.
+        $finalPermissions = $this->mergeRestrictedSelection(
+            $role->permissions->pluck('name'), $validated['permissions'] ?? [], $this->grantablePermissionNames()
+        );
+
         $role->update(['name' => $validated['name']]);
-        $role->syncPermissions($validated['permissions'] ?? []);
+        $role->syncPermissions($finalPermissions);
 
         return redirect()->route('roles.index')->with('success', "Role \"{$role->name}\" updated.");
     }
@@ -101,11 +113,22 @@ class RoleController extends Controller implements HasMiddleware
     }
 
     /**
-     * "sales.view" => grouped under "sales". Matrix and forms render per module.
+     * "sales.view" => grouped under "sales". Every permission — used for the
+     * read-only index matrix, which is informational, not a grant action.
      */
     protected function permissionsByModule()
     {
         return Permission::orderBy('name')->get()
+            ->groupBy(fn ($permission) => explode('.', $permission->name)[0]);
+    }
+
+    /**
+     * Same grouping, but only permissions the acting user themselves holds —
+     * used for the create/edit forms, where checking a box is a grant action.
+     */
+    protected function assignablePermissionsByModule()
+    {
+        return Permission::whereIn('name', $this->grantablePermissionNames())->orderBy('name')->get()
             ->groupBy(fn ($permission) => explode('.', $permission->name)[0]);
     }
 

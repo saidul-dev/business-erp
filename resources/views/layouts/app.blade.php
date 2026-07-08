@@ -72,10 +72,24 @@
                         @endcan
 
                         @can('inventory.view')
-                        <x-sidebar-link href="#" title="Inventory">
-                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
-                            <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">Inventory</span>
-                        </x-sidebar-link>
+                        <x-sidebar-dropdown title="Inventory" :active="request()->routeIs('products.*', 'categories.*', 'brands.*', 'units.*')">
+                            <x-slot name="icon">
+                                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+                            </x-slot>
+
+                            <x-sidebar-sublink :href="route('products.index')" :active="request()->routeIs('products.*')">
+                                Products
+                            </x-sidebar-sublink>
+                            <x-sidebar-sublink :href="route('categories.index')" :active="request()->routeIs('categories.*')">
+                                Categories
+                            </x-sidebar-sublink>
+                            <x-sidebar-sublink :href="route('brands.index')" :active="request()->routeIs('brands.*')">
+                                Brands
+                            </x-sidebar-sublink>
+                            <x-sidebar-sublink :href="route('units.index')" :active="request()->routeIs('units.*')">
+                                Units
+                            </x-sidebar-sublink>
+                        </x-sidebar-dropdown>
                         @endcan
 
                         @can('contacts.view')

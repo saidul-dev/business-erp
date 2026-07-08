@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SiteController;
+use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CurrentSiteController;
 use App\Http\Controllers\ProfileController;
@@ -35,6 +39,16 @@ Route::prefix('admin')->group(function () {
         Route::resource('roles', RoleController::class)->except('show');
         Route::resource('sites', SiteController::class)->except('show');
         Route::patch('/sites/{site}/toggle-status', [SiteController::class, 'toggleStatus'])->name('sites.toggle-status');
+
+        // Inventory master data (global — not site-scoped; stock levels per Site come later)
+        Route::resource('categories', CategoryController::class)->except('show');
+        Route::patch('/categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
+        Route::resource('brands', BrandController::class)->except('show');
+        Route::patch('/brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])->name('brands.toggle-status');
+        Route::resource('units', UnitController::class)->except('show');
+        Route::patch('/units/{unit}/toggle-status', [UnitController::class, 'toggleStatus'])->name('units.toggle-status');
+        Route::resource('products', ProductController::class)->except('show');
+        Route::patch('/products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggle-status');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
