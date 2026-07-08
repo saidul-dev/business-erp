@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attribute;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\CompanySetting;
@@ -124,12 +125,13 @@ class ProductController extends Controller implements HasMiddleware
             'categories' => Category::orderBy('name')->get(),
             'brands' => Brand::orderBy('name')->get(),
             'units' => Unit::orderBy('name')->get(),
+            'attributes' => Attribute::with('values')->orderBy('name')->get(),
         ];
     }
 
     protected function validated(Request $request, ?Product $product = null): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'sku' => ['required', 'string', 'max:100', Rule::unique('products', 'sku')->ignore($product?->id)],
             'barcode' => ['nullable', 'string', 'max:100', Rule::unique('products', 'barcode')->ignore($product?->id)],
@@ -146,6 +148,36 @@ class ProductController extends Controller implements HasMiddleware
             'reorder_level' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'max:2048'],
             'remove_image' => ['nullable', 'boolean'],
+            'has_variants' => ['nullable', 'boolean'],
+            'track_batch' => ['nullable', 'boolean'],
+            'track_expiry' => ['nullable', 'boolean'],
+            'track_serial' => ['nullable', 'boolean'],
+            'warranty_period' => ['nullable', 'integer', 'min:1'],
+            'warranty_unit' => ['nullable', 'required_with:warranty_period', 'in:days,months,years'],
+            'guarantee_period' => ['nullable', 'integer', 'min:1'],
+            'guarantee_unit' => ['nullable', 'required_with:guarantee_period', 'in:days,months,years'],
         ]);
+
+        // Normalize booleans (unchecked checkboxes are absent from the request).
+        foreach (['has_variants', 'track_batch', 'track_expiry', 'track_serial'] as $flag) {
+            $validated[$flag] = $request->boolean($flag);
+        }
+
+        // Expiry lives on a batch — enabling it implies batch tracking.
+        if ($validated['track_expiry']) {
+            $validated['track_batch'] = true;
+        }
+
+        // A duration with no period is meaningless — null the unit.
+        if (empty($validated['warranty_period'])) {
+            $validated['warranty_period'] = null;
+            $validated['warranty_unit'] = null;
+        }
+        if (empty($validated['guarantee_period'])) {
+            $validated['guarantee_period'] = null;
+            $validated['guarantee_unit'] = null;
+        }
+
+        return $validated;
     }
 }
