@@ -58,6 +58,65 @@ Alpine.data('barcodeForm', (products, companyName) => ({
     },
 }));
 
+Alpine.data('productForm', (initial) => ({
+    ...initial,
+    // { [attributeId]: { [valueId]: label } } — selected values per attribute
+    selected: window.__selectedValues || {},
+    // Existing variants (edit mode) injected from the server, if any
+    variants: window.__existingVariants || [],
+
+    toggleValue(attrId, valueId, label, checked) {
+        this.selected[attrId] = this.selected[attrId] || {};
+        if (checked) {
+            this.selected[attrId][valueId] = label;
+        } else {
+            delete this.selected[attrId][valueId];
+            if (Object.keys(this.selected[attrId]).length === 0) delete this.selected[attrId];
+        }
+    },
+
+    generateVariants() {
+        const attrIds = Object.keys(this.selected);
+        if (attrIds.length === 0) { this.variants = []; return; }
+
+        // Cartesian product of selected values across attributes.
+        let combos = [{ values: {}, labels: [] }];
+        attrIds.forEach((attrId) => {
+            const next = [];
+            Object.entries(this.selected[attrId]).forEach(([valueId, label]) => {
+                combos.forEach((combo) => {
+                    next.push({
+                        values: { ...combo.values, [attrId]: Number(valueId) },
+                        labels: [...combo.labels, label],
+                    });
+                });
+            });
+            combos = next;
+        });
+
+        // Merge: keep existing rows whose value-combo matches; add new ones.
+        const keyOf = (values) => Object.keys(values).sort().map((k) => k + ':' + values[k]).join('|');
+        const existingByKey = {};
+        this.variants.forEach((v) => { existingByKey[keyOf(v.values)] = v; });
+
+        this.variants = combos.map((combo) => {
+            const key = keyOf(combo.values);
+            if (existingByKey[key]) return existingByKey[key];
+            return {
+                key,
+                id: null,
+                label: combo.labels.join(' / '),
+                values: combo.values,
+                sku: '',
+                barcode: '',
+                selling_price: this.$root.querySelector('#selling_price')?.value || '',
+                estimated_cost: '',
+                status: true,
+            };
+        });
+    },
+}));
+
 window.Alpine = Alpine;
 window.Chart = Chart;
 

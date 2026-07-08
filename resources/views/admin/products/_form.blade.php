@@ -1,6 +1,16 @@
 @php $editing = isset($product); @endphp
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4" x-data="{ preview: @js($product->image_url ?? null), removeImage: false }">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4"
+     x-data="productForm({
+        preview: @js($product->image_url ?? null),
+        removeImage: false,
+        hasVariants: {{ old('has_variants', $product->has_variants ?? false) ? 'true' : 'false' }},
+        trackBatch: {{ old('track_batch', $product->track_batch ?? false) ? 'true' : 'false' }},
+        trackExpiry: {{ old('track_expiry', $product->track_expiry ?? false) ? 'true' : 'false' }},
+        trackSerial: {{ old('track_serial', $product->track_serial ?? false) ? 'true' : 'false' }},
+        hasWarranty: {{ old('warranty_period', $product->warranty_period ?? null) ? 'true' : 'false' }},
+        hasGuarantee: {{ old('guarantee_period', $product->guarantee_period ?? null) ? 'true' : 'false' }},
+     })">
     <!-- Image -->
     <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div class="mb-4">
@@ -215,7 +225,133 @@
             </div>
         </div>
     </div>
+
+    <!-- Product Type & Features -->
+    <div class="lg:col-span-3 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div class="mb-4">
+            <h3 class="font-bold text-brand-900">Product Type &amp; Features</h3>
+            <p class="text-xs text-slate-400">Enable only what this product needs. All off by default.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Variants toggle -->
+            <label class="flex items-start gap-3 rounded-lg border border-slate-200 p-3">
+                <input type="checkbox" name="has_variants" value="1" x-model="hasVariants"
+                       class="mt-0.5 rounded border-slate-300 text-accent-600 focus:ring-accent-500">
+                <span>
+                    <span class="block text-sm font-semibold text-brand-900">Has variants</span>
+                    <span class="block text-xs text-slate-400">Different Color/Size combinations, each with its own price</span>
+                </span>
+            </label>
+
+            <!-- Serial / IMEI -->
+            <label class="flex items-start gap-3 rounded-lg border border-slate-200 p-3">
+                <input type="checkbox" name="track_serial" value="1" x-model="trackSerial"
+                       class="mt-0.5 rounded border-slate-300 text-accent-600 focus:ring-accent-500">
+                <span>
+                    <span class="block text-sm font-semibold text-brand-900">Track serial / IMEI</span>
+                    <span class="block text-xs text-slate-400">Unique number per unit — captured during purchase (coming soon)</span>
+                </span>
+            </label>
+
+            <!-- Batch -->
+            <label class="flex items-start gap-3 rounded-lg border border-slate-200 p-3">
+                <input type="checkbox" name="track_batch" value="1" x-model="trackBatch" :disabled="trackExpiry"
+                       class="mt-0.5 rounded border-slate-300 text-accent-600 focus:ring-accent-500 disabled:opacity-60">
+                <span>
+                    <span class="block text-sm font-semibold text-brand-900">Track batches</span>
+                    <span class="block text-xs text-slate-400" x-text="trackExpiry ? 'Required by expiry tracking' : 'Grouped by batch during purchase (coming soon)'"></span>
+                </span>
+            </label>
+
+            <!-- Expiry -->
+            <label class="flex items-start gap-3 rounded-lg border border-slate-200 p-3">
+                <input type="checkbox" name="track_expiry" value="1" x-model="trackExpiry"
+                       @change="if (trackExpiry) trackBatch = true"
+                       class="mt-0.5 rounded border-slate-300 text-accent-600 focus:ring-accent-500">
+                <span>
+                    <span class="block text-sm font-semibold text-brand-900">Track expiry date</span>
+                    <span class="block text-xs text-slate-400">Perishable goods — enables batch tracking</span>
+                </span>
+            </label>
+
+            <!-- Warranty -->
+            <div class="rounded-lg border border-slate-200 p-3">
+                <label class="flex items-start gap-3">
+                    <input type="checkbox" x-model="hasWarranty"
+                           @change="if (!hasWarranty) { $refs.warrantyPeriod.value = ''; }"
+                           class="mt-0.5 rounded border-slate-300 text-accent-600 focus:ring-accent-500">
+                    <span>
+                        <span class="block text-sm font-semibold text-brand-900">Has warranty</span>
+                        <span class="block text-xs text-slate-400">Repair coverage duration</span>
+                    </span>
+                </label>
+                <div class="mt-3 flex items-center gap-2" x-show="hasWarranty" x-cloak>
+                    <x-text-input x-ref="warrantyPeriod" name="warranty_period" type="number" min="1" class="block w-24"
+                                  :value="old('warranty_period', $product->warranty_period ?? '')" placeholder="12" />
+                    <select name="warranty_unit" class="rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
+                        @foreach (['days' => 'Days', 'months' => 'Months', 'years' => 'Years'] as $val => $lbl)
+                            <option value="{{ $val }}" @selected(old('warranty_unit', $product->warranty_unit ?? 'months') === $val)>{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <x-input-error class="mt-1" :messages="$errors->get('warranty_period')" />
+                <x-input-error class="mt-1" :messages="$errors->get('warranty_unit')" />
+            </div>
+
+            <!-- Guarantee -->
+            <div class="rounded-lg border border-slate-200 p-3">
+                <label class="flex items-start gap-3">
+                    <input type="checkbox" x-model="hasGuarantee"
+                           @change="if (!hasGuarantee) { $refs.guaranteePeriod.value = ''; }"
+                           class="mt-0.5 rounded border-slate-300 text-accent-600 focus:ring-accent-500">
+                    <span>
+                        <span class="block text-sm font-semibold text-brand-900">Has guarantee</span>
+                        <span class="block text-xs text-slate-400">Replacement coverage duration</span>
+                    </span>
+                </label>
+                <div class="mt-3 flex items-center gap-2" x-show="hasGuarantee" x-cloak>
+                    <x-text-input x-ref="guaranteePeriod" name="guarantee_period" type="number" min="1" class="block w-24"
+                                  :value="old('guarantee_period', $product->guarantee_period ?? '')" placeholder="6" />
+                    <select name="guarantee_unit" class="rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
+                        @foreach (['days' => 'Days', 'months' => 'Months', 'years' => 'Years'] as $val => $lbl)
+                            <option value="{{ $val }}" @selected(old('guarantee_unit', $product->guarantee_unit ?? 'months') === $val)>{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <x-input-error class="mt-1" :messages="$errors->get('guarantee_period')" />
+                <x-input-error class="mt-1" :messages="$errors->get('guarantee_unit')" />
+            </div>
+        </div>
+
+        @include('admin.products._variants')
+    </div>
 </div>
+
+@if (($product ?? null) && $product->has_variants)
+@php
+    $selectedValues = $product->variants
+        ->flatMap->attributeValues
+        ->groupBy(fn ($av) => $av->pivot->attribute_id)
+        ->map(fn ($group) => $group->mapWithKeys(fn ($av) => [$av->id => $av->value]));
+
+    $existingVariants = $product->variants->map(fn ($v) => [
+        'key' => $v->attributeValues->map(fn ($av) => $av->pivot->attribute_id.':'.$av->id)->sort()->implode('|'),
+        'id' => $v->id,
+        'label' => $v->label,
+        'values' => $v->attributeValues->mapWithKeys(fn ($av) => [$av->pivot->attribute_id => $av->id]),
+        'sku' => $v->sku,
+        'barcode' => $v->barcode,
+        'selling_price' => $v->selling_price,
+        'estimated_cost' => $v->estimated_cost,
+        'status' => (bool) $v->status,
+    ]);
+@endphp
+<script>
+    window.__selectedValues = @json($selectedValues);
+    window.__existingVariants = @json($existingVariants);
+</script>
+@endif
 
 <div class="mt-5 flex items-center gap-3">
     <x-primary-button>{{ $editing ? 'Update Product' : 'Create Product' }}</x-primary-button>

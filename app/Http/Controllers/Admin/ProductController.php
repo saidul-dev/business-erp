@@ -72,6 +72,8 @@ class ProductController extends Controller implements HasMiddleware
 
     public function edit(Product $product)
     {
+        $product->load('variants.attributeValues');
+
         return view('admin.products.edit', array_merge(['product' => $product], $this->formOptions()));
     }
 
