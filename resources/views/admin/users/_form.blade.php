@@ -1,6 +1,14 @@
 @php $editing = isset($user); @endphp
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4"
+     x-data="{
+         selectedRoles: @js(old('roles', $editing ? $user->roles->pluck('name')->all() : [])),
+         rolePermMap: @js($rolePermissionsMap),
+         viaRole(permission) {
+             return this.selectedRoles.includes('Super Admin')
+                 || this.selectedRoles.some(role => (this.rolePermMap[role] || []).includes(permission));
+         },
+     }">
     <!-- Account details -->
     <div class="lg:col-span-2 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 space-y-5">
         <div>
@@ -53,6 +61,7 @@
             @foreach ($roles as $role)
             <label class="flex items-center gap-3 rounded-xl px-4 py-3 ring-1 ring-slate-200 hover:bg-slate-50 cursor-pointer has-[:checked]:ring-accent-500 has-[:checked]:bg-accent-500/5">
                 <input type="checkbox" name="roles[]" value="{{ $role->name }}"
+                       x-model="selectedRoles"
                        @checked(in_array($role->name, $checkedRoles))
                        class="rounded border-slate-300 text-brand-700 focus:ring-accent-500">
                 <span>
@@ -112,6 +121,55 @@
         @endif
         <x-input-error class="mt-2" :messages="$errors->get('sites')" />
         <x-input-error class="mt-2" :messages="$errors->get('sites.*')" />
+    </div>
+
+    <!-- Direct Permissions -->
+    <div class="lg:col-span-3 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div class="mb-4">
+            <h3 class="font-bold text-brand-900">Direct Permissions</h3>
+            <p class="text-xs text-slate-400">Extra permissions for this user only, on top of whatever their role(s) already grant. Use this to fine-tune one person without creating a new role.</p>
+        </div>
+
+        @php $checkedDirectPermissions = old('permissions', $editing ? $user->getDirectPermissions()->pluck('name')->all() : []); @endphp
+
+        <x-input-error class="mb-3" :messages="$errors->get('permissions')" />
+        <x-input-error class="mb-3" :messages="$errors->get('permissions.*')" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            @foreach ($permissions as $module => $modulePermissions)
+            <div class="rounded-xl ring-1 ring-slate-200 overflow-hidden"
+                 x-data="{
+                     all() { return [...$el.querySelectorAll('.direct-perm-box')].every(c => c.checked) },
+                     toggleAll(on) { $el.querySelectorAll('.direct-perm-box').forEach(c => c.checked = on) },
+                 }">
+                <label class="flex items-center gap-2.5 bg-brand-50/70 px-4 py-2.5 cursor-pointer border-b border-slate-200">
+                    <input type="checkbox" class="rounded border-slate-300 text-brand-700 focus:ring-accent-500"
+                           @change="toggleAll($event.target.checked)"
+                           @checked(collect($modulePermissions)->every(fn ($p) => in_array($p->name, $checkedDirectPermissions)))>
+                    <span class="text-sm font-bold uppercase tracking-wide text-brand-800">{{ ucfirst($module) }}</span>
+                </label>
+                <div class="px-4 py-3 space-y-2">
+                    @foreach ($modulePermissions as $permission)
+                    <template x-if="viaRole('{{ $permission->name }}')">
+                        <label class="flex items-center gap-2.5 cursor-not-allowed" title="Already granted via role">
+                            <input type="checkbox" checked disabled class="rounded border-slate-300 text-slate-400">
+                            <span class="text-sm text-slate-400">{{ ucfirst(explode('.', $permission->name)[1]) }}</span>
+                            <span class="text-[10px] font-semibold uppercase tracking-wide text-accent-600">via role</span>
+                        </label>
+                    </template>
+                    <template x-if="!viaRole('{{ $permission->name }}')">
+                        <label class="flex items-center gap-2.5 cursor-pointer">
+                            <input type="checkbox" name="permissions[]" value="{{ $permission->name }}"
+                                   @checked(in_array($permission->name, $checkedDirectPermissions))
+                                   class="direct-perm-box rounded border-slate-300 text-brand-700 focus:ring-accent-500">
+                            <span class="text-sm text-slate-600">{{ ucfirst(explode('.', $permission->name)[1]) }}</span>
+                        </label>
+                    </template>
+                    @endforeach
+                </div>
+            </div>
+            @endforeach
+        </div>
     </div>
 </div>
 

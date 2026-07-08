@@ -10,6 +10,7 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller implements HasMiddleware
@@ -36,6 +37,8 @@ class UserController extends Controller implements HasMiddleware
         return view('admin.users.create', [
             'roles' => $this->assignableRoles(),
             'sites' => Site::orderBy('name')->get(),
+            'permissions' => $this->permissionsByModule(),
+            'rolePermissionsMap' => $this->rolePermissionsMap(),
         ]);
     }
 
@@ -50,6 +53,8 @@ class UserController extends Controller implements HasMiddleware
             'sites' => ['array'],
             'sites.*' => ['exists:sites,id'],
             'default_site' => ['nullable', 'integer'],
+            'permissions' => ['array'],
+            'permissions.*' => ['exists:permissions,name'],
         ]);
 
         $user = User::create([
@@ -59,6 +64,7 @@ class UserController extends Controller implements HasMiddleware
         ]);
 
         $user->syncRoles($validated['roles'] ?? []);
+        $user->syncPermissions($validated['permissions'] ?? []);
         $this->syncSites($user, $validated['sites'] ?? [], $validated['default_site'] ?? null);
 
         return redirect()->route('users.index')->with('success', "User \"{$user->name}\" created.");
@@ -72,6 +78,8 @@ class UserController extends Controller implements HasMiddleware
             'user' => $user,
             'roles' => $this->assignableRoles(),
             'sites' => Site::orderBy('name')->get(),
+            'permissions' => $this->permissionsByModule(),
+            'rolePermissionsMap' => $this->rolePermissionsMap(),
         ]);
     }
 
@@ -88,6 +96,8 @@ class UserController extends Controller implements HasMiddleware
             'sites' => ['array'],
             'sites.*' => ['exists:sites,id'],
             'default_site' => ['nullable', 'integer'],
+            'permissions' => ['array'],
+            'permissions.*' => ['exists:permissions,name'],
         ]);
 
         $user->fill([
@@ -101,6 +111,7 @@ class UserController extends Controller implements HasMiddleware
 
         $user->save();
         $user->syncRoles($validated['roles'] ?? []);
+        $user->syncPermissions($validated['permissions'] ?? []);
         $this->syncSites($user, $validated['sites'] ?? [], $validated['default_site'] ?? null);
 
         return redirect()->route('users.index')->with('success', "User \"{$user->name}\" updated.");
@@ -127,6 +138,25 @@ class UserController extends Controller implements HasMiddleware
         return Role::orderBy('name')->get()
             ->when(! auth()->user()->hasRole('Super Admin'),
                 fn ($roles) => $roles->reject(fn ($role) => $role->name === 'Super Admin'));
+    }
+
+    /**
+     * "sales.view" => grouped under "sales", for the Direct Permissions matrix.
+     */
+    protected function permissionsByModule()
+    {
+        return Permission::orderBy('name')->get()
+            ->groupBy(fn ($permission) => explode('.', $permission->name)[0]);
+    }
+
+    /**
+     * Role name => permission names it grants, so the Direct Permissions
+     * matrix can show "already granted via role" as the Roles checkboxes change.
+     */
+    protected function rolePermissionsMap()
+    {
+        return Role::with('permissions')->get()
+            ->mapWithKeys(fn ($role) => [$role->name => $role->permissions->pluck('name')]);
     }
 
     protected function guardSuperAdminTarget(User $user): void
