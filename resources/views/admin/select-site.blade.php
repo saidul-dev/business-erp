@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="mb-5 text-center">
-        <h2 class="text-xl font-bold text-brand-900">Select a Site</h2>
-        <p class="mt-1 text-sm text-slate-500">You're assigned to more than one site. Pick which one you're working from.</p>
+        <h2 class="text-xl font-bold text-brand-900">{{ __('Select a Site') }}</h2>
+        <p class="mt-1 text-sm text-slate-500">{{ __("You're assigned to more than one site. Pick which one you're working from.") }}</p>
     </div>
 
     <div class="space-y-2">
@@ -23,7 +23,7 @@
         <form method="POST" action="{{ route('sites.switch') }}">
             @csrf
             <button type="submit" class="w-full rounded-xl px-4 py-3 ring-1 ring-dashed ring-slate-300 hover:bg-slate-50 text-center text-sm font-semibold text-slate-500">
-                View All Sites
+                {{ __('View All Sites') }}
             </button>
         </form>
         @endif
@@ -31,6 +31,6 @@
 
     <form method="POST" action="{{ route('logout') }}" class="mt-5 text-center">
         @csrf
-        <button type="submit" class="text-xs text-slate-400 hover:text-slate-600 underline">Log out</button>
+        <button type="submit" class="text-xs text-slate-400 hover:text-slate-600 underline">{{ __('Log out') }}</button>
     </form>
 </x-guest-layout>

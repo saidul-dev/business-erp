@@ -1,6 +1,6 @@
 <x-app-layout>
-    <x-slot name="title">Add Attribute</x-slot>
-    <x-slot name="header"><h2 class="text-2xl font-bold text-brand-900">Add Attribute</h2></x-slot>
+    <x-slot name="title">{{ __('Add Attribute') }}</x-slot>
+    <x-slot name="header"><h2 class="text-2xl font-bold text-brand-900">{{ __('Add Attribute') }}</h2></x-slot>
 
     <form method="POST" action="{{ route('attributes.store') }}">
         @csrf

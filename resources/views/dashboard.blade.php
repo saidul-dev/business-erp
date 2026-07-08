@@ -2,22 +2,22 @@
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-brand-900">Dashboard</h2>
+                <h2 class="text-2xl font-bold text-brand-900">{{ __('Dashboard') }}</h2>
                 <p class="text-sm text-slate-500 mt-0.5">
-                    Welcome back, {{ Auth::user()->name }} —
-                    <span class="font-medium text-accent-600">{{ Auth::user()->getRoleNames()->first() ?? 'No role' }}</span>
+                    {{ __('Welcome back,') }} {{ Auth::user()->name }} —
+                    <span class="font-medium text-accent-600">{{ Auth::user()->getRoleNames()->first() ?? __('No role') }}</span>
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 @can('sales.create')
                 <button class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-3 sm:px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 whitespace-nowrap">
                     <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                    New Invoice
+                    {{ __('New Invoice') }}
                 </button>
                 @endcan
                 @can('sourcing.create')
                 <button class="inline-flex items-center gap-2 rounded-lg bg-white px-3 sm:px-4 py-2 text-sm font-semibold text-brand-800 ring-1 ring-slate-200 hover:bg-slate-50 whitespace-nowrap">
-                    Purchase Entry
+                    {{ __('Purchase Entry') }}
                 </button>
                 @endcan
             </div>
@@ -27,10 +27,10 @@
     {{-- Demo figures until the ERP modules land (README Phase 1) --}}
     @php
         $stats = [
-            ['label' => "Today's Sales", 'value' => '৳ 1,24,500', 'delta' => '+12.4%', 'up' => true, 'icon' => 'sales'],
-            ['label' => "Today's Collection", 'value' => '৳ 86,200', 'delta' => '+5.1%', 'up' => true, 'icon' => 'collection'],
-            ['label' => 'Total Receivable (Due)', 'value' => '৳ 4,32,900', 'delta' => '-2.3%', 'up' => false, 'icon' => 'due'],
-            ['label' => 'Low Stock Items', 'value' => '14', 'delta' => '3 critical', 'up' => false, 'icon' => 'stock'],
+            ['label' => __("Today's Sales"), 'value' => '৳ 1,24,500', 'delta' => '+12.4%', 'up' => true, 'icon' => 'sales'],
+            ['label' => __("Today's Collection"), 'value' => '৳ 86,200', 'delta' => '+5.1%', 'up' => true, 'icon' => 'collection'],
+            ['label' => __('Total Receivable (Due)'), 'value' => '৳ 4,32,900', 'delta' => '-2.3%', 'up' => false, 'icon' => 'due'],
+            ['label' => __('Low Stock Items'), 'value' => '14', 'delta' => __('3 critical'), 'up' => false, 'icon' => 'stock'],
         ];
     @endphp
 
@@ -46,7 +46,7 @@
                         <p class="mt-2 text-2xl font-bold text-brand-900">{{ $stat['value'] }}</p>
                         <p class="mt-1 text-xs font-semibold {{ $stat['up'] ? 'text-emerald-600' : 'text-rose-500' }}">
                             {{ $stat['delta'] }}
-                            <span class="font-normal text-slate-400">vs yesterday</span>
+                            <span class="font-normal text-slate-400">{{ __('vs yesterday') }}</span>
                         </p>
                     </div>
                     <span class="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-brand-700 to-brand-900 text-accent-400">
@@ -70,24 +70,24 @@
             <div class="xl:col-span-2 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 class="font-bold text-brand-900">Sales vs Collection</h3>
-                        <p class="text-xs text-slate-400">Last 7 days (demo data)</p>
+                        <h3 class="font-bold text-brand-900">{{ __('Sales vs Collection') }}</h3>
+                        <p class="text-xs text-slate-400">{{ __('Last 7 days (demo data)') }}</p>
                     </div>
-                    <span class="rounded-full bg-accent-500/10 px-3 py-1 text-xs font-semibold text-accent-600">Weekly</span>
+                    <span class="rounded-full bg-accent-500/10 px-3 py-1 text-xs font-semibold text-accent-600">{{ __('Weekly') }}</span>
                 </div>
                 <div class="h-72"><canvas id="salesChart"></canvas></div>
             </div>
 
             <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
                 <div class="mb-4">
-                    <h3 class="font-bold text-brand-900">Receivable Aging</h3>
-                    <p class="text-xs text-slate-400">Outstanding dues by age (demo data)</p>
+                    <h3 class="font-bold text-brand-900">{{ __('Receivable Aging') }}</h3>
+                    <p class="text-xs text-slate-400">{{ __('Outstanding dues by age (demo data)') }}</p>
                 </div>
                 <div class="h-56"><canvas id="agingChart"></canvas></div>
                 <div class="mt-4 space-y-2 text-sm">
-                    <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-brand-800"></span>0–30 days</span><span class="font-semibold text-brand-900">৳ 2,10,000</span></div>
-                    <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-brand-500"></span>31–60 days</span><span class="font-semibold text-brand-900">৳ 1,40,400</span></div>
-                    <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-accent-500"></span>60+ days</span><span class="font-semibold text-brand-900">৳ 82,500</span></div>
+                    <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-brand-800"></span>{{ __('0–30 days') }}</span><span class="font-semibold text-brand-900">৳ 2,10,000</span></div>
+                    <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-brand-500"></span>{{ __('31–60 days') }}</span><span class="font-semibold text-brand-900">৳ 1,40,400</span></div>
+                    <div class="flex items-center justify-between"><span class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-accent-500"></span>{{ __('60+ days') }}</span><span class="font-semibold text-brand-900">৳ 82,500</span></div>
                 </div>
             </div>
         </div>
@@ -97,17 +97,17 @@
             <!-- Recent invoices -->
             <div class="xl:col-span-2 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
                 <div class="flex items-center justify-between px-5 pt-5 pb-3">
-                    <h3 class="font-bold text-brand-900">Recent Invoices</h3>
-                    <a href="#" class="text-xs font-semibold text-accent-600 hover:text-accent-500">View all &rarr;</a>
+                    <h3 class="font-bold text-brand-900">{{ __('Recent Invoices') }}</h3>
+                    <a href="#" class="text-xs font-semibold text-accent-600 hover:text-accent-500">{{ __('View all') }} &rarr;</a>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full min-w-[480px] text-sm">
                         <thead>
                             <tr class="border-y border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                                <th class="px-5 py-3 font-semibold">Invoice</th>
-                                <th class="px-5 py-3 font-semibold">Customer</th>
-                                <th class="px-5 py-3 font-semibold">Amount</th>
-                                <th class="px-5 py-3 font-semibold">Status</th>
+                                <th class="px-5 py-3 font-semibold">{{ __('Invoice') }}</th>
+                                <th class="px-5 py-3 font-semibold">{{ __('Customer') }}</th>
+                                <th class="px-5 py-3 font-semibold">{{ __('Amount') }}</th>
+                                <th class="px-5 py-3 font-semibold">{{ __('Status') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -130,7 +130,7 @@
                                 <td class="px-5 py-3 text-slate-600 whitespace-nowrap">{{ $customer }}</td>
                                 <td class="px-5 py-3 font-medium text-slate-800 whitespace-nowrap">{{ $amount }}</td>
                                 <td class="px-5 py-3 whitespace-nowrap">
-                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 {{ $statusClasses[$status] }}">{{ $status }}</span>
+                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 {{ $statusClasses[$status] }}">{{ __($status) }}</span>
                                 </td>
                             </tr>
                             @endforeach
@@ -142,8 +142,8 @@
             <!-- Low stock alerts -->
             <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-brand-900">Low Stock Alerts</h3>
-                    <span class="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200">14 items</span>
+                    <h3 class="font-bold text-brand-900">{{ __('Low Stock Alerts') }}</h3>
+                    <span class="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200">{{ __(':count items', ['count' => 14]) }}</span>
                 </div>
                 <ul class="space-y-3">
                     @foreach ([
@@ -163,7 +163,7 @@
                 </ul>
                 @can('inventory.view')
                 <a href="#" class="mt-4 block rounded-lg bg-brand-800/5 px-4 py-2 text-center text-xs font-semibold text-brand-800 hover:bg-brand-800/10">
-                    Open Inventory &rarr;
+                    {{ __('Open Inventory') }} &rarr;
                 </a>
                 @endcan
             </div>

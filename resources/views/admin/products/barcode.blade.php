@@ -1,9 +1,9 @@
 <x-app-layout>
-    <x-slot name="title">Barcode</x-slot>
+    <x-slot name="title">{{ __('Barcode') }}</x-slot>
     <x-slot name="header">
         <div>
-            <h2 class="text-2xl font-bold text-brand-900">Barcode</h2>
-            <p class="text-sm text-slate-500 mt-0.5">Generate and print a barcode label for a product</p>
+            <h2 class="text-2xl font-bold text-brand-900">{{ __('Barcode') }}</h2>
+            <p class="text-sm text-slate-500 mt-0.5">{{ __('Generate and print a barcode label for a product') }}</p>
         </div>
     </x-slot>
 
@@ -11,10 +11,10 @@
         <div class="no-print rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-6 max-w-2xl">
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="sm:col-span-2">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Product</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">{{ __('Product') }}</label>
                     <select x-model="productId"
                             class="w-full rounded-lg border-slate-200 text-sm focus:border-accent-500 focus:ring-accent-500">
-                        <option value="">Select a product…</option>
+                        <option value="">{{ __('Select a product…') }}</option>
                         <template x-for="p in products" :key="p.id">
                             <option :value="p.id" x-text="p.name"></option>
                         </template>
@@ -22,16 +22,16 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Format</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">{{ __('Format') }}</label>
                     <select x-model="format"
                             class="w-full rounded-lg border-slate-200 text-sm focus:border-accent-500 focus:ring-accent-500">
-                        <option value="roll">Sticker Roll</option>
-                        <option value="a4">A4 Sheet</option>
+                        <option value="roll">{{ __('Sticker Roll') }}</option>
+                        <option value="a4">{{ __('A4 Sheet') }}</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Quantity</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">{{ __('Quantity') }}</label>
                     <input type="number" min="1" x-model.number="quantity"
                            class="w-full rounded-lg border-slate-200 text-sm focus:border-accent-500 focus:ring-accent-500">
                 </div>
@@ -40,12 +40,12 @@
             <div class="mt-5 flex items-center gap-3">
                 <button type="button" @click="submit()" :disabled="!productId"
                         class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed">
-                    Generate
+                    {{ __('Generate') }}
                 </button>
                 <button type="button" x-show="submitted" @click="window.print()"
                         class="inline-flex items-center gap-2 rounded-lg bg-accent-500 px-4 py-2 text-sm font-semibold text-white hover:bg-accent-600"
                         style="display: none;">
-                    Print
+                    {{ __('Print') }}
                 </button>
             </div>
         </div>

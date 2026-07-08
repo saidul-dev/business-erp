@@ -1,10 +1,10 @@
 {{-- Variant builder. Shown only when "Has variants" is checked. --}}
 <div class="mt-6 border-t border-slate-100 pt-6" x-show="hasVariants" x-cloak>
-    <h4 class="font-semibold text-brand-900">Variants</h4>
-    <p class="text-xs text-slate-400 mb-4">Pick attributes and values, then generate the combinations. Each variant has its own price, SKU and barcode.</p>
+    <h4 class="font-semibold text-brand-900">{{ __('Variants') }}</h4>
+    <p class="text-xs text-slate-400 mb-4">{{ __('Pick attributes and values, then generate the combinations. Each variant has its own price, SKU and barcode.') }}</p>
 
     @if ($attributes->isEmpty())
-        <p class="text-sm text-amber-600">No attributes yet — <a href="{{ route('attributes.index') }}" class="underline font-semibold">create Color/Size first</a>.</p>
+        <p class="text-sm text-amber-600">{{ __('No attributes yet —') }} <a href="{{ route('attributes.index') }}" class="underline font-semibold">{{ __('create Color/Size first') }}</a>.</p>
     @else
         {{-- Attribute + value pickers --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -27,19 +27,19 @@
         </div>
 
         <button type="button" @click="generateVariants()"
-                class="mt-4 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-900">Generate Variants</button>
+                class="mt-4 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-900">{{ __('Generate Variants') }}</button>
 
         {{-- Generated variant rows --}}
         <div class="mt-4 overflow-x-auto" x-show="variants.length" x-cloak>
             <table class="min-w-full text-sm">
                 <thead class="text-left text-xs font-semibold uppercase text-slate-500">
                     <tr>
-                        <th class="py-2 pr-3">Variant</th>
-                        <th class="py-2 pr-3">SKU</th>
-                        <th class="py-2 pr-3">Barcode</th>
-                        <th class="py-2 pr-3">Selling Price</th>
-                        <th class="py-2 pr-3">Cost</th>
-                        <th class="py-2 pr-3">Active</th>
+                        <th class="py-2 pr-3">{{ __('Variant') }}</th>
+                        <th class="py-2 pr-3">{{ __('SKU') }}</th>
+                        <th class="py-2 pr-3">{{ __('Barcode') }}</th>
+                        <th class="py-2 pr-3">{{ __('Selling Price') }}</th>
+                        <th class="py-2 pr-3">{{ __('Cost') }}</th>
+                        <th class="py-2 pr-3">{{ __('Active') }}</th>
                     </tr>
                 </thead>
                 <tbody>

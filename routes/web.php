@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CurrentSiteController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,9 @@ use Illuminate\Support\Facades\Route;
 // once "Enable E-commerce" is switched on from Admin > Settings.
 Route::get('/', [WebsiteController::class, 'home'])->name('home');
 Route::get('/shop', [WebsiteController::class, 'shop'])->name('shop');
+
+// UI language switch — not an authenticated action, just a session preference.
+Route::post('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
 // Backend/admin panel — kept under /admin so the public company website
 // (and its optional e-commerce storefront, toggled from Settings) can

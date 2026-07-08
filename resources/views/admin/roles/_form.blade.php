@@ -6,7 +6,7 @@
 <div class="space-y-4">
     <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div class="max-w-md">
-            <x-input-label for="name" value="Role Name" />
+            <x-input-label for="name" :value="__('Role Name')" />
             <x-text-input id="name" name="name" type="text" class="mt-1 block w-full"
                           :value="old('name', $role->name ?? '')" required autofocus />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
@@ -15,8 +15,8 @@
 
     <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div class="mb-4">
-            <h3 class="font-bold text-brand-900">Permissions</h3>
-            <p class="text-xs text-slate-400">Module-wise access — use the module checkbox to toggle all of its actions</p>
+            <h3 class="font-bold text-brand-900">{{ __('Permissions') }}</h3>
+            <p class="text-xs text-slate-400">{{ __('Module-wise access — use the module checkbox to toggle all of its actions') }}</p>
         </div>
         <x-input-error class="mb-3" :messages="$errors->get('permissions')" />
         <x-input-error class="mb-3" :messages="$errors->get('permissions.*')" />
@@ -51,6 +51,6 @@
 </div>
 
 <div class="mt-5 flex items-center gap-3">
-    <x-primary-button>{{ $editing ? 'Update Role' : 'Create Role' }}</x-primary-button>
-    <a href="{{ route('roles.index') }}" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">Cancel</a>
+    <x-primary-button>{{ $editing ? __('Update Role') : __('Create Role') }}</x-primary-button>
+    <a href="{{ route('roles.index') }}" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Cancel') }}</a>
 </div>
