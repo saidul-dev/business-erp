@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\CompanySetting;
 use App\Models\Product;
 use App\Models\Unit;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class ProductController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:inventory.view', only: ['index']),
+            new Middleware('permission:inventory.view', only: ['index', 'barcode']),
             new Middleware('permission:inventory.create', only: ['create', 'store']),
             new Middleware('permission:inventory.edit', only: ['edit', 'update', 'toggleStatus']),
             new Middleware('permission:inventory.delete', only: ['destroy']),
@@ -89,6 +90,21 @@ class ProductController extends Controller implements HasMiddleware
         $product->update(['status' => ! $product->status]);
 
         return back()->with('success', "Product \"{$product->name}\" is now ".($product->status ? 'active' : 'inactive').'.');
+    }
+
+    public function barcode()
+    {
+        $products = Product::orderBy('name')->get()->map(fn (Product $product) => [
+            'id' => $product->id,
+            'name' => $product->name,
+            'value' => $product->barcode ?: $product->sku,
+            'price' => number_format($product->selling_price, 2),
+        ]);
+
+        return view('admin.products.barcode', [
+            'products' => $products,
+            'companyName' => CompanySetting::current()->name,
+        ]);
     }
 
     public function destroy(Product $product)

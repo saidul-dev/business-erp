@@ -49,6 +49,7 @@ Route::prefix('admin')->group(function () {
         Route::patch('/units/{unit}/toggle-status', [UnitController::class, 'toggleStatus'])->name('units.toggle-status');
         Route::resource('products', ProductController::class)->except('show');
         Route::patch('/products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggle-status');
+        Route::get('/products/barcode', [ProductController::class, 'barcode'])->name('products.barcode');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');

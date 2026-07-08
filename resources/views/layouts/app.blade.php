@@ -89,6 +89,9 @@
                             <x-sidebar-sublink :href="route('units.index')" :active="request()->routeIs('units.*')">
                                 Units
                             </x-sidebar-sublink>
+                            <x-sidebar-sublink :href="route('products.barcode')" :active="request()->routeIs('products.barcode')">
+                                Barcode
+                            </x-sidebar-sublink>
                         </x-sidebar-dropdown>
                         @endcan
 
