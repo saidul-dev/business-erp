@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Scope;
 /**
  * Restricts a query to the authenticated user's Current Site.
  *
- * Owner/Super Admin viewing "All Sites" (current_site_id is null) bypass
+ * Admin/Super Admin viewing "All Sites" (current_site_id is null) bypass
  * the filter entirely — everyone else only ever sees their Current Site's
  * rows, per the Site-based Access Control architecture.
  */

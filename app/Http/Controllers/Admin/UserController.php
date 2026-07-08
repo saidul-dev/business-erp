@@ -15,6 +15,11 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller implements HasMiddleware
 {
+    /**
+     * Display order for role lists — not creation order, just presentation.
+     */
+    protected const ROLE_ORDER = ['Super Admin', 'Admin', 'Manager', 'HR', 'Accountant', 'Store-keeper', 'Sales'];
+
     public static function middleware(): array
     {
         return [
@@ -135,9 +140,15 @@ class UserController extends Controller implements HasMiddleware
      */
     protected function assignableRoles()
     {
-        return Role::orderBy('name')->get()
+        return Role::all()
             ->when(! auth()->user()->hasRole('Super Admin'),
-                fn ($roles) => $roles->reject(fn ($role) => $role->name === 'Super Admin'));
+                fn ($roles) => $roles->reject(fn ($role) => $role->name === 'Super Admin'))
+            ->sortBy(function ($role) {
+                $index = array_search($role->name, self::ROLE_ORDER);
+
+                return $index === false ? 999 : $index;
+            })
+            ->values();
     }
 
     /**

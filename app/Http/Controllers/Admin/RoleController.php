@@ -12,6 +12,11 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller implements HasMiddleware
 {
+    /**
+     * Display order for role lists — not creation order, just presentation.
+     */
+    protected const ROLE_ORDER = ['Super Admin', 'Admin', 'Manager', 'HR', 'Accountant', 'Store-keeper', 'Sales'];
+
     public static function middleware(): array
     {
         return [
@@ -24,7 +29,13 @@ class RoleController extends Controller implements HasMiddleware
 
     public function index()
     {
-        $roles = Role::with('permissions')->withCount('users')->orderBy('id')->get();
+        $roles = Role::with('permissions')->withCount('users')->get()
+            ->sortBy(function ($role) {
+                $index = array_search($role->name, self::ROLE_ORDER);
+
+                return $index === false ? 999 : $index;
+            })
+            ->values();
 
         $permissions = $this->permissionsByModule();
 

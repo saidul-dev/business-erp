@@ -24,13 +24,18 @@ class DatabaseSeeder extends Seeder
 
         User::firstOrCreate(
             ['email' => 'owner@businesserp.test'],
-            ['name' => 'Company Owner', 'password' => 'password']
-        )->syncRoles('Owner');
+            ['name' => 'Company Admin', 'password' => 'password']
+        )->syncRoles('Admin');
 
         User::firstOrCreate(
             ['email' => 'manager@businesserp.test'],
             ['name' => 'Branch Manager', 'password' => 'password']
         )->syncRoles('Manager');
+
+        User::firstOrCreate(
+            ['email' => 'hr@businesserp.test'],
+            ['name' => 'HR Executive', 'password' => 'password']
+        )->syncRoles('HR');
 
         User::firstOrCreate(
             ['email' => 'accountant@businesserp.test'],
@@ -46,10 +51,5 @@ class DatabaseSeeder extends Seeder
             ['email' => 'sales@businesserp.test'],
             ['name' => 'Sales Person', 'password' => 'password']
         )->syncRoles('Sales');
-
-        User::firstOrCreate(
-            ['email' => 'hr@businesserp.test'],
-            ['name' => 'HR Executive', 'password' => 'password']
-        )->syncRoles('HR');
     }
 }

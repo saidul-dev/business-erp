@@ -67,12 +67,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Super Admin and Owner see every site by default ("All Sites") — they
+     * Super Admin and Admin see every site by default ("All Sites") — they
      * are not restricted to the sites they happen to be individually assigned to.
      */
     public function seesAllSites(): bool
     {
-        return $this->hasRole(['Super Admin', 'Owner']);
+        return $this->hasRole(['Super Admin', 'Admin']);
     }
 
     public function defaultSite(): ?Site

@@ -10,6 +10,12 @@ use Spatie\Permission\PermissionRegistrar;
 class RolePermissionSeeder extends Seeder
 {
     /**
+     * Canonical display order for role lists (Roles & Permissions page,
+     * the Users form role picker). Not creation order — just presentation.
+     */
+    public const ROLE_ORDER = ['Super Admin', 'Admin', 'Manager', 'HR', 'Accountant', 'Store-keeper', 'Sales'];
+
+    /**
      * ERP modules (README §3) and the actions available on each.
      * Permission names follow the "module.action" convention.
      */
@@ -42,7 +48,11 @@ class RolePermissionSeeder extends Seeder
         // Super Admin gets everything through Gate::before (see AppServiceProvider)
         Role::findOrCreate('Super Admin');
 
-        Role::findOrCreate('Owner')
+        // Admin = company owner, full access to every site and every module.
+        // A user becomes a given Site's manager simply by holding the
+        // "Manager" role and being assigned to that Site — no separate
+        // "Site Manager" role is needed.
+        Role::findOrCreate('Admin')
             ->syncPermissions(Permission::all());
 
         Role::findOrCreate('Manager')->syncPermissions([
@@ -52,6 +62,13 @@ class RolePermissionSeeder extends Seeder
             'contacts.view', 'contacts.create', 'contacts.edit',
             'delivery.view', 'delivery.create', 'delivery.edit',
             'tasks.view', 'tasks.create', 'tasks.edit',
+            'reports.view',
+        ]);
+
+        Role::findOrCreate('HR')->syncPermissions([
+            'hrm.view', 'hrm.create', 'hrm.edit', 'hrm.approve',
+            'tasks.view', 'tasks.create', 'tasks.edit',
+            'contacts.view',
             'reports.view',
         ]);
 
@@ -74,29 +91,6 @@ class RolePermissionSeeder extends Seeder
             'contacts.view', 'contacts.create', 'contacts.edit',
             'inventory.view',
             'delivery.view',
-            'reports.view',
-        ]);
-
-        Role::findOrCreate('HR')->syncPermissions([
-            'hrm.view', 'hrm.create', 'hrm.edit', 'hrm.approve',
-            'tasks.view', 'tasks.create', 'tasks.edit',
-            'contacts.view',
-            'reports.view',
-        ]);
-
-        // Starter template for a per-site manager — everything needed to run
-        // one site day-to-day, minus company-wide admin (users/roles/settings/sites).
-        // Admin can clone this into narrower roles (e.g. "Factory Site Manager"
-        // with only production/inventory) per Site type from Roles & Permissions.
-        Role::findOrCreate('Site Manager')->syncPermissions([
-            'sourcing.view', 'sourcing.create', 'sourcing.edit', 'sourcing.approve',
-            'sales.view', 'sales.create', 'sales.edit', 'sales.approve',
-            'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.approve',
-            'contacts.view', 'contacts.create', 'contacts.edit',
-            'accounts.view', 'accounts.create', 'accounts.edit',
-            'delivery.view', 'delivery.create', 'delivery.edit',
-            'tasks.view', 'tasks.create', 'tasks.edit',
-            'hrm.view', 'hrm.create', 'hrm.edit',
             'reports.view',
         ]);
     }

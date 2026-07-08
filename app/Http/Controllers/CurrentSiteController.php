@@ -24,7 +24,7 @@ class CurrentSiteController extends Controller
 
     /**
      * Switch the Current Site — used by both the forced picker and the
-     * topbar Site Selector. Only Owner/Super Admin may pick "All Sites" (null).
+     * topbar Site Selector. Only Admin/Super Admin may pick "All Sites" (null).
      */
     public function switch(Request $request)
     {

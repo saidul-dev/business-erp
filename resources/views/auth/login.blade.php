@@ -49,12 +49,12 @@
         @php
             $demoAccounts = [
                 ['role' => 'Super Admin', 'email' => 'admin@businesserp.test'],
-                ['role' => 'Company Owner', 'email' => 'owner@businesserp.test'],
+                ['role' => 'Company Admin', 'email' => 'owner@businesserp.test'],
                 ['role' => 'Branch Manager', 'email' => 'manager@businesserp.test'],
+                ['role' => 'HR Executive', 'email' => 'hr@businesserp.test'],
                 ['role' => 'Head Accountant', 'email' => 'accountant@businesserp.test'],
                 ['role' => 'Store Keeper', 'email' => 'storekeeper@businesserp.test'],
                 ['role' => 'Sales Person', 'email' => 'sales@businesserp.test'],
-                ['role' => 'HR Executive', 'email' => 'hr@businesserp.test'],
             ];
         @endphp
         <div class="mt-6 pt-4 border-t border-gray-200">

@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
  * - 1 assigned site  -> auto-selected, no picker shown.
  * - >1 assigned sites -> must have a valid selection in session, otherwise
  *   redirected to the site picker (see ERP Architecture Guideline v1.0).
- * - 0 assigned sites  -> Owner/Super Admin default to "All Sites" (null);
+ * - 0 assigned sites  -> Admin/Super Admin default to "All Sites" (null);
  *   anyone else simply has no site context yet (nothing to enforce until
  *   a site-aware module needs one).
  */
