@@ -14,9 +14,13 @@ class Product extends Model
         'barcode',
         'category_id',
         'brand_id',
-        'unit_id',
+        'stock_unit_id',
+        'purchase_unit_id',
+        'purchase_unit_conversion',
+        'sale_unit_id',
+        'sale_unit_conversion',
         'description',
-        'cost_price',
+        'estimated_cost',
         'selling_price',
         'reorder_level',
         'image_path',
@@ -25,8 +29,10 @@ class Product extends Model
 
     protected $casts = [
         'status' => 'boolean',
-        'cost_price' => 'decimal:2',
+        'estimated_cost' => 'decimal:2',
         'selling_price' => 'decimal:2',
+        'purchase_unit_conversion' => 'decimal:4',
+        'sale_unit_conversion' => 'decimal:4',
         'reorder_level' => 'integer',
     ];
 
@@ -40,9 +46,30 @@ class Product extends Model
         return $this->belongsTo(Brand::class);
     }
 
-    public function unit(): BelongsTo
+    /**
+     * The unit stock quantity is tracked in — the canonical unit.
+     */
+    public function stockUnit(): BelongsTo
     {
-        return $this->belongsTo(Unit::class);
+        return $this->belongsTo(Unit::class, 'stock_unit_id');
+    }
+
+    /**
+     * Unit used when purchasing this product. Falls back to the stock
+     * unit (1:1) when not set — see purchase_unit_conversion.
+     */
+    public function purchaseUnit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'purchase_unit_id');
+    }
+
+    /**
+     * Unit used when selling this product. Falls back to the stock
+     * unit (1:1) when not set — see sale_unit_conversion.
+     */
+    public function saleUnit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'sale_unit_id');
     }
 
     public function getImageUrlAttribute(): ?string

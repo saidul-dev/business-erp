@@ -57,8 +57,8 @@
                     <td class="px-5 py-3 text-slate-600">{{ $product->sku }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $product->category->name ?? '—' }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $product->brand->name ?? '—' }}</td>
-                    <td class="px-5 py-3 text-slate-600">{{ $product->unit->short_name ?? '—' }}</td>
-                    <td class="px-5 py-3 text-right text-slate-600">{{ number_format($product->cost_price, 2) }}</td>
+                    <td class="px-5 py-3 text-slate-600">{{ $product->stockUnit->short_name ?? '—' }}</td>
+                    <td class="px-5 py-3 text-right text-slate-600">{{ number_format($product->estimated_cost, 2) }}</td>
                     <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ number_format($product->selling_price, 2) }}</td>
                     <td class="px-5 py-3">
                         @can('inventory.edit')

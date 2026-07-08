@@ -27,7 +27,7 @@ class ProductController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        $products = Product::with(['category', 'brand', 'unit'])
+        $products = Product::with(['category', 'brand', 'stockUnit'])
             ->when($request->filled('q'), fn ($q) => $q->where(function ($q) use ($request) {
                 $q->where('name', 'like', "%{$request->q}%")
                     ->orWhere('sku', 'like', "%{$request->q}%")
@@ -119,9 +119,13 @@ class ProductController extends Controller implements HasMiddleware
             'barcode' => ['nullable', 'string', 'max:100', Rule::unique('products', 'barcode')->ignore($product?->id)],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'brand_id' => ['nullable', 'integer', 'exists:brands,id'],
-            'unit_id' => ['required', 'integer', 'exists:units,id'],
+            'stock_unit_id' => ['required', 'integer', 'exists:units,id'],
+            'purchase_unit_id' => ['nullable', 'integer', 'exists:units,id'],
+            'purchase_unit_conversion' => ['required', 'numeric', 'min:0.0001'],
+            'sale_unit_id' => ['nullable', 'integer', 'exists:units,id'],
+            'sale_unit_conversion' => ['required', 'numeric', 'min:0.0001'],
             'description' => ['nullable', 'string', 'max:2000'],
-            'cost_price' => ['required', 'numeric', 'min:0'],
+            'estimated_cost' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
             'reorder_level' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'max:2048'],

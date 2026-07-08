@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -60,7 +61,13 @@ class UnitController extends Controller implements HasMiddleware
 
     public function destroy(Unit $unit)
     {
-        if ($unit->products()->exists()) {
+        // A unit can be in use as a product's Stock, Purchase, or Sale unit.
+        $inUse = Product::where('stock_unit_id', $unit->id)
+            ->orWhere('purchase_unit_id', $unit->id)
+            ->orWhere('sale_unit_id', $unit->id)
+            ->exists();
+
+        if ($inUse) {
             return back()->with('error', "Unit \"{$unit->name}\" still has products assigned — reassign them first.");
         }
 
