@@ -38,7 +38,11 @@ class Product extends Model
 
     protected $casts = [
         'status' => 'boolean',
-        'estimated_cost' => 'decimal:2',
+        // 4dp: a perpetual weighted-average, recalculated on every costed "in"
+        // movement (see StockMovement::recalculateAverageCost()) — rounding
+        // it to money precision here would drift qty × cost off the ledger's
+        // true total. UI display still formats to 2dp.
+        'estimated_cost' => 'decimal:4',
         'selling_price' => 'decimal:2',
         'purchase_unit_conversion' => 'decimal:4',
         'sale_unit_conversion' => 'decimal:4',

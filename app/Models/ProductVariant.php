@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductVariant extends Model
 {
@@ -15,12 +16,18 @@ class ProductVariant extends Model
     protected $casts = [
         'status' => 'boolean',
         'selling_price' => 'decimal:2',
-        'estimated_cost' => 'decimal:2',
+        // 4dp — see Product::$casts for why.
+        'estimated_cost' => 'decimal:4',
     ];
 
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
     }
 
     public function attributeValues(): BelongsToMany

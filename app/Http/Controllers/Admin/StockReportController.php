@@ -43,8 +43,6 @@ class StockReportController extends Controller implements HasMiddleware
         $groupBalances = collect();
         $groupCostValuation = collect();
         $groupSaleValuation = collect();
-        $simpleAvgCost = collect();
-        $variantAvgCost = collect();
 
         if ($site) {
             $q = $request->q;
@@ -156,31 +154,6 @@ class StockReportController extends Controller implements HasMiddleware
                 ->groupBy('product_variant_id')
                 ->pluck('balance', 'product_variant_id');
 
-            // Weighted-average cost = total cost of every "in" movement that
-            // actually recorded a unit_cost, divided by their total quantity.
-            // Purchase/production cost moves over time, so Cost Valuation
-            // must be priced off this ledger history — Product.estimated_cost
-            // (a single static number) is only the fallback for items that
-            // have never been costed yet.
-            $simpleAvgCost = StockMovement::where('site_id', $site->id)
-                ->where('direction', 'in')
-                ->whereNotNull('unit_cost')
-                ->whereIn('product_id', $simpleProductIds)
-                ->whereNull('product_variant_id')
-                ->selectRaw('product_id, SUM(quantity * unit_cost) as cost_sum, SUM(quantity) as qty_sum')
-                ->groupBy('product_id')
-                ->get()
-                ->mapWithKeys(fn ($row) => [$row->product_id => (float) $row->cost_sum / (float) $row->qty_sum]);
-
-            $variantAvgCost = StockMovement::where('site_id', $site->id)
-                ->where('direction', 'in')
-                ->whereNotNull('unit_cost')
-                ->whereIn('product_variant_id', $variantIds)
-                ->selectRaw('product_variant_id, SUM(quantity * unit_cost) as cost_sum, SUM(quantity) as qty_sum')
-                ->groupBy('product_variant_id')
-                ->get()
-                ->mapWithKeys(fn ($row) => [$row->product_variant_id => (float) $row->cost_sum / (float) $row->qty_sum]);
-
             // Variant movements always carry the parent product_id too, so
             // the group total is just "every variant movement for this product".
             $groupBalances = StockMovement::where('site_id', $site->id)
@@ -206,23 +179,13 @@ class StockReportController extends Controller implements HasMiddleware
                     ->groupBy('product_variant_id')
                     ->pluck('balance', 'product_variant_id');
 
-                $groupVariantAvgCost = StockMovement::where('site_id', $site->id)
-                    ->where('direction', 'in')
-                    ->whereNotNull('unit_cost')
-                    ->whereIn('product_variant_id', $groupVariantIds)
-                    ->selectRaw('product_variant_id, SUM(quantity * unit_cost) as cost_sum, SUM(quantity) as qty_sum')
-                    ->groupBy('product_variant_id')
-                    ->get()
-                    ->mapWithKeys(fn ($row) => [$row->product_variant_id => (float) $row->cost_sum / (float) $row->qty_sum]);
-
                 foreach ($groupProducts as $product) {
                     $cost = 0.0;
                     $sale = 0.0;
 
                     foreach ($product->variants as $variant) {
                         $bal = (float) ($groupVariantBalances[$variant->id] ?? 0);
-                        $unitCost = $groupVariantAvgCost[$variant->id] ?? (float) ($variant->estimated_cost ?? $product->estimated_cost);
-                        $cost += $bal * $unitCost;
+                        $cost += $bal * (float) ($variant->estimated_cost ?? $product->estimated_cost);
                         $sale += $bal * (float) $variant->selling_price;
                     }
 
@@ -232,6 +195,6 @@ class StockReportController extends Controller implements HasMiddleware
             }
         }
 
-        return view('admin.stock.report', compact('sites', 'categories', 'site', 'products', 'simpleBalances', 'variantBalances', 'groupBalances', 'groupCostValuation', 'groupSaleValuation', 'simpleAvgCost', 'variantAvgCost'));
+        return view('admin.stock.report', compact('sites', 'categories', 'site', 'products', 'simpleBalances', 'variantBalances', 'groupBalances', 'groupCostValuation', 'groupSaleValuation'));
     }
 }

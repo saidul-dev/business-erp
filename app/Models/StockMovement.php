@@ -71,6 +71,56 @@ class StockMovement extends Model
             $movement->direction = self::TYPES[$movement->type]
                 ?? throw new \InvalidArgumentException("Unknown stock movement type [{$movement->type}].");
         });
+
+        static::created(function (StockMovement $movement) {
+            if ($movement->direction === 'in' && $movement->unit_cost !== null) {
+                $movement->recalculateAverageCost();
+            }
+        });
+
+        // The app never exposes a way to edit/delete a posted movement, but
+        // if one is ever removed directly (DB tooling, a future admin
+        // feature), the average cost must not stay stuck on stale history.
+        static::deleted(function (StockMovement $movement) {
+            if ($movement->direction === 'in' && $movement->unit_cost !== null) {
+                $movement->recalculateAverageCost();
+            }
+        });
+    }
+
+    /**
+     * Global (all-Sites), all-time weighted-average cost: SUM(qty × cost)
+     * over every "in" movement that recorded a unit_cost, ÷ their total
+     * qty — stored back onto the Product/ProductVariant so every screen
+     * (Product page, Stock Report, Stock Adjustment) reads one trustworthy
+     * number instead of a manually-typed static estimate. "out" movements
+     * never change it — they're valued at whatever the average already is.
+     * Movements with no recorded cost don't dilute it either.
+     */
+    public function recalculateAverageCost(): void
+    {
+        $query = static::query()
+            ->where('direction', 'in')
+            ->whereNotNull('unit_cost')
+            ->where('product_id', $this->product_id);
+
+        $this->product_variant_id
+            ? $query->where('product_variant_id', $this->product_variant_id)
+            : $query->whereNull('product_variant_id');
+
+        $totals = $query->selectRaw('SUM(quantity * unit_cost) as cost_sum, SUM(quantity) as qty_sum')->first();
+
+        if (! $totals || (float) $totals->qty_sum <= 0) {
+            return;
+        }
+
+        $avgCost = round((float) $totals->cost_sum / (float) $totals->qty_sum, 4);
+        $target = $this->product_variant_id ? $this->productVariant : $this->product;
+
+        if ($target && (float) $target->estimated_cost !== $avgCost) {
+            $target->estimated_cost = $avgCost;
+            $target->saveQuietly();
+        }
     }
 
     public function product(): BelongsTo

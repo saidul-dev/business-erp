@@ -64,6 +64,9 @@
                             </td>
                             <td class="py-2 pr-3">
                                 <input type="number" step="0.01" min="0" :name="'variants[' + i + '][estimated_cost]'" x-model="variant.estimated_cost"
+                                       :readonly="variant.has_cost_history"
+                                       :class="variant.has_cost_history ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : ''"
+                                       :title="variant.has_cost_history ? '{{ __('Auto-calculated from stock movement history — correct it via Stock Adjustment.') }}' : ''"
                                        class="block w-24 rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                             </td>
                             <td class="py-2 pr-3">

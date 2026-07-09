@@ -12,6 +12,7 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class InitialStockController extends Controller implements HasMiddleware
 {
@@ -127,6 +128,25 @@ class InitialStockController extends Controller implements HasMiddleware
 
         if ($productsToInsert->isEmpty() && $variantsToInsert->isEmpty()) {
             return back()->with('error', 'Enter a quantity for at least one product.');
+        }
+
+        // Unit cost is how this item's average cost gets seeded — every row
+        // that's actually being inserted needs one, even though the column
+        // stays optional at the validation level (most rows in this bulk
+        // form are left blank/zero to skip them).
+        $missingCost = collect();
+        foreach ($productsToInsert as $productId => $row) {
+            if (empty($row['unit_cost']) || $row['unit_cost'] <= 0) {
+                $missingCost["products.{$productId}.unit_cost"] = 'Unit cost is required.';
+            }
+        }
+        foreach ($variantsToInsert as $variantId => $row) {
+            if (empty($row['unit_cost']) || $row['unit_cost'] <= 0) {
+                $missingCost["variants.{$variantId}.unit_cost"] = 'Unit cost is required.';
+            }
+        }
+        if ($missingCost->isNotEmpty()) {
+            throw ValidationException::withMessages($missingCost->all());
         }
 
         DB::transaction(function () use ($productsToInsert, $variantsToInsert, $validVariants, $validated) {

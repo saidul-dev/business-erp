@@ -74,13 +74,24 @@ class ProductController extends Controller implements HasMiddleware
     {
         $product->load('variants.attributeValues');
 
-        return view('admin.products.edit', array_merge(['product' => $product], $this->formOptions()));
+        return view('admin.products.edit', array_merge([
+            'product' => $product,
+            'hasCostHistory' => $product->stockMovements()->exists(),
+        ], $this->formOptions()));
     }
 
     public function update(Request $request, Product $product)
     {
         $validated = $this->validated($request, $product);
         $variants = $validated['has_variants'] ? $this->validateVariants($request, $product) : [];
+
+        // Estimated cost is only a manual starting reference before this
+        // product has any stock movement history — once it does, cost is
+        // auto-maintained by StockMovement::recalculateAverageCost() and
+        // this form's (readonly) field must not overwrite it.
+        if ($product->stockMovements()->exists()) {
+            unset($validated['estimated_cost']);
+        }
 
         if ($request->boolean('remove_image') && $product->image_path) {
             Storage::disk('public')->delete($product->image_path);
@@ -262,9 +273,20 @@ class ProductController extends Controller implements HasMiddleware
                 'status' => (bool) ($row['status'] ?? true),
             ];
 
-            $variant = ! empty($row['id'])
-                ? tap($product->variants()->findOrFail($row['id']))->update($attributes)
-                : $product->variants()->create($attributes);
+            if (! empty($row['id'])) {
+                $variant = $product->variants()->findOrFail($row['id']);
+
+                // Same rule as the parent Product: once a variant has stock
+                // movement history, its cost is auto-maintained and this
+                // (readonly) form field must not overwrite it.
+                if ($variant->stockMovements()->exists()) {
+                    unset($attributes['estimated_cost']);
+                }
+
+                $variant->update($attributes);
+            } else {
+                $variant = $product->variants()->create($attributes);
+            }
 
             $keepIds[] = $variant->id;
 

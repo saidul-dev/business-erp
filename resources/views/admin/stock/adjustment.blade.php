@@ -79,17 +79,18 @@
                         <x-input-error class="mt-2" :messages="$errors->get('direction')" />
                     </div>
 
-                    <div class="mb-5 grid grid-cols-2 gap-4">
+                    <div class="mb-5 grid gap-4" :class="direction === 'in' ? 'grid-cols-2' : 'grid-cols-1 max-w-[calc(50%-0.5rem)]'">
                         <div>
                             <x-input-label for="quantity" :value="__('Quantity')" />
                             <input id="quantity" type="number" step="0.0001" min="0.0001" name="quantity" x-model.number="qty"
                                    class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500" required>
                             <x-input-error class="mt-2" :messages="$errors->get('quantity')" />
                         </div>
-                        <div>
-                            <x-input-label for="unit_cost" :value="__('Unit Cost (optional)')" />
+                        <div x-show="direction === 'in'" x-cloak>
+                            <x-input-label for="unit_cost">{{ __('Unit Cost') }} <span class="text-rose-500">*</span></x-input-label>
                             <input id="unit_cost" type="number" step="0.0001" min="0" name="unit_cost"
-                                   value="{{ old('unit_cost') }}"
+                                   value="{{ old('unit_cost', $avgCost > 0 ? $avgCost : '') }}"
+                                   :required="direction === 'in'"
                                    class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500" placeholder="0.00">
                             <x-input-error class="mt-2" :messages="$errors->get('unit_cost')" />
                         </div>
@@ -165,9 +166,15 @@
                 </div>
 
                 <div class="space-y-3">
-                    <div class="rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-100">
-                        <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Current Stock') }}</span>
-                        <span class="block text-2xl font-bold text-slate-800">{{ rtrim(rtrim(number_format($balance, 4), '0'), '.') ?: '0' }}</span>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-100">
+                            <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Current Stock') }}</span>
+                            <span class="block text-xl font-bold text-slate-800">{{ rtrim(rtrim(number_format($balance, 4), '0'), '.') ?: '0' }}</span>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-100">
+                            <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Avg. Cost') }}</span>
+                            <span class="block text-xl font-bold text-slate-800">{{ number_format($avgCost, 2) }}</span>
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-center gap-1.5 text-sm font-semibold" :class="delta >= 0 ? 'text-emerald-600' : 'text-rose-600'">

@@ -37,6 +37,7 @@ class StockAdjustmentController extends Controller implements HasMiddleware
         $product = null;
         $variant = null;
         $balance = 0;
+        $avgCost = 0;
 
         if ($site) {
             $items = $this->itemOptions();
@@ -45,6 +46,10 @@ class StockAdjustmentController extends Controller implements HasMiddleware
 
             if ($product) {
                 $balance = $this->currentBalance($site->id, $product->id, $variant?->id);
+                // Global, all-time weighted-average cost — kept in sync by
+                // StockMovement::recalculateAverageCost() on every costed
+                // "in" movement, so this is always the current figure.
+                $avgCost = (float) ($variant->estimated_cost ?? $product->estimated_cost);
             }
         }
 
@@ -56,6 +61,7 @@ class StockAdjustmentController extends Controller implements HasMiddleware
             'product' => $product,
             'variant' => $variant,
             'balance' => $balance,
+            'avgCost' => $avgCost,
             'reasons' => StockMovement::REASONS,
         ]);
     }
@@ -67,7 +73,10 @@ class StockAdjustmentController extends Controller implements HasMiddleware
             'item' => ['required', 'string'],
             'direction' => ['required', 'in:in,out'],
             'quantity' => ['required', 'numeric', 'min:0.0001'],
-            'unit_cost' => ['nullable', 'numeric', 'min:0'],
+            // Required for Additions — every unit added needs a known cost
+            // to keep the item's average cost meaningful. Deductions don't
+            // carry a cost (they're valued at whatever the average already is).
+            'unit_cost' => ['required_if:direction,in', 'nullable', 'numeric', 'min:0'],
             'reason' => ['required', Rule::in(array_keys(StockMovement::REASONS))],
             'note' => ['nullable', 'string', 'max:1000'],
             'batch_no' => ['nullable', 'string', 'max:100'],

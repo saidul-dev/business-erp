@@ -47,7 +47,7 @@
                             <th class="px-5 py-3 font-semibold">{{ __('Product') }}</th>
                             <th class="px-5 py-3 font-semibold">{{ __('Unit') }}</th>
                             <th class="px-5 py-3 font-semibold w-32">{{ __('Quantity') }}</th>
-                            <th class="px-5 py-3 font-semibold w-32">{{ __('Unit Cost') }}</th>
+                            <th class="px-5 py-3 font-semibold w-32">{{ __('Unit Cost') }} <span class="text-slate-300 normal-case">({{ __('required if qty > 0') }})</span></th>
                             <th class="px-5 py-3 font-semibold">{{ __('Batch / Expiry / Serial') }}</th>
                         </tr>
                     </thead>
@@ -68,6 +68,7 @@
                                 <input type="number" step="0.0001" min="0" name="products[{{ $product->id }}][unit_cost]"
                                        value="{{ old("products.{$product->id}.unit_cost", $product->estimated_cost) }}"
                                        class="w-28 rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500" placeholder="0.00">
+                                <x-input-error class="mt-1" :messages="$errors->get('products.'.$product->id.'.unit_cost')" />
                             </td>
                             <td class="px-5 py-3">
                                 <div class="flex flex-wrap gap-2">
@@ -111,7 +112,7 @@
                             <th class="px-5 py-3 font-semibold">{{ __('Product / Variant') }}</th>
                             <th class="px-5 py-3 font-semibold">{{ __('Unit') }}</th>
                             <th class="px-5 py-3 font-semibold w-32">{{ __('Quantity') }}</th>
-                            <th class="px-5 py-3 font-semibold w-32">{{ __('Unit Cost') }}</th>
+                            <th class="px-5 py-3 font-semibold w-32">{{ __('Unit Cost') }} <span class="text-slate-300 normal-case">({{ __('required if qty > 0') }})</span></th>
                             <th class="px-5 py-3 font-semibold">{{ __('Batch / Expiry / Serial') }}</th>
                         </tr>
                     </thead>
@@ -133,6 +134,7 @@
                                 <input type="number" step="0.0001" min="0" name="variants[{{ $variant->id }}][unit_cost]"
                                        value="{{ old("variants.{$variant->id}.unit_cost", $variant->estimated_cost ?? $product->estimated_cost) }}"
                                        class="w-28 rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500" placeholder="0.00">
+                                <x-input-error class="mt-1" :messages="$errors->get('variants.'.$variant->id.'.unit_cost')" />
                             </td>
                             <td class="px-5 py-3">
                                 <div class="flex flex-wrap gap-2">

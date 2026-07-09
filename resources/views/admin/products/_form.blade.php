@@ -202,9 +202,15 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
                 <x-input-label for="estimated_cost" :value="__('Estimated Cost')" />
-                <x-text-input id="estimated_cost" name="estimated_cost" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                <x-text-input id="estimated_cost" name="estimated_cost" type="number" step="0.01" min="0"
+                              :readonly="$hasCostHistory ?? false"
+                              class="mt-1 block w-full {{ ($hasCostHistory ?? false) ? 'bg-slate-50 text-slate-500 cursor-not-allowed' : '' }}"
                               :value="old('estimated_cost', $product->estimated_cost ?? '0')" required />
-                <p class="mt-1 text-[11px] text-slate-400">{{ __('Reference only, per Stock Unit — not the source of truth once purchases exist') }}</p>
+                @if ($hasCostHistory ?? false)
+                    <p class="mt-1 text-[11px] text-amber-600">{{ __('Auto-calculated from stock movement history — correct it via Stock Adjustment.') }}</p>
+                @else
+                    <p class="mt-1 text-[11px] text-slate-400">{{ __('Reference only, per Stock Unit — not the source of truth once purchases exist') }}</p>
+                @endif
                 <x-input-error class="mt-2" :messages="$errors->get('estimated_cost')" />
             </div>
 
@@ -344,6 +350,7 @@
         'barcode' => $v->barcode,
         'selling_price' => $v->selling_price,
         'estimated_cost' => $v->estimated_cost,
+        'has_cost_history' => $v->stockMovements()->exists(),
         'status' => (bool) $v->status,
     ]);
 @endphp
