@@ -72,13 +72,16 @@
                         @endcan
 
                         @can('inventory.view')
-                        <x-sidebar-dropdown :title="__('Inventory')" :active="request()->routeIs('products.*', 'categories.*', 'brands.*', 'units.*', 'attributes.*')">
+                        <x-sidebar-dropdown :title="__('Inventory')" :active="request()->routeIs('products.*', 'categories.*', 'brands.*', 'units.*', 'attributes.*', 'stock.*')">
                             <x-slot name="icon">
                                 <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
                             </x-slot>
 
                             <x-sidebar-sublink :href="route('products.index')" :active="request()->routeIs('products.*')">
                                 {{ __('Products') }}
+                            </x-sidebar-sublink>
+                            <x-sidebar-sublink :href="route('stock.initial.index')" :active="request()->routeIs('stock.initial.*')">
+                                {{ __('Initial Stock') }}
                             </x-sidebar-sublink>
                             <x-sidebar-sublink :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                                 {{ __('Categories') }}

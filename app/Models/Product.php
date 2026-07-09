@@ -97,6 +97,11 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
+    public function stockMovements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
     public function isVariable(): bool
     {
         return (bool) $this->has_variants;

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\InitialStockController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
@@ -55,6 +56,9 @@ Route::prefix('admin')->group(function () {
         Route::resource('products', ProductController::class)->except('show');
         Route::patch('/products/{product}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggle-status');
         Route::get('/products/barcode', [ProductController::class, 'barcode'])->name('products.barcode');
+
+        Route::get('/stock/initial-stock', [InitialStockController::class, 'index'])->name('stock.initial.index');
+        Route::post('/stock/initial-stock', [InitialStockController::class, 'store'])->name('stock.initial.store');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
