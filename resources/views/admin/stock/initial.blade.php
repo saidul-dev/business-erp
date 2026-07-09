@@ -10,13 +10,10 @@
     <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-6 max-w-md">
         <form method="GET" action="{{ route('stock.initial.index') }}">
             <x-input-label for="site_id" :value="__('Site')" />
-            <select id="site_id" name="site_id" onchange="this.form.submit()"
-                    class="mt-1 block w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
-                <option value="">{{ __('Select a site…') }}</option>
-                @foreach ($sites as $option)
-                    <option value="{{ $option->id }}" @selected($site && $site->id === $option->id)>{{ $option->name }}</option>
-                @endforeach
-            </select>
+            <div class="mt-1">
+                <x-searchable-select name="site_id" :options="$sites" :selected="$site?->id"
+                                      placeholder="{{ __('Select a site…') }}" :auto-submit="true" />
+            </div>
         </form>
     </div>
 

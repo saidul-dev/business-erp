@@ -8,25 +8,29 @@
     </x-slot>
 
     <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-6">
-        <form method="GET" action="{{ route('stock.report') }}" class="flex flex-wrap items-end gap-4">
-            <div class="w-full max-w-xs">
+        <form method="GET" action="{{ route('stock.report') }}" class="flex flex-nowrap items-end gap-4 overflow-x-auto">
+            <div class="w-56 shrink-0">
                 <x-input-label for="site_id" :value="__('Site')" />
-                <select id="site_id" name="site_id" onchange="this.form.submit()"
-                        class="mt-1 block w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
-                    <option value="">{{ __('Select a site…') }}</option>
-                    @foreach ($sites as $option)
-                        <option value="{{ $option->id }}" @selected($site && $site->id === $option->id)>{{ $option->name }}</option>
-                    @endforeach
-                </select>
+                <div class="mt-1">
+                    <x-searchable-select name="site_id" :options="$sites" :selected="$site?->id"
+                                          placeholder="{{ __('Select a site…') }}" :auto-submit="true" />
+                </div>
             </div>
 
             @if ($site)
-            <div class="flex-1 min-w-[220px]">
+            <div class="w-56 shrink-0">
+                <x-input-label for="category_id" :value="__('Category')" />
+                <div class="mt-1">
+                    <x-searchable-select name="category_id" :options="$categories" :selected="request('category_id')"
+                                          placeholder="{{ __('All categories') }}" />
+                </div>
+            </div>
+            <div class="flex-1 min-w-[200px]">
                 <x-input-label for="q" :value="__('Search')" />
                 <input type="search" id="q" name="q" value="{{ request('q') }}" placeholder="{{ __('Name or SKU…') }}"
                        class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
             </div>
-            <button type="submit" class="rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">{{ __('Filter') }}</button>
+            <button type="submit" class="shrink-0 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">{{ __('Filter') }}</button>
             @endif
         </form>
     </div>
@@ -38,10 +42,11 @@
     @else
         <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
             <div class="overflow-x-auto">
-            <table class="w-full min-w-[720px] text-sm">
+            <table class="w-full min-w-[860px] text-sm">
                 <thead>
                     <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                         <th class="px-5 py-3 font-semibold">{{ __('Product') }}</th>
+                        <th class="px-5 py-3 font-semibold">{{ __('Category') }}</th>
                         <th class="px-5 py-3 font-semibold">{{ __('Unit') }}</th>
                         <th class="px-5 py-3 font-semibold text-right">{{ __('Quantity') }}</th>
                         <th class="px-5 py-3 font-semibold">{{ __('Status') }}</th>
@@ -55,6 +60,7 @@
                             <span class="block font-semibold text-slate-800">{{ $product->name }}</span>
                             <span class="block text-xs text-slate-400">{{ $product->sku }}</span>
                         </td>
+                        <td class="px-5 py-3 text-slate-600">{{ $product->category->name ?? '—' }}</td>
                         <td class="px-5 py-3 text-slate-600">{{ $product->stockUnit->short_name ?? '—' }}</td>
                         <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ rtrim(rtrim(number_format($qty, 4), '0'), '.') ?: '0' }}</td>
                         <td class="px-5 py-3">
@@ -69,7 +75,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="px-5 py-10 text-center text-slate-400">{{ __('No products found.') }}</td>
+                        <td colspan="5" class="px-5 py-10 text-center text-slate-400">{{ __('No products found.') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

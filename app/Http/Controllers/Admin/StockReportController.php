@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\Site;
 use App\Models\StockMovement;
@@ -28,19 +29,21 @@ class StockReportController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $sites = Site::where('status', true)->orderBy('name')->get();
+        $categories = Category::orderBy('name')->get();
         $site = $request->filled('site_id') ? Site::findOrFail($request->integer('site_id')) : null;
 
         $products = collect();
         $stock = collect();
 
         if ($site) {
-            $products = Product::with('stockUnit')
+            $products = Product::with(['stockUnit', 'category'])
                 ->where('status', true)
                 ->where('has_variants', false)
                 ->when($request->filled('q'), fn ($q) => $q->where(function ($q) use ($request) {
                     $q->where('name', 'like', "%{$request->q}%")
                         ->orWhere('sku', 'like', "%{$request->q}%");
                 }))
+                ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->integer('category_id')))
                 ->orderBy('name')
                 ->paginate(20)
                 ->withQueryString();
@@ -52,6 +55,6 @@ class StockReportController extends Controller implements HasMiddleware
                 ->pluck('balance', 'product_id');
         }
 
-        return view('admin.stock.report', compact('sites', 'site', 'products', 'stock'));
+        return view('admin.stock.report', compact('sites', 'categories', 'site', 'products', 'stock'));
     }
 }
