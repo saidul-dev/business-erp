@@ -23,7 +23,7 @@ class RolePermissionSeeder extends Seeder
         'sourcing'  => ['view', 'create', 'edit', 'delete', 'approve'],
         'sales'     => ['view', 'create', 'edit', 'delete', 'approve'],
         'inventory' => ['view', 'create', 'edit', 'delete', 'approve'],
-        'contacts'  => ['view', 'create', 'edit', 'delete'],
+        'parties'   => ['view', 'create', 'edit', 'delete'],
         'accounts'  => ['view', 'create', 'edit', 'delete', 'approve'],
         'delivery'  => ['view', 'create', 'edit', 'delete'],
         'tasks'     => ['view', 'create', 'edit', 'delete'],
@@ -59,7 +59,7 @@ class RolePermissionSeeder extends Seeder
             'sourcing.view', 'sourcing.create', 'sourcing.edit', 'sourcing.approve',
             'sales.view', 'sales.create', 'sales.edit', 'sales.approve',
             'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.approve',
-            'contacts.view', 'contacts.create', 'contacts.edit',
+            'parties.view', 'parties.create', 'parties.edit',
             'delivery.view', 'delivery.create', 'delivery.edit',
             'tasks.view', 'tasks.create', 'tasks.edit',
             'reports.view',
@@ -68,7 +68,7 @@ class RolePermissionSeeder extends Seeder
         Role::findOrCreate('HR')->syncPermissions([
             'hrm.view', 'hrm.create', 'hrm.edit', 'hrm.approve',
             'tasks.view', 'tasks.create', 'tasks.edit',
-            'contacts.view',
+            'parties.view',
             'reports.view',
         ]);
 
@@ -76,7 +76,7 @@ class RolePermissionSeeder extends Seeder
             'accounts.view', 'accounts.create', 'accounts.edit', 'accounts.approve',
             'sourcing.view',
             'sales.view',
-            'contacts.view',
+            'parties.view',
             'reports.view',
         ]);
 
@@ -88,7 +88,7 @@ class RolePermissionSeeder extends Seeder
 
         Role::findOrCreate('Sales')->syncPermissions([
             'sales.view', 'sales.create', 'sales.edit',
-            'contacts.view', 'contacts.create', 'contacts.edit',
+            'parties.view', 'parties.create', 'parties.edit',
             'inventory.view',
             'delivery.view',
             'reports.view',
