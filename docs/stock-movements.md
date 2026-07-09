@@ -52,3 +52,17 @@ Guardrails:
 **Not yet covered:** variable (`has_variants`) products — they need a
 per-variant version of this screen, and literal CSV/file upload (current
 "bulk" entry is a multi-row web form, not a file import).
+
+## Stock Report (built)
+
+Route: `admin/stock/report` (`stock.report`), gated behind `inventory.view`,
+controller `App\Http\Controllers\Admin\StockReportController`.
+
+Pick a Site → paginated table of every active, non-variant product with its
+current balance at that site, computed live as
+`SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END)` grouped by
+`product_id` — never a stored counter. Status badge compares the balance
+against `Product.reorder_level` (Out of Stock / Low Stock / In Stock).
+
+Same `has_variants` exclusion as Initial Stock, for the same reason (no
+per-variant ledger view yet).
