@@ -43,7 +43,46 @@
                     <td class="px-5 py-3">
                         <span class="inline-flex rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700 ring-1 ring-brand-200">{{ $site->type }}</span>
                     </td>
-                    <td class="px-5 py-3 text-slate-600">{{ $site->users_count }}</td>
+                    <td class="px-5 py-3">
+                        @if ($site->users_count > 0)
+                        <div x-data="{
+                                open: false,
+                                top: 0,
+                                left: 0,
+                                toggle() {
+                                    this.open = ! this.open;
+                                    if (this.open) {
+                                        const r = $refs.trigger.getBoundingClientRect();
+                                        this.top = r.bottom + window.scrollY + 8;
+                                        this.left = r.left + window.scrollX;
+                                    }
+                                },
+                            }" class="inline-block">
+                            <button type="button" x-ref="trigger" @click="toggle()"
+                                    class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 hover:bg-slate-200">
+                                {{ $site->users_count }}
+                                <svg class="h-3 w-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                            </button>
+
+                            <template x-teleport="body">
+                                <div x-show="open" @click.outside="open = false" x-transition
+                                     :style="`top: ${top}px; left: ${left}px;`"
+                                     class="fixed z-50 w-56 rounded-xl bg-white py-1.5 shadow-lg ring-1 ring-slate-200"
+                                     style="display: none;">
+                                    <p class="px-4 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Assigned Users') }}</p>
+                                    @foreach ($site->users as $user)
+                                    <div class="px-4 py-1.5">
+                                        <span class="block text-sm font-medium text-slate-700">{{ $user->name }}</span>
+                                        <span class="block text-[11px] text-slate-400">{{ $user->roles->pluck('name')->join(', ') ?: __('No role') }}</span>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </template>
+                        </div>
+                        @else
+                        <span class="text-slate-400">0</span>
+                        @endif
+                    </td>
                     <td class="px-5 py-3">
                         @can('sites.edit')
                         <form method="POST" action="{{ route('sites.toggle-status', $site) }}">

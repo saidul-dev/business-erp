@@ -23,7 +23,10 @@ class SiteController extends Controller implements HasMiddleware
 
     public function index()
     {
-        $sites = Site::withCount('users')->orderBy('name')->paginate(15);
+        $sites = Site::withCount('users')
+            ->with(['users:id,name,email', 'users.roles:id,name'])
+            ->orderBy('name')
+            ->paginate(15);
 
         return view('admin.sites.index', compact('sites'));
     }
