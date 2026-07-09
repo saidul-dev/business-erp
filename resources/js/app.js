@@ -117,6 +117,45 @@ Alpine.data('productForm', (initial) => ({
     },
 }));
 
+Alpine.data('transferCart', (initial) => ({
+    itemOptions: initial.itemOptions || [],
+    items: [],
+    query: '',
+    open: false,
+
+    // Already-added items drop out of the pickable pool — a transfer line
+    // is one row per item, so re-picking just means "edit the existing row".
+    get filtered() {
+        const chosen = new Set(this.items.map((i) => i.id));
+        const pool = this.itemOptions.filter((o) => !chosen.has(o.id));
+        if (!this.query) return pool;
+        const q = this.query.toLowerCase();
+        return pool.filter((o) => o.name.toLowerCase().includes(q));
+    },
+
+    addItem(opt) {
+        this.items.push({
+            id: opt.id,
+            name: opt.name,
+            unit: opt.unit,
+            balance: opt.balance,
+            trackBatch: opt.trackBatch,
+            trackExpiry: opt.trackExpiry,
+            trackSerial: opt.trackSerial,
+            quantity: '',
+            batch_no: '',
+            expiry_date: '',
+            serial_no: '',
+        });
+        this.query = '';
+        this.open = false;
+    },
+
+    removeItem(id) {
+        this.items = this.items.filter((i) => i.id !== id);
+    },
+}));
+
 window.Alpine = Alpine;
 window.Chart = Chart;
 

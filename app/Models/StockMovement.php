@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class StockMovement extends Model
 {
@@ -56,6 +57,8 @@ class StockMovement extends Model
         'note',
         'moved_at',
         'created_by',
+        'reference_type',
+        'reference_id',
     ];
 
     protected $casts = [
@@ -141,5 +144,10 @@ class StockMovement extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function reference(): MorphTo
+    {
+        return $this->morphTo();
     }
 }

@@ -18,16 +18,48 @@ mutable counter column, so the full history stays auditable.
 | `type` | string, one of `App\Models\StockMovement::TYPES` keys |
 | `direction` | `in`/`out` — **always derived from `type`** in `StockMovement::booted()`, never set directly, so a row can't disagree with its own type |
 | `quantity` | decimal(14,4), always stored positive |
-| `unit_cost` | decimal(14,4), nullable |
+| `unit_cost` | decimal(14,4), nullable — required on every "in" movement type except transfers (see costing below) |
 | `batch_no`, `expiry_date`, `serial_no` | nullable — only populated when the product's `track_batch`/`track_expiry`/`track_serial` flags are on |
 | `reason` | nullable — only populated on `adjustment_in`/`adjustment_out` rows, one of `App\Models\StockMovement::REASONS` (Stock Adjustment screen) |
-| `reference_type` / `reference_id` | nullable morph — will link back to the source document (Purchase, Sale, Transfer, Adjustment) once those modules exist |
+| `reference_type` / `reference_id` | nullable morph — links back to the source document; currently only `App\Models\StockTransfer` uses it (Purchase/Sale/Adjustment don't have their own document yet) |
 | `moved_at` | date the movement is effective as-of (can differ from `created_at`) |
 | `created_by` | user who recorded it |
 
 `App\Models\StockMovement::TYPES` is the fixed type → direction map (mirrors
 the `Site::TYPES` const-array pattern already used in this codebase — not a
 DB-backed lookup table, since the list isn't user-editable).
+
+### Costing: perpetual weighted-average cost
+
+`Product.estimated_cost` / `ProductVariant.estimated_cost` (decimal(12,4) —
+wider than the 2dp money columns so `qty × cost` doesn't drift off the
+ledger's true total) is **not** a manually-maintained field once a product
+has stock history. `StockMovement::recalculateAverageCost()` (hooked into
+`created`/`deleted` in `booted()`) recomputes it from scratch on every
+costed "in" movement:
+
+```
+SUM(quantity × unit_cost) ÷ SUM(quantity)
+```
+
+— across every "in" movement with a recorded `unit_cost`, **global across
+all Sites** (this app has no per-site cost concept). "out" movements never
+change it. A movement with no `unit_cost` (e.g. a transfer_in carrying a
+cost through, or the rare case someone bypasses validation) doesn't dilute
+it either.
+
+Consequences:
+- Initial Stock and Stock Adjustment (Addition) **require** `unit_cost` on
+  every row that's actually posted — every unit entering the ledger needs a
+  known cost or the average drifts silently.
+- The Product/Variant edit form's "Estimated Cost" field becomes **readonly**
+  the moment that product/variant has any `stock_movements` row — it's a
+  manual starting estimate only until real history exists
+  (`ProductController::update()`/`syncVariants()` also strip the field
+  server-side, not just in the UI).
+- `php artisan app:recalculate-product-costs` rebuilds every
+  Product/Variant's cost from history — a one-off backfill/repair tool, not
+  part of the normal request flow.
 
 ## Initial Stock feature (built)
 
@@ -39,9 +71,10 @@ Flow: pick a Site → two tables — **Products** (simple products) and
 **Product Variants** (one row per variant of a `has_variants` product,
 labelled "Product name — Variant label", e.g. "Premium Polo T-Shirt —
 Black / M") — list everything that doesn't yet have **any** `stock_movements`
-row at that site → enter quantity (+ unit cost, and batch/expiry/serial when
-the *product* tracks them — those flags live on Product, not per-variant) →
-one submit creates a `stock_movements` row per product/variant with a qty > 0.
+row at that site → enter quantity + unit cost (required once quantity > 0 —
+see costing above; batch/expiry/serial when the *product* tracks them —
+those flags live on Product, not per-variant) → one submit creates a
+`stock_movements` row per product/variant with a qty > 0.
 Variant rows are stored with both `product_id` (the parent) and
 `product_variant_id` set; simple-product rows leave `product_variant_id` null.
 
@@ -81,11 +114,12 @@ gated behind the `inventory.edit` permission, controller
 
 Single-item correction, immediate effect (no approval step). Flow: pick a
 Site → search a product or variant (any active one, not filtered by
-movement history like Initial Stock) → its current balance at that site is
-computed live and shown → choose Addition or Deduction, enter a quantity,
-pick a fixed `reason` (`StockMovement::REASONS`) + optional note, optional
-unit cost and batch/expiry/serial (only shown when the *product* tracks
-them) → submit posts one `adjustment_in`/`adjustment_out` row.
+movement history like Initial Stock) → its current balance and average cost
+at that site are computed live and shown → choose Addition or Deduction,
+enter a quantity, pick a fixed `reason` (`StockMovement::REASONS`) + optional
+note, batch/expiry/serial (only shown when the *product* tracks them) →
+submit posts one `adjustment_in`/`adjustment_out` row. Unit cost is required
+for Additions (see costing above) and not asked for Deductions.
 
 Guardrail: a Deduction can't exceed the item's current balance at that site
 (blocked with a validation error) — the ledger never goes negative.
@@ -93,3 +127,38 @@ Guardrail: a Deduction can't exceed the item's current balance at that site
 Damage/expiry write-offs are **not** an Adjustment reason — they use the
 separate `damage_expiry` type (see `inventory-movement-types.md`) once that
 screen exists, so loss/wastage stays reportable on its own.
+
+## Stock Transfer (built)
+
+Routes: `admin/stock/transfers*` (`stock.transfers.index` / `.create` /
+`.store` / `.show` / `.receive` / `.cancel`), controller
+`App\Http\Controllers\Admin\StockTransferController`. The only stock feature
+with its own parent tables — `stock_transfers` (one row per transfer:
+`transfer_no`, `from_site_id`, `to_site_id`, `status`, dispatch/receive
+audit fields) and `stock_transfer_items` (line items: product/variant,
+quantity, unit_cost, batch/expiry/serial) — since a transfer is inherently
+two linked ledger entries, not a single row.
+
+**Workflow — Dispatch → Receive, with Cancel as the only other exit:**
+1. **Dispatch** (`inventory.create`): pick From Site + To Site, add items via
+   a cart-style picker (search anything with balance > 0 at From Site,
+   quantity capped at that balance) → submit posts one `transfer_out` row
+   per item **at From Site immediately** (`status = in_transit`). Unit cost
+   is never asked — each line auto-captures the item's current average cost
+   at dispatch time and carries it through unchanged to receipt.
+2. **Receive** (`inventory.approve` — the permission the seeder has assigned
+   to Manager but not Store-keeper since this codebase's first commit,
+   finally put to use): confirms arrival, posting one `transfer_in` row per
+   item **at To Site**, with the exact qty/cost/batch/expiry/serial that was
+   dispatched — nothing is re-entered or editable at this step.
+3. **Cancel** (`inventory.edit`, `in_transit` only): reverses the stock back
+   at From Site by posting an offsetting `transfer_in` there — the original
+   `transfer_out` rows are never edited or deleted, same "ledger only ever
+   grows" rule as everywhere else in this file.
+
+Both legs of every transfer set `reference_type`/`reference_id` to the
+owning `StockTransfer`.
+
+Batch/expiry/serial on a transfer item is informational only (same as
+Initial Stock/Adjustment) — this app doesn't track balances *per batch*,
+just carries the metadata through so it isn't lost in transit.
