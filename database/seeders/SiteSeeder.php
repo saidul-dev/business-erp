@@ -24,11 +24,24 @@ class SiteSeeder extends Seeder
             ]
         );
 
+        // Second Site — needed to test Stock Transfer (a movement always has
+        // a from-Site and a to-Site, so at least two are required).
+        $warehouse = Site::firstOrCreate(
+            ['code' => 'WH-01'],
+            [
+                'name' => 'Central Warehouse',
+                'type' => 'Warehouse',
+                'address' => 'Gazipur, Bangladesh',
+                'status' => true,
+            ]
+        );
+
         $manager = User::where('email', 'manager@businesserp.test')->first();
 
         if ($manager) {
             $manager->sites()->syncWithoutDetaching([
                 $site->id => ['is_default' => true],
+                $warehouse->id => ['is_default' => false],
             ]);
 
             $manager->update(['current_site_id' => $site->id]);
