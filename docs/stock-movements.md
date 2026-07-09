@@ -35,15 +35,16 @@ gated behind the `inventory.create` permission, controller
 `App\Http\Controllers\Admin\InitialStockController`.
 
 Flow: pick a Site → a table lists every active, non-variant product that
-doesn't already have an `initial_stock` movement at that site → enter
+doesn't yet have **any** `stock_movements` row at that site → enter
 quantity (+ unit cost, and batch/expiry/serial when the product tracks them)
 for as many rows as needed → one submit creates a `stock_movements` row per
 product with a qty > 0.
 
 Guardrails:
-- A product/site pair that already has an `initial_stock` row is excluded
-  from the list and silently skipped if resubmitted — opening stock is never
-  overwritten. Corrections go through an Adjustment movement instead once
+- A product/site pair drops off this list the moment it has *any* movement
+  at that site — not just `initial_stock`. Once real transactions start
+  (e.g. a Purchase), backdating an opening balance on top would double-count
+  against them. Corrections go through an Adjustment movement instead once
   that screen exists.
 - Rows with an empty/zero quantity are skipped (lets you leave products for
   later without erroring the whole batch).

@@ -26,7 +26,7 @@
         </div>
     @elseif ($products->isEmpty())
         <div class="rounded-2xl bg-white p-10 text-center text-slate-400 shadow-sm ring-1 ring-slate-200">
-            {{ __('Every active product already has opening stock recorded for :site. Use Adjustment to correct a quantity.', ['site' => $site->name]) }}
+            {{ __('Every active product already has stock movement history at :site (opening stock or otherwise). Use Adjustment to correct a quantity.', ['site' => $site->name]) }}
         </div>
     @else
         <form method="POST" action="{{ route('stock.initial.store') }}">

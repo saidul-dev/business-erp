@@ -35,14 +35,16 @@ class InitialStockController extends Controller implements HasMiddleware
         $products = collect();
 
         if ($site) {
-            $alreadySeeded = StockMovement::where('site_id', $site->id)
-                ->where('type', 'initial_stock')
-                ->pluck('product_id');
+            // Once a product has ANY movement at this site (initial stock,
+            // purchase, sale, ...) its history has already started — an
+            // initial-stock entry after that would double-count on top of
+            // real transactions, so it drops out of this list for good.
+            $hasMovement = StockMovement::where('site_id', $site->id)->pluck('product_id');
 
             $products = Product::with('stockUnit')
                 ->where('status', true)
                 ->where('has_variants', false)
-                ->whereNotIn('id', $alreadySeeded)
+                ->whereNotIn('id', $hasMovement)
                 ->orderBy('name')
                 ->get();
         }
@@ -69,17 +71,16 @@ class InitialStockController extends Controller implements HasMiddleware
             ->pluck('id')
             ->all();
 
-        // Never re-seed a product/site that already has an initial-stock
-        // entry — history is never overwritten, only corrected via adjustments.
-        $alreadySeeded = StockMovement::where('site_id', $validated['site_id'])
-            ->where('type', 'initial_stock')
+        // Never seed a product/site that already has ANY movement — history
+        // is never overwritten or double-counted, only corrected via adjustments.
+        $hasMovement = StockMovement::where('site_id', $validated['site_id'])
             ->whereIn('product_id', $validProductIds)
             ->pluck('product_id')
             ->all();
 
         $rows = collect($validated['rows'])
             ->filter(fn ($row, $productId) => in_array($productId, $validProductIds)
-                && ! in_array($productId, $alreadySeeded)
+                && ! in_array($productId, $hasMovement)
                 && ! empty($row['quantity'])
                 && $row['quantity'] > 0
             );
