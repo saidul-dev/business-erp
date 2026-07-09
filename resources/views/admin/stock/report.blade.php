@@ -56,17 +56,20 @@
     @else
         <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
             <div class="overflow-x-auto">
-            <table class="w-full min-w-[860px] text-sm">
+            <table class="w-full min-w-[1080px] text-sm">
                 <thead>
                     <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                         <th class="px-5 py-3 font-semibold">{{ __('Product / Variant') }}</th>
                         <th class="px-5 py-3 font-semibold">{{ __('Category') }}</th>
                         <th class="px-5 py-3 font-semibold">{{ __('Unit') }}</th>
                         <th class="px-5 py-3 font-semibold text-right">{{ __('Quantity') }}</th>
+                        <th class="px-5 py-3 font-semibold text-right">{{ __('Cost Valuation') }}</th>
+                        <th class="px-5 py-3 font-semibold text-right">{{ __('Sale Valuation') }}</th>
                         <th class="px-5 py-3 font-semibold">{{ __('Status') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
+                    @php $pageCostTotal = 0; $pageSaleTotal = 0; @endphp
                     @forelse ($products as $row)
                     @php
                         $qty = (float) match (true) {
@@ -74,6 +77,14 @@
                             $row->is_group => $groupBalances[$row->product_id] ?? 0,
                             default => $simpleBalances[$row->product_id] ?? 0,
                         };
+                        $costValuation = $row->is_group
+                            ? (float) ($groupCostValuation[$row->product_id] ?? 0)
+                            : $qty * $row->cost_price;
+                        $saleValuation = $row->is_group
+                            ? (float) ($groupSaleValuation[$row->product_id] ?? 0)
+                            : $qty * $row->sale_price;
+                        $pageCostTotal += $costValuation;
+                        $pageSaleTotal += $saleValuation;
                     @endphp
                     <tr class="hover:bg-slate-50">
                         <td class="px-5 py-3">
@@ -88,6 +99,8 @@
                         <td class="px-5 py-3 text-slate-600">{{ $row->category ?? '—' }}</td>
                         <td class="px-5 py-3 text-slate-600">{{ $row->unit ?? '—' }}</td>
                         <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ rtrim(rtrim(number_format($qty, 4), '0'), '.') ?: '0' }}</td>
+                        <td class="px-5 py-3 text-right text-slate-600">{{ number_format($costValuation, 2) }}</td>
+                        <td class="px-5 py-3 text-right text-slate-600">{{ number_format($saleValuation, 2) }}</td>
                         <td class="px-5 py-3">
                             @if ($qty <= 0)
                                 <span class="inline-flex rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200">{{ __('Out of Stock') }}</span>
@@ -100,10 +113,21 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-5 py-10 text-center text-slate-400">{{ __('No products found.') }}</td>
+                        <td colspan="7" class="px-5 py-10 text-center text-slate-400">{{ __('No products found.') }}</td>
                     </tr>
                     @endforelse
                 </tbody>
+                @if ($products->isNotEmpty())
+                <tfoot>
+                    <tr class="border-t border-slate-200 bg-slate-50">
+                        <td colspan="3" class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Page Total') }}</td>
+                        <td class="px-5 py-3"></td>
+                        <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ number_format($pageCostTotal, 2) }}</td>
+                        <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ number_format($pageSaleTotal, 2) }}</td>
+                        <td class="px-5 py-3"></td>
+                    </tr>
+                </tfoot>
+                @endif
             </table>
             </div>
 

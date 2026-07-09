@@ -41,6 +41,8 @@ class StockReportController extends Controller implements HasMiddleware
         $simpleBalances = collect();
         $variantBalances = collect();
         $groupBalances = collect();
+        $groupCostValuation = collect();
+        $groupSaleValuation = collect();
 
         if ($site) {
             $q = $request->q;
@@ -64,6 +66,8 @@ class StockReportController extends Controller implements HasMiddleware
                     'product_id' => $product->id,
                     'variant_id' => null,
                     'is_group' => false,
+                    'cost_price' => (float) $product->estimated_cost,
+                    'sale_price' => (float) $product->selling_price,
                 ]);
 
             $variableProducts = Product::with(['stockUnit', 'category', 'variants.attributeValues'])
@@ -113,6 +117,9 @@ class StockReportController extends Controller implements HasMiddleware
                                 'product_id' => $product->id,
                                 'variant_id' => $variant->id,
                                 'is_group' => false,
+                                // A variant without its own estimated cost inherits the parent product's.
+                                'cost_price' => (float) ($variant->estimated_cost ?? $product->estimated_cost),
+                                'sale_price' => (float) $variant->selling_price,
                             ]);
                     });
             }
@@ -155,8 +162,39 @@ class StockReportController extends Controller implements HasMiddleware
                 ->selectRaw("product_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
                 ->groupBy('product_id')
                 ->pluck('balance', 'product_id');
+
+            // A group row has no single unit price (its variants can each
+            // have their own), so its valuation is the sum of every
+            // variant's own balance × price rather than qty × one price.
+            $groupCostValuation = collect();
+            $groupSaleValuation = collect();
+            $groupProducts = $variableProducts->whereIn('id', $groupProductIds)->keyBy('id');
+
+            if ($groupProducts->isNotEmpty()) {
+                $groupVariantIds = $groupProducts->flatMap(fn (Product $p) => $p->variants->pluck('id'));
+
+                $groupVariantBalances = StockMovement::where('site_id', $site->id)
+                    ->whereIn('product_variant_id', $groupVariantIds)
+                    ->selectRaw("product_variant_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
+                    ->groupBy('product_variant_id')
+                    ->pluck('balance', 'product_variant_id');
+
+                foreach ($groupProducts as $product) {
+                    $cost = 0.0;
+                    $sale = 0.0;
+
+                    foreach ($product->variants as $variant) {
+                        $bal = (float) ($groupVariantBalances[$variant->id] ?? 0);
+                        $cost += $bal * (float) ($variant->estimated_cost ?? $product->estimated_cost);
+                        $sale += $bal * (float) $variant->selling_price;
+                    }
+
+                    $groupCostValuation[$product->id] = $cost;
+                    $groupSaleValuation[$product->id] = $sale;
+                }
+            }
         }
 
-        return view('admin.stock.report', compact('sites', 'categories', 'site', 'products', 'simpleBalances', 'variantBalances', 'groupBalances'));
+        return view('admin.stock.report', compact('sites', 'categories', 'site', 'products', 'simpleBalances', 'variantBalances', 'groupBalances', 'groupCostValuation', 'groupSaleValuation'));
     }
 }
