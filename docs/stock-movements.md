@@ -34,24 +34,30 @@ Route: `admin/stock/initial-stock` (`stock.initial.index` / `stock.initial.store
 gated behind the `inventory.create` permission, controller
 `App\Http\Controllers\Admin\InitialStockController`.
 
-Flow: pick a Site → a table lists every active, non-variant product that
-doesn't yet have **any** `stock_movements` row at that site → enter
-quantity (+ unit cost, and batch/expiry/serial when the product tracks them)
-for as many rows as needed → one submit creates a `stock_movements` row per
-product with a qty > 0.
+Flow: pick a Site → two tables — **Products** (simple products) and
+**Product Variants** (one row per variant of a `has_variants` product,
+labelled "Product name — Variant label", e.g. "Premium Polo T-Shirt —
+Black / M") — list everything that doesn't yet have **any** `stock_movements`
+row at that site → enter quantity (+ unit cost, and batch/expiry/serial when
+the *product* tracks them — those flags live on Product, not per-variant) →
+one submit creates a `stock_movements` row per product/variant with a qty > 0.
+Variant rows are stored with both `product_id` (the parent) and
+`product_variant_id` set; simple-product rows leave `product_variant_id` null.
 
 Guardrails:
-- A product/site pair drops off this list the moment it has *any* movement
+- A product or variant drops off its list the moment it has *any* movement
   at that site — not just `initial_stock`. Once real transactions start
   (e.g. a Purchase), backdating an opening balance on top would double-count
   against them. Corrections go through an Adjustment movement instead once
   that screen exists.
-- Rows with an empty/zero quantity are skipped (lets you leave products for
+- A `has_variants` product disappears from the Variants table entirely once
+  every one of its variants has been seeded; if only some variants are
+  seeded, the remaining ones still show under that product.
+- Rows with an empty/zero quantity are skipped (lets you leave items for
   later without erroring the whole batch).
 
-**Not yet covered:** variable (`has_variants`) products — they need a
-per-variant version of this screen, and literal CSV/file upload (current
-"bulk" entry is a multi-row web form, not a file import).
+**Not yet covered:** literal CSV/file upload (current "bulk" entry is a
+multi-row web form, not a file import).
 
 ## Stock Report (built)
 

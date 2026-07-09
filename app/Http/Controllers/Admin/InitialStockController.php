@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Site;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
@@ -23,9 +24,8 @@ class InitialStockController extends Controller implements HasMiddleware
 
     /**
      * Bulk opening-stock entry: pick a Site, then enter quantity/cost for
-     * every eligible product in one form submit. Variable (has_variants)
-     * products are excluded here — opening stock for their variants needs
-     * its own screen once the variant-level ledger is built.
+     * every eligible product (and, for variable products, every eligible
+     * variant) in one form submit.
      */
     public function index(Request $request)
     {
@@ -33,23 +33,42 @@ class InitialStockController extends Controller implements HasMiddleware
         $site = $request->filled('site_id') ? Site::findOrFail($request->integer('site_id')) : null;
 
         $products = collect();
+        $variantGroups = collect();
 
         if ($site) {
-            // Once a product has ANY movement at this site (initial stock,
-            // purchase, sale, ...) its history has already started — an
-            // initial-stock entry after that would double-count on top of
+            // Once a product/variant has ANY movement at this site (initial
+            // stock, purchase, sale, ...) its history has already started —
+            // an initial-stock entry after that would double-count on top of
             // real transactions, so it drops out of this list for good.
-            $hasMovement = StockMovement::where('site_id', $site->id)->pluck('product_id');
+            $movements = StockMovement::where('site_id', $site->id)->get(['product_id', 'product_variant_id']);
+            $seededProductIds = $movements->whereNull('product_variant_id')->pluck('product_id');
+            $seededVariantIds = $movements->whereNotNull('product_variant_id')->pluck('product_variant_id');
 
             $products = Product::with('stockUnit')
                 ->where('status', true)
                 ->where('has_variants', false)
-                ->whereNotIn('id', $hasMovement)
+                ->whereNotIn('id', $seededProductIds)
                 ->orderBy('name')
                 ->get();
+
+            $variantGroups = Product::with(['stockUnit', 'variants.attributeValues'])
+                ->where('status', true)
+                ->where('has_variants', true)
+                ->orderBy('name')
+                ->get()
+                ->map(function (Product $product) use ($seededVariantIds) {
+                    $product->setRelation('variants', $product->variants
+                        ->where('status', true)
+                        ->whereNotIn('id', $seededVariantIds)
+                        ->values());
+
+                    return $product;
+                })
+                ->filter(fn (Product $product) => $product->variants->isNotEmpty())
+                ->values();
         }
 
-        return view('admin.stock.initial', compact('sites', 'site', 'products'));
+        return view('admin.stock.initial', compact('sites', 'site', 'products', 'variantGroups'));
     }
 
     public function store(Request $request)
@@ -57,40 +76,61 @@ class InitialStockController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'site_id' => ['required', 'integer', 'exists:sites,id'],
             'moved_at' => ['required', 'date'],
-            'rows' => ['required', 'array', 'min:1'],
-            'rows.*.quantity' => ['nullable', 'numeric', 'min:0'],
-            'rows.*.unit_cost' => ['nullable', 'numeric', 'min:0'],
-            'rows.*.batch_no' => ['nullable', 'string', 'max:100'],
-            'rows.*.expiry_date' => ['nullable', 'date'],
-            'rows.*.serial_no' => ['nullable', 'string', 'max:100'],
+            'products' => ['nullable', 'array'],
+            'products.*.quantity' => ['nullable', 'numeric', 'min:0'],
+            'products.*.unit_cost' => ['nullable', 'numeric', 'min:0'],
+            'products.*.batch_no' => ['nullable', 'string', 'max:100'],
+            'products.*.expiry_date' => ['nullable', 'date'],
+            'products.*.serial_no' => ['nullable', 'string', 'max:100'],
+            'variants' => ['nullable', 'array'],
+            'variants.*.quantity' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.unit_cost' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.batch_no' => ['nullable', 'string', 'max:100'],
+            'variants.*.expiry_date' => ['nullable', 'date'],
+            'variants.*.serial_no' => ['nullable', 'string', 'max:100'],
         ]);
 
-        // Only real, eligible products (guards against a tampered product-id key).
-        $validProductIds = Product::whereIn('id', array_keys($validated['rows']))
+        $productRows = collect($validated['products'] ?? []);
+        $variantRows = collect($validated['variants'] ?? []);
+
+        // Only real, eligible records (guards against a tampered id key).
+        $validProductIds = Product::whereIn('id', $productRows->keys())
             ->where('has_variants', false)
             ->pluck('id')
             ->all();
 
-        // Never seed a product/site that already has ANY movement — history
-        // is never overwritten or double-counted, only corrected via adjustments.
-        $hasMovement = StockMovement::where('site_id', $validated['site_id'])
-            ->whereIn('product_id', $validProductIds)
-            ->pluck('product_id')
-            ->all();
+        $validVariants = ProductVariant::whereIn('id', $variantRows->keys())->get()->keyBy('id');
 
-        $rows = collect($validated['rows'])
-            ->filter(fn ($row, $productId) => in_array($productId, $validProductIds)
-                && ! in_array($productId, $hasMovement)
-                && ! empty($row['quantity'])
-                && $row['quantity'] > 0
-            );
+        // Never seed a product/variant/site that already has ANY movement —
+        // history is never overwritten or double-counted, only corrected via adjustments.
+        $seeded = StockMovement::where('site_id', $validated['site_id'])
+            ->where(function ($q) use ($validProductIds, $validVariants) {
+                $q->whereIn('product_id', $validProductIds)
+                    ->orWhereIn('product_variant_id', $validVariants->keys());
+            })
+            ->get(['product_id', 'product_variant_id']);
 
-        if ($rows->isEmpty()) {
+        $seededProductIds = $seeded->whereNull('product_variant_id')->pluck('product_id')->all();
+        $seededVariantIds = $seeded->whereNotNull('product_variant_id')->pluck('product_variant_id')->all();
+
+        $productsToInsert = $productRows->filter(fn ($row, $productId) => in_array($productId, $validProductIds)
+            && ! in_array($productId, $seededProductIds)
+            && ! empty($row['quantity'])
+            && $row['quantity'] > 0
+        );
+
+        $variantsToInsert = $variantRows->filter(fn ($row, $variantId) => $validVariants->has($variantId)
+            && ! in_array($variantId, $seededVariantIds)
+            && ! empty($row['quantity'])
+            && $row['quantity'] > 0
+        );
+
+        if ($productsToInsert->isEmpty() && $variantsToInsert->isEmpty()) {
             return back()->with('error', 'Enter a quantity for at least one product.');
         }
 
-        DB::transaction(function () use ($rows, $validated) {
-            foreach ($rows as $productId => $row) {
+        DB::transaction(function () use ($productsToInsert, $variantsToInsert, $validVariants, $validated) {
+            foreach ($productsToInsert as $productId => $row) {
                 StockMovement::create([
                     'product_id' => $productId,
                     'site_id' => $validated['site_id'],
@@ -104,9 +144,29 @@ class InitialStockController extends Controller implements HasMiddleware
                     'created_by' => Auth::id(),
                 ]);
             }
+
+            foreach ($variantsToInsert as $variantId => $row) {
+                $variant = $validVariants[$variantId];
+
+                StockMovement::create([
+                    'product_id' => $variant->product_id,
+                    'product_variant_id' => $variant->id,
+                    'site_id' => $validated['site_id'],
+                    'type' => 'initial_stock',
+                    'quantity' => $row['quantity'],
+                    'unit_cost' => $row['unit_cost'] ?? null,
+                    'batch_no' => $row['batch_no'] ?? null,
+                    'expiry_date' => $row['expiry_date'] ?? null,
+                    'serial_no' => $row['serial_no'] ?? null,
+                    'moved_at' => $validated['moved_at'],
+                    'created_by' => Auth::id(),
+                ]);
+            }
         });
 
+        $count = $productsToInsert->count() + $variantsToInsert->count();
+
         return redirect()->route('stock.initial.index', ['site_id' => $validated['site_id']])
-            ->with('success', $rows->count().' product(s) opening stock saved.');
+            ->with('success', "{$count} item(s) opening stock saved.");
     }
 }
