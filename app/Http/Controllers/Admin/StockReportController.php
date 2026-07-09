@@ -24,9 +24,12 @@ class StockReportController extends Controller implements HasMiddleware
 
     /**
      * Current stock per SKU at a Site — SUM(in) - SUM(out) from the
-     * stock_movements ledger, never a stored counter. Variable products
-     * contribute one row per variant (their own SKU/stock), not one row
-     * for the parent product.
+     * stock_movements ledger, never a stored counter.
+     *
+     * `view=detail` (default): variable products contribute one row per
+     * variant (their own SKU/stock).
+     * `view=summary`: variable products contribute a single row for the
+     * parent product, with stock summed across all its variants.
      */
     public function index(Request $request)
     {
@@ -35,12 +38,14 @@ class StockReportController extends Controller implements HasMiddleware
         $site = $request->filled('site_id') ? Site::findOrFail($request->integer('site_id')) : null;
 
         $products = null;
-        $productBalances = collect();
+        $simpleBalances = collect();
         $variantBalances = collect();
+        $groupBalances = collect();
 
         if ($site) {
             $q = $request->q;
             $categoryId = $request->filled('category_id') ? $request->integer('category_id') : null;
+            $isSummary = $request->get('view') === 'summary';
 
             $simpleRows = Product::with(['stockUnit', 'category'])
                 ->where('status', true)
@@ -58,30 +63,59 @@ class StockReportController extends Controller implements HasMiddleware
                     'reorder_level' => $product->reorder_level,
                     'product_id' => $product->id,
                     'variant_id' => null,
+                    'is_group' => false,
                 ]);
 
-            $variantRows = Product::with(['stockUnit', 'category', 'variants.attributeValues'])
+            $variableProducts = Product::with(['stockUnit', 'category', 'variants.attributeValues'])
                 ->where('status', true)
                 ->where('has_variants', true)
                 ->when($categoryId, fn ($query) => $query->where('category_id', $categoryId))
                 ->get()
-                ->flatMap(function (Product $product) use ($q) {
-                    return $product->variants
-                        ->where('status', true)
-                        ->when($q, fn ($variants) => $variants->filter(
-                            fn (ProductVariant $v) => str_contains(strtolower($product->name), strtolower($q))
-                                || str_contains(strtolower($v->sku), strtolower($q))
-                        ))
-                        ->map(fn (ProductVariant $variant) => (object) [
-                            'name' => $product->name.' — '.$variant->label,
-                            'sku' => $variant->sku,
-                            'category' => $product->category?->name,
-                            'unit' => $product->stockUnit?->short_name,
-                            'reorder_level' => $product->reorder_level,
-                            'product_id' => $product->id,
-                            'variant_id' => $variant->id,
-                        ]);
-                });
+                ->map(function (Product $product) {
+                    $product->setRelation('variants', $product->variants->where('status', true)->values());
+
+                    return $product;
+                })
+                ->filter(fn (Product $product) => $product->variants->isNotEmpty());
+
+            if ($isSummary) {
+                $variantRows = $variableProducts
+                    ->when($q, fn ($products) => $products->filter(
+                        fn (Product $p) => str_contains(strtolower($p->name), strtolower($q))
+                            || $p->variants->contains(fn (ProductVariant $v) => str_contains(strtolower($v->sku), strtolower($q)))
+                    ))
+                    ->map(fn (Product $product) => (object) [
+                        'name' => $product->name,
+                        'sku' => $product->sku,
+                        'category' => $product->category?->name,
+                        'unit' => $product->stockUnit?->short_name,
+                        'reorder_level' => $product->reorder_level,
+                        'product_id' => $product->id,
+                        'variant_id' => null,
+                        'is_group' => true,
+                        'variant_count' => $product->variants->count(),
+                    ])
+                    ->values();
+            } else {
+                $variantRows = $variableProducts
+                    ->flatMap(function (Product $product) use ($q) {
+                        return $product->variants
+                            ->when($q, fn ($variants) => $variants->filter(
+                                fn (ProductVariant $v) => str_contains(strtolower($product->name), strtolower($q))
+                                    || str_contains(strtolower($v->sku), strtolower($q))
+                            ))
+                            ->map(fn (ProductVariant $variant) => (object) [
+                                'name' => $product->name.' — '.$variant->label,
+                                'sku' => $variant->sku,
+                                'category' => $product->category?->name,
+                                'unit' => $product->stockUnit?->short_name,
+                                'reorder_level' => $product->reorder_level,
+                                'product_id' => $product->id,
+                                'variant_id' => $variant->id,
+                                'is_group' => false,
+                            ]);
+                    });
+            }
 
             $all = $simpleRows->concat($variantRows)->sortBy('name')->values();
 
@@ -95,11 +129,13 @@ class StockReportController extends Controller implements HasMiddleware
                 ['path' => $request->url(), 'query' => $request->query()]
             );
 
-            $productIds = $products->getCollection()->whereNull('variant_id')->pluck('product_id');
-            $variantIds = $products->getCollection()->whereNotNull('variant_id')->pluck('variant_id');
+            $rows = $products->getCollection();
+            $simpleProductIds = $rows->where('is_group', false)->whereNull('variant_id')->pluck('product_id');
+            $variantIds = $rows->whereNotNull('variant_id')->pluck('variant_id');
+            $groupProductIds = $rows->where('is_group', true)->pluck('product_id');
 
-            $productBalances = StockMovement::where('site_id', $site->id)
-                ->whereIn('product_id', $productIds)
+            $simpleBalances = StockMovement::where('site_id', $site->id)
+                ->whereIn('product_id', $simpleProductIds)
                 ->whereNull('product_variant_id')
                 ->selectRaw("product_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
                 ->groupBy('product_id')
@@ -110,8 +146,17 @@ class StockReportController extends Controller implements HasMiddleware
                 ->selectRaw("product_variant_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
                 ->groupBy('product_variant_id')
                 ->pluck('balance', 'product_variant_id');
+
+            // Variant movements always carry the parent product_id too, so
+            // the group total is just "every variant movement for this product".
+            $groupBalances = StockMovement::where('site_id', $site->id)
+                ->whereIn('product_id', $groupProductIds)
+                ->whereNotNull('product_variant_id')
+                ->selectRaw("product_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
+                ->groupBy('product_id')
+                ->pluck('balance', 'product_id');
         }
 
-        return view('admin.stock.report', compact('sites', 'categories', 'site', 'products', 'productBalances', 'variantBalances'));
+        return view('admin.stock.report', compact('sites', 'categories', 'site', 'products', 'simpleBalances', 'variantBalances', 'groupBalances'));
     }
 }

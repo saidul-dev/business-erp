@@ -25,6 +25,20 @@
                                           placeholder="{{ __('All categories') }}" />
                 </div>
             </div>
+            @php $currentView = request('view') === 'summary' ? 'summary' : 'detail'; @endphp
+            <div class="w-44 shrink-0">
+                <x-input-label :value="__('View')" />
+                <div class="mt-1 inline-flex w-full rounded-lg border border-slate-300 bg-slate-50 p-0.5 text-sm">
+                    <a href="{{ request()->fullUrlWithQuery(['view' => 'detail', 'page' => null]) }}"
+                       class="flex-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-center font-medium transition-colors {{ $currentView === 'detail' ? 'bg-brand-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800' }}">
+                        {{ __('Variants') }}
+                    </a>
+                    <a href="{{ request()->fullUrlWithQuery(['view' => 'summary', 'page' => null]) }}"
+                       class="flex-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-center font-medium transition-colors {{ $currentView === 'summary' ? 'bg-brand-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800' }}">
+                        {{ __('Parent') }}
+                    </a>
+                </div>
+            </div>
             <div class="flex-1 min-w-[200px]">
                 <x-input-label for="q" :value="__('Search')" />
                 <input type="search" id="q" name="q" value="{{ request('q') }}" placeholder="{{ __('Name or SKU…') }}"
@@ -55,14 +69,21 @@
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($products as $row)
                     @php
-                        $qty = (float) ($row->variant_id
-                            ? ($variantBalances[$row->variant_id] ?? 0)
-                            : ($productBalances[$row->product_id] ?? 0));
+                        $qty = (float) match (true) {
+                            $row->variant_id !== null => $variantBalances[$row->variant_id] ?? 0,
+                            $row->is_group => $groupBalances[$row->product_id] ?? 0,
+                            default => $simpleBalances[$row->product_id] ?? 0,
+                        };
                     @endphp
                     <tr class="hover:bg-slate-50">
                         <td class="px-5 py-3">
                             <span class="block font-semibold text-slate-800">{{ $row->name }}</span>
-                            <span class="block text-xs text-slate-400">{{ $row->sku }}</span>
+                            <span class="block text-xs text-slate-400">
+                                {{ $row->sku }}
+                                @if ($row->is_group)
+                                    · {{ trans_choice(':count variant|:count variants', $row->variant_count, ['count' => $row->variant_count]) }}
+                                @endif
+                            </span>
                         </td>
                         <td class="px-5 py-3 text-slate-600">{{ $row->category ?? '—' }}</td>
                         <td class="px-5 py-3 text-slate-600">{{ $row->unit ?? '—' }}</td>
