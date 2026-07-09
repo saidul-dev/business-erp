@@ -45,7 +45,7 @@
             <table class="w-full min-w-[860px] text-sm">
                 <thead>
                     <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                        <th class="px-5 py-3 font-semibold">{{ __('Product') }}</th>
+                        <th class="px-5 py-3 font-semibold">{{ __('Product / Variant') }}</th>
                         <th class="px-5 py-3 font-semibold">{{ __('Category') }}</th>
                         <th class="px-5 py-3 font-semibold">{{ __('Unit') }}</th>
                         <th class="px-5 py-3 font-semibold text-right">{{ __('Quantity') }}</th>
@@ -53,20 +53,24 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                    @forelse ($products as $product)
-                    @php $qty = (float) ($stock[$product->id] ?? 0); @endphp
+                    @forelse ($products as $row)
+                    @php
+                        $qty = (float) ($row->variant_id
+                            ? ($variantBalances[$row->variant_id] ?? 0)
+                            : ($productBalances[$row->product_id] ?? 0));
+                    @endphp
                     <tr class="hover:bg-slate-50">
                         <td class="px-5 py-3">
-                            <span class="block font-semibold text-slate-800">{{ $product->name }}</span>
-                            <span class="block text-xs text-slate-400">{{ $product->sku }}</span>
+                            <span class="block font-semibold text-slate-800">{{ $row->name }}</span>
+                            <span class="block text-xs text-slate-400">{{ $row->sku }}</span>
                         </td>
-                        <td class="px-5 py-3 text-slate-600">{{ $product->category->name ?? '—' }}</td>
-                        <td class="px-5 py-3 text-slate-600">{{ $product->stockUnit->short_name ?? '—' }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ $row->category ?? '—' }}</td>
+                        <td class="px-5 py-3 text-slate-600">{{ $row->unit ?? '—' }}</td>
                         <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ rtrim(rtrim(number_format($qty, 4), '0'), '.') ?: '0' }}</td>
                         <td class="px-5 py-3">
                             @if ($qty <= 0)
                                 <span class="inline-flex rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200">{{ __('Out of Stock') }}</span>
-                            @elseif ($qty <= $product->reorder_level)
+                            @elseif ($qty <= $row->reorder_level)
                                 <span class="inline-flex rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-600 ring-1 ring-amber-200">{{ __('Low Stock') }}</span>
                             @else
                                 <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-200">{{ __('In Stock') }}</span>
