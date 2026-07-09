@@ -39,6 +39,19 @@
                     </a>
                 </div>
             </div>
+            <div class="w-48 shrink-0">
+                <x-input-label :value="__('Availability')" />
+                <div class="mt-1 flex h-[38px] w-full items-stretch rounded-lg border border-slate-300 bg-slate-50 p-0.5 text-sm">
+                    <a href="{{ request()->fullUrlWithQuery(['availability' => 'in', 'page' => null]) }}"
+                       class="flex flex-1 items-center justify-center whitespace-nowrap rounded-md px-2.5 text-center font-medium transition-colors {{ $availability === 'in' ? 'bg-brand-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800' }}">
+                        {{ __('In Stock') }}
+                    </a>
+                    <a href="{{ request()->fullUrlWithQuery(['availability' => 'out', 'page' => null]) }}"
+                       class="flex flex-1 items-center justify-center whitespace-nowrap rounded-md px-2.5 text-center font-medium transition-colors {{ $availability === 'out' ? 'bg-brand-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800' }}">
+                        {{ __('Out of Stock') }}
+                    </a>
+                </div>
+            </div>
             <div class="flex-1 min-w-[200px]">
                 <x-input-label for="q" :value="__('Search')" />
                 <input type="search" id="q" name="q" value="{{ request('q') }}" placeholder="{{ __('Name or SKU…') }}"
@@ -72,17 +85,9 @@
                     @php $pageCostTotal = 0; $pageSaleTotal = 0; @endphp
                     @forelse ($products as $row)
                     @php
-                        $qty = (float) match (true) {
-                            $row->variant_id !== null => $variantBalances[$row->variant_id] ?? 0,
-                            $row->is_group => $groupBalances[$row->product_id] ?? 0,
-                            default => $simpleBalances[$row->product_id] ?? 0,
-                        };
-                        $costValuation = $row->is_group
-                            ? (float) ($groupCostValuation[$row->product_id] ?? 0)
-                            : $qty * $row->cost_price;
-                        $saleValuation = $row->is_group
-                            ? (float) ($groupSaleValuation[$row->product_id] ?? 0)
-                            : $qty * $row->sale_price;
+                        $qty = $row->balance;
+                        $costValuation = $row->cost_valuation;
+                        $saleValuation = $row->sale_valuation;
                         $pageCostTotal += $costValuation;
                         $pageSaleTotal += $saleValuation;
                     @endphp

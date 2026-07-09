@@ -36,13 +36,9 @@ class StockReportController extends Controller implements HasMiddleware
         $sites = Site::where('status', true)->orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
         $site = $request->filled('site_id') ? Site::findOrFail($request->integer('site_id')) : null;
+        $availability = $request->get('availability') === 'out' ? 'out' : 'in';
 
         $products = null;
-        $simpleBalances = collect();
-        $variantBalances = collect();
-        $groupBalances = collect();
-        $groupCostValuation = collect();
-        $groupSaleValuation = collect();
 
         if ($site) {
             $q = $request->q;
@@ -126,20 +122,12 @@ class StockReportController extends Controller implements HasMiddleware
 
             $all = $simpleRows->concat($variantRows)->sortBy('name')->values();
 
-            $perPage = 20;
-            $page = max(1, $request->integer('page', 1));
-            $products = new LengthAwarePaginator(
-                $all->forPage($page, $perPage)->values(),
-                $all->count(),
-                $perPage,
-                $page,
-                ['path' => $request->url(), 'query' => $request->query()]
-            );
-
-            $rows = $products->getCollection();
-            $simpleProductIds = $rows->where('is_group', false)->whereNull('variant_id')->pluck('product_id');
-            $variantIds = $rows->whereNotNull('variant_id')->pluck('variant_id');
-            $groupProductIds = $rows->where('is_group', true)->pluck('product_id');
+            // Balances/valuations must be known for every matching row (not
+            // just one page) before the Availability filter can decide who
+            // even makes it into the paginated set.
+            $simpleProductIds = $all->where('is_group', false)->whereNull('variant_id')->pluck('product_id');
+            $variantIds = $all->whereNotNull('variant_id')->pluck('variant_id');
+            $groupProductIds = $all->where('is_group', true)->pluck('product_id');
 
             $simpleBalances = StockMovement::where('site_id', $site->id)
                 ->whereIn('product_id', $simpleProductIds)
@@ -193,8 +181,38 @@ class StockReportController extends Controller implements HasMiddleware
                     $groupSaleValuation[$product->id] = $sale;
                 }
             }
+
+            $all = $all->map(function ($row) use ($simpleBalances, $variantBalances, $groupBalances, $groupCostValuation, $groupSaleValuation) {
+                $row->balance = (float) match (true) {
+                    $row->variant_id !== null => $variantBalances[$row->variant_id] ?? 0,
+                    $row->is_group => $groupBalances[$row->product_id] ?? 0,
+                    default => $simpleBalances[$row->product_id] ?? 0,
+                };
+                $row->cost_valuation = $row->is_group
+                    ? (float) ($groupCostValuation[$row->product_id] ?? 0)
+                    : $row->balance * $row->cost_price;
+                $row->sale_valuation = $row->is_group
+                    ? (float) ($groupSaleValuation[$row->product_id] ?? 0)
+                    : $row->balance * $row->sale_price;
+
+                return $row;
+            });
+
+            // Default "In Stock" (balance >= 1) — "Out of Stock" is the
+            // complement, so a fractional leftover (e.g. 0.5) counts as out.
+            $all = $all->filter(fn ($row) => $availability === 'out' ? $row->balance < 1 : $row->balance >= 1)->values();
+
+            $perPage = 20;
+            $page = max(1, $request->integer('page', 1));
+            $products = new LengthAwarePaginator(
+                $all->forPage($page, $perPage)->values(),
+                $all->count(),
+                $perPage,
+                $page,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
         }
 
-        return view('admin.stock.report', compact('sites', 'categories', 'site', 'products', 'simpleBalances', 'variantBalances', 'groupBalances', 'groupCostValuation', 'groupSaleValuation'));
+        return view('admin.stock.report', compact('sites', 'categories', 'site', 'products', 'availability'));
     }
 }
