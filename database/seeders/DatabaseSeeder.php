@@ -56,5 +56,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'sales@businesserp.test'],
             ['name' => 'Sales Person', 'password' => 'password']
         )->syncRoles('Sales');
+
+        $this->call(SiteSeeder::class);
     }
 }
