@@ -80,11 +80,11 @@
                             <x-sidebar-sublink :href="route('products.index')" :active="request()->routeIs('products.*')">
                                 {{ __('Products') }}
                             </x-sidebar-sublink>
-                            <x-sidebar-sublink :href="route('stock.initial.index')" :active="request()->routeIs('stock.initial.*')">
-                                {{ __('Initial Stock') }}
-                            </x-sidebar-sublink>
                             <x-sidebar-sublink :href="route('stock.report')" :active="request()->routeIs('stock.report')">
                                 {{ __('Stock Report') }}
+                            </x-sidebar-sublink>
+                            <x-sidebar-sublink :href="route('stock.initial.index')" :active="request()->routeIs('stock.initial.*')">
+                                {{ __('Initial Stock') }}
                             </x-sidebar-sublink>
                             <x-sidebar-sublink :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                                 {{ __('Categories') }}
