@@ -2,12 +2,16 @@
 
 namespace Database\Seeders;
 
+use App\Models\Attribute;
+use App\Models\AttributeValue;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Unit;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 
 class ProductSeeder extends Seeder
 {
@@ -154,6 +158,97 @@ class ProductSeeder extends Seeder
                     'status' => true,
                 ]
             );
+        }
+
+        $this->seedVariantProducts($categories, $brands, $units);
+    }
+
+    /**
+     * A couple of has_variants=true demo products, so the Attribute /
+     * Product Variant feature has real data to show on first login.
+     */
+    protected function seedVariantProducts(Collection $categories, Collection $brands, Collection $units): void
+    {
+        $colorAttributeId = Attribute::where('name', 'Color')->value('id');
+        $sizeAttributeId = Attribute::where('name', 'Size')->value('id');
+        $colorValueIds = AttributeValue::where('attribute_id', $colorAttributeId)->pluck('id', 'value');
+        $sizeValueIds = AttributeValue::where('attribute_id', $sizeAttributeId)->pluck('id', 'value');
+
+        // Polo T-Shirt: varies by Color and Size.
+        $poloUnitId = $units['Pcs'];
+        $polo = Product::firstOrCreate(
+            ['sku' => 'GAR-003'],
+            [
+                'name' => 'Premium Polo T-Shirt',
+                'category_id' => $categories['Garments'],
+                'brand_id' => $brands['Generic'],
+                'stock_unit_id' => $poloUnitId,
+                'purchase_unit_id' => $poloUnitId,
+                'purchase_unit_conversion' => 1,
+                'sale_unit_id' => $poloUnitId,
+                'sale_unit_conversion' => 1,
+                'estimated_cost' => 300,
+                'selling_price' => 550,
+                'reorder_level' => 10,
+                'status' => true,
+                'has_variants' => true,
+            ]
+        );
+
+        foreach (['Black', 'White', 'Blue'] as $color) {
+            foreach (['M', 'L', 'XL'] as $size) {
+                $variant = ProductVariant::firstOrCreate(
+                    ['sku' => 'GAR-003-'.strtoupper(substr($color, 0, 3)).'-'.$size],
+                    [
+                        'product_id' => $polo->id,
+                        'selling_price' => 550,
+                        'estimated_cost' => 300,
+                        'status' => true,
+                    ]
+                );
+
+                $variant->attributeValues()->syncWithoutDetaching([
+                    $colorValueIds[$color] => ['attribute_id' => $colorAttributeId],
+                    $sizeValueIds[$size] => ['attribute_id' => $sizeAttributeId],
+                ]);
+            }
+        }
+
+        // Cotton Bed Sheet: varies by Color only.
+        $bedUnitId = $units['Pcs'];
+        $bedSheet = Product::firstOrCreate(
+            ['sku' => 'HK-003'],
+            [
+                'name' => 'Cotton Bed Sheet (King Size)',
+                'category_id' => $categories['Home & Kitchen'],
+                'brand_id' => $brands['Generic'],
+                'stock_unit_id' => $bedUnitId,
+                'purchase_unit_id' => $bedUnitId,
+                'purchase_unit_conversion' => 1,
+                'sale_unit_id' => $bedUnitId,
+                'sale_unit_conversion' => 1,
+                'estimated_cost' => 600,
+                'selling_price' => 950,
+                'reorder_level' => 10,
+                'status' => true,
+                'has_variants' => true,
+            ]
+        );
+
+        foreach (['Black', 'White', 'Blue', 'Green'] as $color) {
+            $variant = ProductVariant::firstOrCreate(
+                ['sku' => 'HK-003-'.strtoupper(substr($color, 0, 3))],
+                [
+                    'product_id' => $bedSheet->id,
+                    'selling_price' => 950,
+                    'estimated_cost' => 600,
+                    'status' => true,
+                ]
+            );
+
+            $variant->attributeValues()->syncWithoutDetaching([
+                $colorValueIds[$color] => ['attribute_id' => $colorAttributeId],
+            ]);
         }
     }
 }
