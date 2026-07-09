@@ -86,6 +86,9 @@
                             <x-sidebar-sublink :href="route('stock.initial.index')" :active="request()->routeIs('stock.initial.*')">
                                 {{ __('Initial Stock') }}
                             </x-sidebar-sublink>
+                            <x-sidebar-sublink :href="route('stock.adjustment.index')" :active="request()->routeIs('stock.adjustment.*')">
+                                {{ __('Stock Adjustment') }}
+                            </x-sidebar-sublink>
                             <x-sidebar-sublink :href="route('categories.index')" :active="request()->routeIs('categories.*')">
                                 {{ __('Categories') }}
                             </x-sidebar-sublink>

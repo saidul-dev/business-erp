@@ -20,6 +20,7 @@ mutable counter column, so the full history stays auditable.
 | `quantity` | decimal(14,4), always stored positive |
 | `unit_cost` | decimal(14,4), nullable |
 | `batch_no`, `expiry_date`, `serial_no` | nullable — only populated when the product's `track_batch`/`track_expiry`/`track_serial` flags are on |
+| `reason` | nullable — only populated on `adjustment_in`/`adjustment_out` rows, one of `App\Models\StockMovement::REASONS` (Stock Adjustment screen) |
 | `reference_type` / `reference_id` | nullable morph — will link back to the source document (Purchase, Sale, Transfer, Adjustment) once those modules exist |
 | `moved_at` | date the movement is effective as-of (can differ from `created_at`) |
 | `created_by` | user who recorded it |
@@ -48,8 +49,7 @@ Guardrails:
 - A product or variant drops off its list the moment it has *any* movement
   at that site — not just `initial_stock`. Once real transactions start
   (e.g. a Purchase), backdating an opening balance on top would double-count
-  against them. Corrections go through an Adjustment movement instead once
-  that screen exists.
+  against them. Corrections go through a Stock Adjustment instead (see below).
 - A `has_variants` product disappears from the Variants table entirely once
   every one of its variants has been seeded; if only some variants are
   seeded, the remaining ones still show under that product.
@@ -72,3 +72,24 @@ against `Product.reorder_level` (Out of Stock / Low Stock / In Stock).
 
 Same `has_variants` exclusion as Initial Stock, for the same reason (no
 per-variant ledger view yet).
+
+## Stock Adjustment (built)
+
+Route: `admin/stock/adjustment` (`stock.adjustment.index` / `stock.adjustment.store`),
+gated behind the `inventory.edit` permission, controller
+`App\Http\Controllers\Admin\StockAdjustmentController`.
+
+Single-item correction, immediate effect (no approval step). Flow: pick a
+Site → search a product or variant (any active one, not filtered by
+movement history like Initial Stock) → its current balance at that site is
+computed live and shown → choose Addition or Deduction, enter a quantity,
+pick a fixed `reason` (`StockMovement::REASONS`) + optional note, optional
+unit cost and batch/expiry/serial (only shown when the *product* tracks
+them) → submit posts one `adjustment_in`/`adjustment_out` row.
+
+Guardrail: a Deduction can't exceed the item's current balance at that site
+(blocked with a validation error) — the ledger never goes negative.
+
+Damage/expiry write-offs are **not** an Adjustment reason — they use the
+separate `damage_expiry` type (see `inventory-movement-types.md`) once that
+screen exists, so loss/wastage stays reportable on its own.

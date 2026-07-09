@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SiteController;
+use App\Http\Controllers\Admin\StockAdjustmentController;
 use App\Http\Controllers\Admin\StockReportController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
@@ -61,6 +62,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/stock/initial-stock', [InitialStockController::class, 'index'])->name('stock.initial.index');
         Route::post('/stock/initial-stock', [InitialStockController::class, 'store'])->name('stock.initial.store');
         Route::get('/stock/report', [StockReportController::class, 'index'])->name('stock.report');
+        Route::get('/stock/adjustment', [StockAdjustmentController::class, 'index'])->name('stock.adjustment.index');
+        Route::post('/stock/adjustment', [StockAdjustmentController::class, 'store'])->name('stock.adjustment.store');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');

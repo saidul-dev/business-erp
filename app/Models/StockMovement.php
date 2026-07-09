@@ -29,11 +29,25 @@ class StockMovement extends Model
         'internal_consumption' => 'out',
     ];
 
+    /**
+     * Fixed reason list for adjustment_in/adjustment_out movements (the
+     * Stock Adjustment screen). Damage/expiry write-offs use their own
+     * `damage_expiry` type instead of an adjustment reason — see TYPES.
+     */
+    public const REASONS = [
+        'physical_count' => 'Physical Count / Recount',
+        'data_entry_error' => 'Data Entry Error',
+        'found_stock' => 'Found Stock',
+        'missing_stock' => 'Missing / Shortage',
+        'other' => 'Other',
+    ];
+
     protected $fillable = [
         'product_id',
         'product_variant_id',
         'site_id',
         'type',
+        'reason',
         'quantity',
         'unit_cost',
         'batch_no',

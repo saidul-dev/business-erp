@@ -77,9 +77,14 @@
                             $row->is_group => $groupBalances[$row->product_id] ?? 0,
                             default => $simpleBalances[$row->product_id] ?? 0,
                         };
+                        // Prefer the ledger's own weighted-average cost (actual purchase/
+                        // production history) over the product's static estimated cost.
+                        $unitCost = $row->variant_id !== null
+                            ? ($variantAvgCost[$row->variant_id] ?? $row->cost_price)
+                            : ($simpleAvgCost[$row->product_id] ?? $row->cost_price);
                         $costValuation = $row->is_group
                             ? (float) ($groupCostValuation[$row->product_id] ?? 0)
-                            : $qty * $row->cost_price;
+                            : $qty * $unitCost;
                         $saleValuation = $row->is_group
                             ? (float) ($groupSaleValuation[$row->product_id] ?? 0)
                             : $qty * $row->sale_price;
