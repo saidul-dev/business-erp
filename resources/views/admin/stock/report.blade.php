@@ -28,13 +28,13 @@
             @php $currentView = request('view') === 'summary' ? 'summary' : 'detail'; @endphp
             <div class="w-44 shrink-0">
                 <x-input-label :value="__('View')" />
-                <div class="mt-1 inline-flex w-full rounded-lg border border-slate-300 bg-slate-50 p-0.5 text-sm">
+                <div class="mt-1 flex h-[38px] w-full items-stretch rounded-lg border border-slate-300 bg-slate-50 p-0.5 text-sm">
                     <a href="{{ request()->fullUrlWithQuery(['view' => 'detail', 'page' => null]) }}"
-                       class="flex-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-center font-medium transition-colors {{ $currentView === 'detail' ? 'bg-brand-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800' }}">
+                       class="flex flex-1 items-center justify-center whitespace-nowrap rounded-md px-2.5 text-center font-medium transition-colors {{ $currentView === 'detail' ? 'bg-brand-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800' }}">
                         {{ __('Variants') }}
                     </a>
                     <a href="{{ request()->fullUrlWithQuery(['view' => 'summary', 'page' => null]) }}"
-                       class="flex-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-center font-medium transition-colors {{ $currentView === 'summary' ? 'bg-brand-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800' }}">
+                       class="flex flex-1 items-center justify-center whitespace-nowrap rounded-md px-2.5 text-center font-medium transition-colors {{ $currentView === 'summary' ? 'bg-brand-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800' }}">
                         {{ __('Parent') }}
                     </a>
                 </div>
