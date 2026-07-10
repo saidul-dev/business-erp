@@ -87,8 +87,12 @@
             </tbody>
         </table>
 
-        <div class="mt-3 text-right text-sm font-bold text-slate-800">
-            {{ __('Total') }}: {{ number_format($purchase->total_amount, 2) }}
+        <div class="mt-3 text-right text-sm">
+            <div class="text-slate-500">{{ __('Subtotal') }}: {{ number_format($purchase->subtotal_amount, 2) }}</div>
+            @if ($purchase->discount_amount > 0)
+            <div class="text-slate-500">{{ __('Discount') }}: {{ number_format($purchase->discount_amount, 2) }}</div>
+            @endif
+            <div class="font-bold text-slate-800">{{ __('Total') }}: {{ number_format($purchase->total_amount, 2) }}</div>
         </div>
 
         @if ($purchase->note)

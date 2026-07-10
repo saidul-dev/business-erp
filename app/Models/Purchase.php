@@ -21,12 +21,16 @@ class Purchase extends Model
         'status',
         'order_date',
         'note',
+        'subtotal_amount',
+        'discount_amount',
         'total_amount',
         'created_by',
     ];
 
     protected $casts = [
         'order_date' => 'date',
+        'subtotal_amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
     ];
 
@@ -83,5 +87,19 @@ class Purchase extends Model
         if ($status !== $this->status) {
             $this->update(['status' => $status]);
         }
+    }
+
+    /**
+     * The discount entered on the order, prorated onto a receipt's gross
+     * value by its share of the order's subtotal — see
+     * PurchaseController::receive(). Mirrors Sale::discountRate() exactly.
+     */
+    public function discountRate(): float
+    {
+        if ((float) $this->subtotal_amount <= 0) {
+            return 0;
+        }
+
+        return (float) $this->discount_amount / (float) $this->subtotal_amount;
     }
 }

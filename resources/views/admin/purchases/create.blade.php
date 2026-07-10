@@ -101,6 +101,19 @@
                         </template>
                     </tbody>
                     <tfoot>
+                        <tr class="border-t border-slate-100">
+                            <td colspan="3" class="px-5 py-2 text-right text-slate-500">{{ __('Subtotal') }}</td>
+                            <td class="px-5 py-2 text-right font-semibold text-slate-700" x-text="subtotal.toFixed(2)"></td>
+                            <td></td>
+                        </tr>
+                        <tr class="border-t border-slate-100">
+                            <td colspan="3" class="px-5 py-2 text-right text-slate-500">{{ __('Discount') }}</td>
+                            <td class="px-5 py-2 text-right">
+                                <input type="number" step="0.01" min="0" name="discount_amount" x-model.number="discount"
+                                       class="w-28 rounded-lg border-slate-300 text-sm text-right focus:border-accent-500 focus:ring-accent-500" placeholder="0.00">
+                            </td>
+                            <td></td>
+                        </tr>
                         <tr class="border-t border-slate-100 bg-slate-50">
                             <td colspan="3" class="px-5 py-3 text-right font-semibold text-slate-600">{{ __('Total') }}</td>
                             <td class="px-5 py-3 text-right font-bold text-brand-900" x-text="total.toFixed(2)"></td>
@@ -111,6 +124,7 @@
                 </div>
             </div>
             <x-input-error class="mb-4" :messages="$errors->get('items')" />
+            <x-input-error class="mb-4" :messages="$errors->get('discount_amount')" />
 
             <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200" x-show="items.length" x-cloak>
                 <div class="mb-5 max-w-xl">

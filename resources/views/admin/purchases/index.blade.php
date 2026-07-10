@@ -19,15 +19,28 @@
     <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-6">
         <form method="GET" action="{{ route('purchases.index') }}" class="flex flex-nowrap items-end gap-4 overflow-x-auto">
             <div class="w-56 shrink-0">
+                <x-input-label for="q" :value="__('Search')" />
+                <input type="search" id="q" name="q" value="{{ $q }}" placeholder="{{ __('Purchase no. or supplier…') }}"
+                       class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
+            </div>
+            <div class="w-40 shrink-0">
+                <x-input-label for="from" :value="__('From')" />
+                <x-text-input id="from" name="from" type="date" class="mt-1 block w-full" :value="$from" />
+            </div>
+            <div class="w-40 shrink-0">
+                <x-input-label for="to" :value="__('To')" />
+                <x-text-input id="to" name="to" type="date" class="mt-1 block w-full" :value="$to" />
+            </div>
+            <div class="w-56 shrink-0">
                 <x-input-label for="site_id" :value="__('Site')" />
                 <div class="mt-1">
                     <x-searchable-select name="site_id" :options="$sites" :selected="$siteId"
-                                          placeholder="{{ __('All sites') }}" :auto-submit="true" />
+                                          placeholder="{{ __('All sites') }}" />
                 </div>
             </div>
             <div class="w-48 shrink-0">
                 <x-input-label for="status" :value="__('Status')" />
-                <select name="status" onchange="this.form.submit()"
+                <select name="status"
                         class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                     <option value="">{{ __('All statuses') }}</option>
                     @foreach (['pending' => __('Pending'), 'partial' => __('Partially Received'), 'received' => __('Received'), 'cancelled' => __('Cancelled')] as $key => $label)
@@ -35,6 +48,10 @@
                     @endforeach
                 </select>
             </div>
+            <button type="submit" class="shrink-0 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">{{ __('Filter') }}</button>
+            @if ($q || $from || $to || $siteId || $status)
+            <a href="{{ route('purchases.index') }}" class="shrink-0 text-sm font-semibold text-slate-500 hover:text-slate-700">{{ __('Clear') }}</a>
+            @endif
         </form>
     </div>
 

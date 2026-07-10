@@ -36,6 +36,9 @@
             <div>
                 <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Total') }}</span>
                 <span class="block font-semibold text-slate-800">{{ number_format($purchase->total_amount, 2) }}</span>
+                @if ($purchase->discount_amount > 0)
+                <span class="block text-xs text-slate-400">{{ __('Discount') }}: {{ number_format($purchase->discount_amount, 2) }}</span>
+                @endif
             </div>
             <div>
                 <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Supplier Due') }}</span>

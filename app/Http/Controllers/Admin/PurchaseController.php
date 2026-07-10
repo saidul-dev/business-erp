@@ -38,16 +38,25 @@ class PurchaseController extends Controller implements HasMiddleware
         $sites = Site::where('status', true)->orderBy('name')->get();
         $status = $request->get('status');
         $siteId = $request->filled('site_id') ? $request->integer('site_id') : null;
+        $from = $request->get('from');
+        $to = $request->get('to');
+        $q = $request->get('q');
 
         $purchases = Purchase::with(['party', 'site'])
-            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
-            ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($siteId, fn ($qr) => $qr->where('site_id', $siteId))
+            ->when($status, fn ($qr) => $qr->where('status', $status))
+            ->when($from, fn ($qr) => $qr->whereDate('order_date', '>=', $from))
+            ->when($to, fn ($qr) => $qr->whereDate('order_date', '<=', $to))
+            ->when($q, fn ($qr) => $qr->where(fn ($qr2) => $qr2
+                ->where('purchase_no', 'like', "%{$q}%")
+                ->orWhereHas('party', fn ($qp) => $qp->where('name', 'like', "%{$q}%"))
+            ))
             ->orderByDesc('order_date')
             ->orderByDesc('id')
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.purchases.index', compact('purchases', 'sites', 'status', 'siteId'));
+        return view('admin.purchases.index', compact('purchases', 'sites', 'status', 'siteId', 'from', 'to', 'q'));
     }
 
     /**
@@ -76,6 +85,7 @@ class PurchaseController extends Controller implements HasMiddleware
             'party_id' => ['required', 'integer', 'exists:parties,id'],
             'site_id' => ['required', 'integer', 'exists:sites,id'],
             'order_date' => ['required', 'date'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'note' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.item' => ['required', 'string'],
@@ -105,7 +115,14 @@ class PurchaseController extends Controller implements HasMiddleware
             ];
         }
 
-        $purchase = DB::transaction(function () use ($validated, $rows) {
+        $subtotal = collect($rows)->sum('subtotal');
+        $discount = min((float) ($validated['discount_amount'] ?? 0), $subtotal);
+
+        if ($discount < (float) ($validated['discount_amount'] ?? 0)) {
+            throw ValidationException::withMessages(['discount_amount' => 'Discount cannot exceed the order subtotal.']);
+        }
+
+        $purchase = DB::transaction(function () use ($validated, $rows, $subtotal, $discount) {
             $purchase = Purchase::create([
                 'purchase_no' => 'PENDING',
                 'party_id' => $validated['party_id'],
@@ -113,7 +130,9 @@ class PurchaseController extends Controller implements HasMiddleware
                 'status' => 'pending',
                 'order_date' => $validated['order_date'],
                 'note' => $validated['note'] ?? null,
-                'total_amount' => collect($rows)->sum('subtotal'),
+                'subtotal_amount' => $subtotal,
+                'discount_amount' => $discount,
+                'total_amount' => $subtotal - $discount,
                 'created_by' => Auth::id(),
             ]);
             $purchase->update(['purchase_no' => 'PO-'.str_pad($purchase->id, 6, '0', STR_PAD_LEFT)]);
@@ -191,7 +210,12 @@ class PurchaseController extends Controller implements HasMiddleware
      * one ledger_transactions entry for the whole receipt (Dr Inventory,
      * Cr Accounts Payable) via LedgerService::post() — see
      * docs/accounting-foundation.md. Quantities not received now stay
-     * open for a later receipt.
+     * open for a later receipt. The order's discount (see
+     * Purchase::discountRate()) is baked directly into each line's
+     * unit_cost for this receipt — unlike Sale's separate Discount
+     * Allowed line, a purchase discount just lowers the real cost, so
+     * Inventory/Accounts Payable and the stock_movements valuation used
+     * for average costing stay in agreement.
      */
     public function receive(Request $request, Purchase $purchase)
     {
@@ -254,10 +278,12 @@ class PurchaseController extends Controller implements HasMiddleware
             ]);
             $receipt->update(['receipt_no' => 'GRN-'.str_pad($receipt->id, 6, '0', STR_PAD_LEFT)]);
 
+            $discountRate = $purchase->discountRate();
             $totalValue = 0;
 
             foreach ($lines as $row) {
                 $item = $row['item'];
+                $netUnitCost = round((float) $item->unit_cost * (1 - $discountRate), 4);
 
                 $receipt->items()->create([
                     'purchase_item_id' => $item->id,
@@ -273,7 +299,7 @@ class PurchaseController extends Controller implements HasMiddleware
                     'site_id' => $purchase->site_id,
                     'type' => 'purchase',
                     'quantity' => $row['quantity'],
-                    'unit_cost' => $item->unit_cost,
+                    'unit_cost' => $netUnitCost,
                     'batch_no' => $row['batch_no'],
                     'expiry_date' => $row['expiry_date'],
                     'serial_no' => $row['serial_no'],
@@ -285,7 +311,7 @@ class PurchaseController extends Controller implements HasMiddleware
 
                 $item->update(['received_quantity' => $item->received_quantity + $row['quantity']]);
 
-                $totalValue += round($row['quantity'] * $item->unit_cost, 2);
+                $totalValue += round($row['quantity'] * $netUnitCost, 2);
             }
 
             LedgerService::post([
@@ -400,10 +426,12 @@ class PurchaseController extends Controller implements HasMiddleware
             ]);
             $return->update(['return_no' => 'RTN-'.str_pad($return->id, 6, '0', STR_PAD_LEFT)]);
 
+            $discountRate = $purchase->discountRate();
             $totalValue = 0;
 
             foreach ($lines as $row) {
                 $item = $row['item'];
+                $netUnitCost = round((float) $item->unit_cost * (1 - $discountRate), 4);
 
                 $return->items()->create([
                     'purchase_item_id' => $item->id,
@@ -419,7 +447,7 @@ class PurchaseController extends Controller implements HasMiddleware
                     'site_id' => $purchase->site_id,
                     'type' => 'purchase_return',
                     'quantity' => $row['quantity'],
-                    'unit_cost' => $item->unit_cost,
+                    'unit_cost' => $netUnitCost,
                     'batch_no' => $row['batch_no'],
                     'expiry_date' => $row['expiry_date'],
                     'serial_no' => $row['serial_no'],
@@ -431,7 +459,7 @@ class PurchaseController extends Controller implements HasMiddleware
 
                 $item->update(['returned_quantity' => $item->returned_quantity + $row['quantity']]);
 
-                $totalValue += round($row['quantity'] * $item->unit_cost, 2);
+                $totalValue += round($row['quantity'] * $netUnitCost, 2);
             }
 
             LedgerService::post([

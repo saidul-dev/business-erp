@@ -161,6 +161,7 @@ Alpine.data('purchaseCart', (initial) => ({
     items: [],
     query: '',
     open: false,
+    discount: '',
 
     get filtered() {
         const chosen = new Set(this.items.map((i) => i.id));
@@ -170,8 +171,12 @@ Alpine.data('purchaseCart', (initial) => ({
         return pool.filter((o) => o.name.toLowerCase().includes(q));
     },
 
-    get total() {
+    get subtotal() {
         return this.items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.unit_cost) || 0), 0);
+    },
+
+    get total() {
+        return Math.max(this.subtotal - (Number(this.discount) || 0), 0);
     },
 
     addItem(opt) {

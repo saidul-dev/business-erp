@@ -38,16 +38,25 @@ class SaleController extends Controller implements HasMiddleware
         $sites = Site::where('status', true)->orderBy('name')->get();
         $status = $request->get('status');
         $siteId = $request->filled('site_id') ? $request->integer('site_id') : null;
+        $from = $request->get('from');
+        $to = $request->get('to');
+        $q = $request->get('q');
 
         $sales = Sale::with(['party', 'site'])
-            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
-            ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($siteId, fn ($qr) => $qr->where('site_id', $siteId))
+            ->when($status, fn ($qr) => $qr->where('status', $status))
+            ->when($from, fn ($qr) => $qr->whereDate('order_date', '>=', $from))
+            ->when($to, fn ($qr) => $qr->whereDate('order_date', '<=', $to))
+            ->when($q, fn ($qr) => $qr->where(fn ($qr2) => $qr2
+                ->where('sale_no', 'like', "%{$q}%")
+                ->orWhereHas('party', fn ($qp) => $qp->where('name', 'like', "%{$q}%"))
+            ))
             ->orderByDesc('order_date')
             ->orderByDesc('id')
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.sales.index', compact('sales', 'sites', 'status', 'siteId'));
+        return view('admin.sales.index', compact('sales', 'sites', 'status', 'siteId', 'from', 'to', 'q'));
     }
 
     /**

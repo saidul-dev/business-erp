@@ -71,9 +71,13 @@
                 </tr>
             </thead>
             <tbody>
-                @php $totalValue = 0; @endphp
+                @php $totalValue = 0; $discountRate = $purchaseReturn->purchase->discountRate(); @endphp
                 @foreach ($purchaseReturn->items as $i => $ri)
-                @php $lineValue = $ri->quantity * $ri->purchaseItem->unit_cost; $totalValue += $lineValue; @endphp
+                @php
+                    $netUnitCost = round($ri->purchaseItem->unit_cost * (1 - $discountRate), 4);
+                    $lineValue = $ri->quantity * $netUnitCost;
+                    $totalValue += $lineValue;
+                @endphp
                 <tr class="border-b border-slate-200">
                     <td class="py-2 pr-2 align-top">{{ $i + 1 }}</td>
                     <td class="py-2 pr-2 align-top">
@@ -85,7 +89,7 @@
                     <td class="py-2 pr-2 text-right align-top">
                         {{ rtrim(rtrim(number_format($ri->quantity, 4), '0'), '.') ?: '0' }} {{ $ri->purchaseItem->product->stockUnit?->short_name }}
                     </td>
-                    <td class="py-2 pr-2 text-right align-top">{{ number_format($ri->purchaseItem->unit_cost, 2) }}</td>
+                    <td class="py-2 pr-2 text-right align-top">{{ number_format($netUnitCost, 2) }}</td>
                     <td class="py-2 text-right align-top">{{ number_format($lineValue, 2) }}</td>
                 </tr>
                 @endforeach
