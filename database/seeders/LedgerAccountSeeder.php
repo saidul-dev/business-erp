@@ -42,6 +42,12 @@ class LedgerAccountSeeder extends Seeder
             ['code' => 'other_income', 'name' => 'Other Income', 'group' => 'income_expense', 'nature' => 'credit'],
 
             ['code' => 'opening_balance_equity', 'name' => 'Opening Balance Equity', 'group' => 'equity_adjustment', 'nature' => 'credit'],
+
+            // Ongoing owner capital movements — see CapitalTransactionController.
+            // Distinct from opening_balance_equity above, which is only for
+            // the one-time initial balancing entry.
+            ['code' => 'owner_capital', 'name' => "Owner's Capital", 'group' => 'equity_adjustment', 'nature' => 'credit'],
+            ['code' => 'owner_drawings', 'name' => "Owner's Drawings", 'group' => 'equity_adjustment', 'nature' => 'debit'],
         ];
 
         foreach ($accounts as $account) {

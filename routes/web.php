@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\CapitalTransactionController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CollectionController;
 use App\Http\Controllers\Admin\DayBookController;
@@ -120,6 +121,9 @@ Route::prefix('admin')->group(function () {
         Route::resource('fund-transfers', FundTransferController::class)->only(['index', 'create', 'store', 'show'])
             ->parameters(['fund-transfers' => 'fundTransfer']);
         Route::get('/fund-transfers/{fundTransfer}/print', [FundTransferController::class, 'print'])->name('fund-transfers.print');
+        Route::resource('capital-transactions', CapitalTransactionController::class)->only(['index', 'create', 'store', 'show'])
+            ->parameters(['capital-transactions' => 'capitalTransaction']);
+        Route::get('/capital-transactions/{capitalTransaction}/print', [CapitalTransactionController::class, 'print'])->name('capital-transactions.print');
         Route::get('/day-book', [DayBookController::class, 'index'])->name('day-book.index');
         Route::get('/trial-balance', [TrialBalanceController::class, 'index'])->name('trial-balance.index');
 

@@ -40,6 +40,8 @@ class LedgerAccount extends Model
         'rental_income' => 'Rental Income',
         'commission_income' => 'Commission Income',
         'other_income' => 'Other Income',
+        'owner_capital' => "Owner's Capital",
+        'owner_drawings' => "Owner's Drawings",
     ];
 
     protected $fillable = [
