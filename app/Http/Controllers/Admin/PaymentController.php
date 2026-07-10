@@ -114,7 +114,7 @@ class PaymentController extends Controller implements HasMiddleware
 
     public function show(Payment $payment)
     {
-        $payment->load(['party', 'account', 'creator']);
+        $payment->load(['party', 'account', 'creator', 'ledgerTransaction.lines.account']);
 
         return view('admin.payments.show', compact('payment'));
     }

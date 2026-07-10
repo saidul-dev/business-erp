@@ -114,7 +114,7 @@ class CollectionController extends Controller implements HasMiddleware
 
     public function show(Collection $collection)
     {
-        $collection->load(['party', 'account', 'creator']);
+        $collection->load(['party', 'account', 'creator', 'ledgerTransaction.lines.account']);
 
         return view('admin.collections.show', compact('collection'));
     }
