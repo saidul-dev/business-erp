@@ -74,6 +74,13 @@
             </form>
             @endcan
             @endif
+            @can('accounts.create')
+            <a href="{{ route('collections.create', ['party_id' => $sale->party_id]) }}"
+               class="inline-flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-800 hover:bg-brand-100">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-9-8.25h19.5v9.75a1.5 1.5 0 0 1-1.5 1.5h-16.5a1.5 1.5 0 0 1-1.5-1.5V6.75a1.5 1.5 0 0 1 1.5-1.5Z"/></svg>
+                {{ __('Collect from Customer') }}
+            </a>
+            @endcan
         </div>
     </div>
 

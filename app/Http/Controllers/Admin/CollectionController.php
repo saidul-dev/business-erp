@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Collection;
 use App\Models\LedgerAccount;
 use App\Models\Party;
-use App\Models\Payment;
 use App\Services\LedgerService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Payment Out — settles the Accounts Payable a Purchase (or a Supplier's
- * opening balance) created. Symmetric counterpart to CollectionController
- * (Payment In). See docs/accounting-foundation.md.
+ * Payment In — settles the Accounts Receivable a Sale (or a Customer's
+ * opening balance) created. Symmetric counterpart to PaymentController
+ * (Payment Out). See docs/accounting-foundation.md.
  */
-class PaymentController extends Controller implements HasMiddleware
+class CollectionController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
@@ -33,33 +33,33 @@ class PaymentController extends Controller implements HasMiddleware
     {
         $partyId = $request->filled('party_id') ? $request->integer('party_id') : null;
 
-        $payments = Payment::with(['party', 'account'])
+        $collections = Collection::with(['party', 'account'])
             ->when($partyId, fn ($q) => $q->where('party_id', $partyId))
-            ->orderByDesc('payment_date')
+            ->orderByDesc('collection_date')
             ->orderByDesc('id')
             ->paginate(20)
             ->withQueryString();
 
-        $suppliers = Party::where('is_supplier', true)->where('status', true)->orderBy('name')->get(['id', 'name']);
+        $customers = Party::where('is_customer', true)->where('status', true)->orderBy('name')->get(['id', 'name']);
 
-        return view('admin.payments.index', compact('payments', 'suppliers', 'partyId'));
+        return view('admin.collections.index', compact('collections', 'customers', 'partyId'));
     }
 
     /**
-     * Picking a Supplier reveals their current payable balance so the
+     * Picking a Customer reveals their current receivable balance so the
      * amount can be judged against it — not enforced as a hard cap, since
-     * paying more than currently due is a valid advance-to-supplier case
-     * (the signed balance math already handles that correctly).
+     * collecting more than currently due is a valid advance-from-customer
+     * case (the signed balance math already handles that correctly).
      */
     public function create(Request $request)
     {
-        $suppliers = Party::where('is_supplier', true)->where('status', true)->orderBy('name')->get(['id', 'name']);
+        $customers = Party::where('is_customer', true)->where('status', true)->orderBy('name')->get(['id', 'name']);
         $accounts = LedgerAccount::where('group', 'cash_bank')->where('status', true)->orderBy('name')->get(['id', 'name']);
 
         $party = $request->filled('party_id') ? Party::findOrFail($request->integer('party_id')) : null;
-        $payable = $party?->payableBalance();
+        $receivable = $party?->receivableBalance();
 
-        return view('admin.payments.create', compact('suppliers', 'accounts', 'party', 'payable'));
+        return view('admin.collections.create', compact('customers', 'accounts', 'party', 'receivable'));
     }
 
     public function store(Request $request)
@@ -68,53 +68,53 @@ class PaymentController extends Controller implements HasMiddleware
             'party_id' => ['required', 'integer', 'exists:parties,id'],
             'ledger_account_id' => ['required', 'integer', 'exists:ledger_accounts,id'],
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'payment_date' => ['required', 'date'],
+            'collection_date' => ['required', 'date'],
             'reference_no' => ['nullable', 'string', 'max:100'],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $party = Party::findOrFail($validated['party_id']);
-        if (! $party->is_supplier) {
-            throw ValidationException::withMessages(['party_id' => 'Pick a party marked as a Supplier.']);
+        if (! $party->is_customer) {
+            throw ValidationException::withMessages(['party_id' => 'Pick a party marked as a Customer.']);
         }
 
         $account = LedgerAccount::where('group', 'cash_bank')->findOrFail($validated['ledger_account_id']);
 
-        $payment = DB::transaction(function () use ($validated, $party, $account) {
-            $payment = Payment::create([
-                'payment_no' => 'PENDING',
+        $collection = DB::transaction(function () use ($validated, $party, $account) {
+            $collection = Collection::create([
+                'collection_no' => 'PENDING',
                 'party_id' => $party->id,
                 'ledger_account_id' => $account->id,
                 'amount' => $validated['amount'],
-                'payment_date' => $validated['payment_date'],
+                'collection_date' => $validated['collection_date'],
                 'reference_no' => $validated['reference_no'] ?? null,
                 'note' => $validated['note'] ?? null,
                 'created_by' => Auth::id(),
             ]);
-            $payment->update(['payment_no' => 'PMT-'.str_pad($payment->id, 6, '0', STR_PAD_LEFT)]);
+            $collection->update(['collection_no' => 'COL-'.str_pad($collection->id, 6, '0', STR_PAD_LEFT)]);
 
             LedgerService::post([
-                'type' => 'payment_out',
-                'date' => $validated['payment_date'],
-                'narration' => "Payment to {$party->name} ({$payment->payment_no})",
-                'reference' => $payment,
+                'type' => 'payment_in',
+                'date' => $validated['collection_date'],
+                'narration' => "Collection from {$party->name} ({$collection->collection_no})",
+                'reference' => $collection,
                 'created_by' => Auth::id(),
                 'lines' => [
-                    ['account' => 'accounts_payable', 'party_id' => $party->id, 'debit' => $validated['amount']],
-                    ['account' => $account, 'credit' => $validated['amount']],
+                    ['account' => $account, 'debit' => $validated['amount']],
+                    ['account' => 'accounts_receivable', 'party_id' => $party->id, 'credit' => $validated['amount']],
                 ],
             ]);
 
-            return $payment;
+            return $collection;
         });
 
-        return redirect()->route('payments.show', $payment)->with('success', "Payment {$payment->payment_no} recorded.");
+        return redirect()->route('collections.show', $collection)->with('success', "Collection {$collection->collection_no} recorded.");
     }
 
-    public function show(Payment $payment)
+    public function show(Collection $collection)
     {
-        $payment->load(['party', 'account', 'creator']);
+        $collection->load(['party', 'account', 'creator']);
 
-        return view('admin.payments.show', compact('payment'));
+        return view('admin.collections.show', compact('collection'));
     }
 }
