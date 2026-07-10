@@ -31,7 +31,7 @@
                 @forelse ($bankAccounts as $account)
                 <tr class="hover:bg-slate-50">
                     <td class="px-5 py-3">
-                        <span class="block font-semibold text-slate-800">{{ $account->name }}</span>
+                        <a href="{{ route('bank-accounts.ledger', $account) }}" class="block font-semibold text-slate-800 hover:text-accent-600">{{ $account->name }}</a>
                         @if ($account->is_system)
                             <span class="block text-xs text-slate-400">{{ __('System account') }}</span>
                         @endif

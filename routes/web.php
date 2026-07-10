@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CollectionController;
+use App\Http\Controllers\Admin\DayBookController;
 use App\Http\Controllers\Admin\InitialStockController;
 use App\Http\Controllers\Admin\LedgerAccountController;
 use App\Http\Controllers\Admin\PartyController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\StockAdjustmentController;
 use App\Http\Controllers\Admin\StockReportController;
 use App\Http\Controllers\Admin\StockTransferController;
+use App\Http\Controllers\Admin\TrialBalanceController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CurrentSiteController;
@@ -103,10 +105,13 @@ Route::prefix('admin')->group(function () {
         Route::resource('bank-accounts', LedgerAccountController::class)->except('show')
             ->parameters(['bank-accounts' => 'bankAccount']);
         Route::patch('/bank-accounts/{bankAccount}/toggle-status', [LedgerAccountController::class, 'toggleStatus'])->name('bank-accounts.toggle-status');
+        Route::get('/bank-accounts/{bankAccount}/ledger', [LedgerAccountController::class, 'ledger'])->name('bank-accounts.ledger');
         Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show']);
         Route::get('/payments/{payment}/print', [PaymentController::class, 'print'])->name('payments.print');
         Route::resource('collections', CollectionController::class)->only(['index', 'create', 'store', 'show']);
         Route::get('/collections/{collection}/print', [CollectionController::class, 'print'])->name('collections.print');
+        Route::get('/day-book', [DayBookController::class, 'index'])->name('day-book.index');
+        Route::get('/trial-balance', [TrialBalanceController::class, 'index'])->name('trial-balance.index');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');

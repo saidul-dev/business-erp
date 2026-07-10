@@ -20,7 +20,7 @@ class LedgerAccountController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:accounts.view', only: ['index']),
+            new Middleware('permission:accounts.view', only: ['index', 'ledger']),
             new Middleware('permission:accounts.create', only: ['create', 'store']),
             new Middleware('permission:accounts.edit', only: ['edit', 'update', 'toggleStatus']),
             new Middleware('permission:accounts.delete', only: ['destroy']),
@@ -35,6 +35,38 @@ class LedgerAccountController extends Controller implements HasMiddleware
             ->paginate(15);
 
         return view('admin.bank-accounts.index', compact('bankAccounts'));
+    }
+
+    /**
+     * Per-account transaction register (a bank passbook, in effect) — the
+     * drill-down the list's balance figure doesn't show on its own. Same
+     * "no stored counter" rule as everywhere else: the running balance is
+     * computed by walking the lines in date order, never read from a
+     * column.
+     */
+    public function ledger(LedgerAccount $bankAccount)
+    {
+        $lines = $bankAccount->lines()
+            ->with('transaction')
+            ->join('ledger_transactions', 'ledger_transactions.id', '=', 'ledger_transaction_lines.ledger_transaction_id')
+            ->orderBy('ledger_transactions.date')
+            ->orderBy('ledger_transaction_lines.id')
+            ->select('ledger_transaction_lines.*')
+            ->get();
+
+        $running = 0.0;
+        $lines = $lines->map(function ($line) use (&$running) {
+            $running += (float) $line->debit - (float) $line->credit;
+            $line->running_balance = $running;
+
+            return $line;
+        });
+
+        return view('admin.bank-accounts.ledger', [
+            'bankAccount' => $bankAccount,
+            'lines' => $lines,
+            'balance' => $bankAccount->balance(),
+        ]);
     }
 
     public function create()
