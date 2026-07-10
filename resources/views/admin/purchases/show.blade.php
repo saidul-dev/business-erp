@@ -37,6 +37,12 @@
                 <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Total') }}</span>
                 <span class="block font-semibold text-slate-800">{{ number_format($purchase->total_amount, 2) }}</span>
             </div>
+            <div>
+                <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Supplier Due') }}</span>
+                <span class="block font-semibold {{ $purchase->party->payableBalance() > 0 ? 'text-amber-600' : 'text-slate-700' }}">
+                    {{ number_format($purchase->party->payableBalance(), 2) }}
+                </span>
+            </div>
             @if ($purchase->note)
             <div>
                 <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Note') }}</span>
@@ -45,8 +51,8 @@
             @endif
         </div>
 
-        @if (in_array($purchase->status, ['pending', 'partial']))
         <div class="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
+            @if (in_array($purchase->status, ['pending', 'partial']))
             @can('sourcing.approve')
             <a href="{{ route('purchases.receive.create', $purchase) }}"
                class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
@@ -64,8 +70,15 @@
                 </button>
             </form>
             @endcan
+            @endif
+            @can('accounts.create')
+            <a href="{{ route('payments.create', ['party_id' => $purchase->party_id]) }}"
+               class="inline-flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-800 hover:bg-brand-100">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-9-8.25h19.5v9.75a1.5 1.5 0 0 1-1.5 1.5h-16.5a1.5 1.5 0 0 1-1.5-1.5V6.75a1.5 1.5 0 0 1 1.5-1.5Z"/></svg>
+                {{ __('Pay Supplier') }}
+            </a>
+            @endcan
         </div>
-        @endif
     </div>
 
     <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden mb-4">
