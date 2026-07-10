@@ -73,11 +73,9 @@ class PartyController extends Controller implements HasMiddleware
             ->select('ledger_transaction_lines.*')
             ->get();
 
-        // Accounts Receivable is debit-normal (positive = they owe us),
-        // Accounts Payable is credit-normal (positive = we owe them) — a
-        // Customer+Supplier party can carry both balances at once.
-        $receivable = (float) $lines->where('account.code', 'accounts_receivable')->sum(fn ($line) => $line->debit - $line->credit);
-        $payable = (float) $lines->where('account.code', 'accounts_payable')->sum(fn ($line) => $line->credit - $line->debit);
+        // A Customer+Supplier party can carry both balances at once.
+        $receivable = $party->receivableBalance();
+        $payable = $party->payableBalance();
 
         return view('admin.parties.ledger', compact('party', 'lines', 'receivable', 'payable'));
     }

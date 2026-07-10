@@ -63,6 +63,28 @@ class Party extends Model
     }
 
     /**
+     * Positive = this party owes the business (Accounts Receivable balance).
+     */
+    public function receivableBalance(): float
+    {
+        return (float) ($this->lines()
+            ->whereHas('account', fn ($q) => $q->where('code', 'accounts_receivable'))
+            ->selectRaw('COALESCE(SUM(debit) - SUM(credit), 0) as bal')
+            ->value('bal') ?? 0);
+    }
+
+    /**
+     * Positive = the business owes this party (Accounts Payable balance).
+     */
+    public function payableBalance(): float
+    {
+        return (float) ($this->lines()
+            ->whereHas('account', fn ($q) => $q->where('code', 'accounts_payable'))
+            ->selectRaw('COALESCE(SUM(credit) - SUM(debit), 0) as bal')
+            ->value('bal') ?? 0);
+    }
+
+    /**
      * One-time entry that gets this party's ledger balance in sync with the
      * `opening_balance`/`opening_balance_type` fields captured on the form.
      * Only ever runs once, right after creation (see booted()) — editing
