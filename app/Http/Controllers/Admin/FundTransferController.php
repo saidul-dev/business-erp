@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Moving money between the company's own cash/bank accounts (e.g.
  * depositing cash into the bank) — no party, no category, so it posts as
- * a plain `journal` voucher: Dr [to account] / Cr [from account] via
+ * a `transfer` voucher: Dr [to account] / Cr [from account] via
  * LedgerService::post(). See docs/accounting-foundation.md.
  */
 class FundTransferController extends Controller implements HasMiddleware
@@ -83,7 +83,7 @@ class FundTransferController extends Controller implements HasMiddleware
             $transfer->update(['transfer_no' => 'FT-'.str_pad($transfer->id, 6, '0', STR_PAD_LEFT)]);
 
             LedgerService::post([
-                'type' => 'journal',
+                'type' => 'transfer',
                 'date' => $validated['transfer_date'],
                 'narration' => "Transfer from {$fromAccount->name} to {$toAccount->name} ({$transfer->transfer_no})",
                 'reference' => $transfer,

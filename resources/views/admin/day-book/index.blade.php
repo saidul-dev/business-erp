@@ -65,6 +65,9 @@
                         'payment_in' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
                         'expense' => 'bg-orange-50 text-orange-700 ring-orange-200',
                         'income' => 'bg-teal-50 text-teal-700 ring-teal-200',
+                        'transfer' => 'bg-indigo-50 text-indigo-700 ring-indigo-200',
+                        'investment' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+                        'drawing' => 'bg-rose-50 text-rose-700 ring-rose-200',
                         'opening_balance' => 'bg-slate-100 text-slate-600 ring-slate-200',
                         'journal' => 'bg-violet-50 text-violet-700 ring-violet-200',
                     ];

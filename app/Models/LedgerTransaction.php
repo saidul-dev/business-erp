@@ -21,6 +21,9 @@ class LedgerTransaction extends Model
         'payment_in',
         'expense',
         'income',
+        'transfer',
+        'investment',
+        'drawing',
         'opening_balance',
         'journal',
     ];
@@ -35,6 +38,9 @@ class LedgerTransaction extends Model
         'payment_in' => 'REC',
         'expense' => 'EXP',
         'income' => 'INC',
+        'transfer' => 'TRF',
+        'investment' => 'CAP',
+        'drawing' => 'DRW',
         'opening_balance' => 'OB',
         'journal' => 'JNL',
     ];
@@ -50,6 +56,9 @@ class LedgerTransaction extends Model
         'payment_in' => 'Collection',
         'expense' => 'Expense',
         'income' => 'Income',
+        'transfer' => 'Fund Transfer',
+        'investment' => 'Investment',
+        'drawing' => 'Drawing',
         'opening_balance' => 'Opening Balance',
         'journal' => 'Journal',
     ];
@@ -106,6 +115,10 @@ class LedgerTransaction extends Model
             \App\Models\SaleDelivery::class => route('sales.show', $this->reference->sale_id),
             \App\Models\Payment::class => route('payments.show', $this->reference_id),
             \App\Models\Collection::class => route('collections.show', $this->reference_id),
+            \App\Models\Expense::class => route('expenses.show', $this->reference_id),
+            \App\Models\Income::class => route('incomes.show', $this->reference_id),
+            \App\Models\FundTransfer::class => route('fund-transfers.show', $this->reference_id),
+            \App\Models\CapitalTransaction::class => route('capital-transactions.show', $this->reference_id),
             \App\Models\Party::class => route('parties.ledger', $this->reference_id),
             default => null,
         };

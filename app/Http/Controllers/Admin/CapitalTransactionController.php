@@ -17,10 +17,10 @@ use Illuminate\Validation\Rule;
 /**
  * Owner capital movements — Investment (owner puts money in) and Drawing
  * (owner takes money out), the two sides of one screen since they only
- * ever swap direction between the same pair of accounts. Posts as a
- * `journal` voucher via LedgerService::post() — no party, no operating
- * category, just the cash_bank account and the matching owner-equity
- * account. See docs/accounting-foundation.md.
+ * ever swap direction between the same pair of accounts. Posts as an
+ * `investment` or `drawing` voucher via LedgerService::post() — no party,
+ * no operating category, just the cash_bank account and the matching
+ * owner-equity account. See docs/accounting-foundation.md.
  */
 class CapitalTransactionController extends Controller implements HasMiddleware
 {
@@ -88,7 +88,7 @@ class CapitalTransactionController extends Controller implements HasMiddleware
             $label = $isInvestment ? 'Owner investment' : 'Owner drawings';
 
             LedgerService::post([
-                'type' => 'journal',
+                'type' => $isInvestment ? 'investment' : 'drawing',
                 'date' => $validated['transaction_date'],
                 'narration' => "{$label} — {$account->name} ({$transaction->transaction_no})",
                 'reference' => $transaction,
