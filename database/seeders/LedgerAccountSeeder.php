@@ -21,6 +21,17 @@ class LedgerAccountSeeder extends Seeder
             ['code' => 'sales_revenue', 'name' => 'Sales Revenue', 'group' => 'income_expense', 'nature' => 'credit'],
             ['code' => 'cost_of_goods_sold', 'name' => 'Cost of Goods Sold', 'group' => 'income_expense', 'nature' => 'debit'],
             ['code' => 'discount_allowed', 'name' => 'Discount Allowed', 'group' => 'income_expense', 'nature' => 'debit'],
+
+            // Manual expense categories — see ExpenseController. Distinct
+            // from purchase_expense/cost_of_goods_sold/discount_allowed
+            // above, which only ever get posted automatically and are
+            // excluded from the Expense form's category picker.
+            ['code' => 'rent_expense', 'name' => 'Rent Expense', 'group' => 'income_expense', 'nature' => 'debit'],
+            ['code' => 'utility_expense', 'name' => 'Utility Expense', 'group' => 'income_expense', 'nature' => 'debit'],
+            ['code' => 'salary_expense', 'name' => 'Salary Expense', 'group' => 'income_expense', 'nature' => 'debit'],
+            ['code' => 'office_expense', 'name' => 'Office Expense', 'group' => 'income_expense', 'nature' => 'debit'],
+            ['code' => 'other_expense', 'name' => 'Other Expense', 'group' => 'income_expense', 'nature' => 'debit'],
+
             ['code' => 'opening_balance_equity', 'name' => 'Opening Balance Equity', 'group' => 'equity_adjustment', 'nature' => 'credit'],
         ];
 

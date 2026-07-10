@@ -31,6 +31,11 @@ class LedgerAccount extends Model
         'sales_revenue' => 'Sales Revenue',
         'cost_of_goods_sold' => 'Cost of Goods Sold',
         'discount_allowed' => 'Discount Allowed',
+        'rent_expense' => 'Rent Expense',
+        'utility_expense' => 'Utility Expense',
+        'salary_expense' => 'Salary Expense',
+        'office_expense' => 'Office Expense',
+        'other_expense' => 'Other Expense',
     ];
 
     protected $fillable = [
