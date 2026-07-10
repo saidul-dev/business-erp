@@ -27,7 +27,7 @@
                 <!-- Collapse/expand toggle (desktop only) -->
                 <button type="button" @click="$store.sidebar.toggle()"
                         title="Collapse or expand the sidebar"
-                        class="hidden lg:grid absolute -right-3 top-20 h-6 w-6 place-items-center rounded-full bg-brand-700 text-white ring-2 ring-brand-950 hover:bg-accent-500 z-10">
+                        class="hidden lg:grid absolute -right-3 top-5 h-6 w-6 place-items-center rounded-full bg-brand-700 text-white ring-2 ring-brand-950 hover:bg-accent-500 z-10">
                     <svg class="h-3.5 w-3.5 transition-transform duration-200" :class="$store.sidebar.collapsed && 'rotate-180'"
                          fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/>
