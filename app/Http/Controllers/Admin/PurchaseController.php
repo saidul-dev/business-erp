@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CompanySetting;
 use App\Models\Party;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -24,7 +25,7 @@ class PurchaseController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:sourcing.view', only: ['index', 'show']),
+            new Middleware('permission:sourcing.view', only: ['index', 'show', 'printOrder', 'printReceipt']),
             new Middleware('permission:sourcing.create', only: ['create', 'store']),
             new Middleware('permission:sourcing.approve', only: ['receiveForm', 'receive']),
             new Middleware('permission:sourcing.edit', only: ['cancel']),
@@ -142,6 +143,28 @@ class PurchaseController extends Controller implements HasMiddleware
         ]);
 
         return view('admin.purchases.show', compact('purchase'));
+    }
+
+    public function printOrder(Purchase $purchase)
+    {
+        $purchase->load([
+            'party', 'site', 'creator',
+            'items.product.stockUnit', 'items.productVariant.attributeValues',
+        ]);
+        $company = CompanySetting::current();
+
+        return view('admin.purchases.print', compact('purchase', 'company'));
+    }
+
+    public function printReceipt(PurchaseReceipt $receipt)
+    {
+        $receipt->load([
+            'purchase.party', 'purchase.site', 'receivedBy',
+            'items.purchaseItem.product.stockUnit', 'items.purchaseItem.productVariant.attributeValues',
+        ]);
+        $company = CompanySetting::current();
+
+        return view('admin.purchases.receipt-print', compact('receipt', 'company'));
     }
 
     /**
