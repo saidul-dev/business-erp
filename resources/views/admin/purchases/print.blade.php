@@ -19,13 +19,14 @@
     </div>
 
     <div class="print-area mx-auto max-w-3xl rounded-2xl bg-white p-8 ring-1 ring-slate-200">
-        <div class="flex items-start justify-between gap-6 border-b border-slate-200 pb-6">
+        <div class="h-1.5 -mx-8 -mt-8 mb-6 rounded-t-2xl bg-brand-800"></div>
+        <div class="flex items-start justify-between gap-6 border-b-2 border-brand-800 pb-6">
             <div class="flex items-center gap-3">
                 @if ($company->logo_url)
                 <img src="{{ $company->logo_url }}" alt="{{ $company->name }}" class="h-14 w-14 rounded-lg object-cover">
                 @endif
                 <div>
-                    <h1 class="text-xl font-bold text-slate-800">{{ $company->name }}</h1>
+                    <h1 class="text-xl font-bold text-brand-800">{{ $company->name }}</h1>
                     @if ($company->address)<p class="text-xs text-slate-500">{{ $company->address }}</p>@endif
                     @if ($company->phone || $company->email)
                     <p class="text-xs text-slate-500">{{ collect([$company->phone, $company->email])->filter()->implode(' · ') }}</p>
@@ -39,7 +40,7 @@
                 </div>
             </div>
             <div class="text-right">
-                <h2 class="text-lg font-bold uppercase tracking-wide text-slate-700">{{ __('Purchase Order') }}</h2>
+                <h2 class="text-lg font-bold uppercase tracking-wide text-brand-800">{{ __('Purchase Order') }}</h2>
                 <p class="text-sm font-semibold text-slate-800">{{ $purchase->purchase_no }}</p>
                 <p class="text-xs text-slate-500">{{ $purchase->order_date->format('d M, Y') }}</p>
             </div>
@@ -61,7 +62,7 @@
 
         <table class="mt-6 w-full text-sm">
             <thead>
-                <tr class="border-b-2 border-slate-800 text-left">
+                <tr class="border-b-2 border-brand-800 text-left">
                     <th class="py-2 pr-2">#</th>
                     <th class="py-2 pr-2">{{ __('Item') }}</th>
                     <th class="py-2 pr-2 text-right">{{ __('Qty') }}</th>
@@ -84,13 +85,11 @@
                 </tr>
                 @endforeach
             </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="4" class="pt-3 text-right font-bold text-slate-800">{{ __('Total') }}</td>
-                    <td class="pt-3 text-right font-bold text-slate-800">{{ number_format($purchase->total_amount, 2) }}</td>
-                </tr>
-            </tfoot>
         </table>
+
+        <div class="mt-3 text-right text-sm font-bold text-slate-800">
+            {{ __('Total') }}: {{ number_format($purchase->total_amount, 2) }}
+        </div>
 
         @if ($purchase->note)
         <div class="mt-6 text-sm">
@@ -99,18 +98,23 @@
         </div>
         @endif
 
-        <div class="mt-20 grid grid-cols-2 gap-6 text-sm">
-            <div class="border-t border-slate-400 pt-2 text-slate-600">
-                {{ __('Prepared By') }} ({{ $purchase->creator->name ?? '—' }})
+        <div class="mt-16 print-footer">
+            <div class="grid grid-cols-2 gap-6 text-sm">
+                <div class="border-t border-slate-400 pt-2 text-slate-600">
+                    {{ __('Prepared By') }} ({{ $purchase->creator->name ?? '—' }})
+                </div>
+                <div class="border-t border-slate-400 pt-2 text-right text-slate-600">
+                    {{ __('Supplier Signature') }}
+                </div>
             </div>
-            <div class="border-t border-slate-400 pt-2 text-right text-slate-600">
-                {{ __('Supplier Signature') }}
-            </div>
+
+            <div class="h-1.5 -mx-8 -mb-8 mt-8 rounded-b-2xl bg-brand-800"></div>
         </div>
     </div>
 
     <style>
         @media print {
+            body { background: #fff !important; }
             body * { visibility: hidden; }
             .print-area, .print-area * { visibility: visible; }
             .print-area {
@@ -121,6 +125,12 @@
                 max-width: 100%;
                 box-shadow: none;
                 border: none;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .print-footer {
+                page-break-inside: avoid;
+                break-inside: avoid;
             }
             @page { margin: 12mm; }
         }
