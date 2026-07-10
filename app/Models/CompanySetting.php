@@ -37,4 +37,18 @@ class CompanySetting extends Model
     {
         return $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null;
     }
+
+    /**
+     * Spoken currency name for the "amount in words" line on printed
+     * vouchers — see App\Support\AmountInWords.
+     */
+    public function getCurrencyLabelAttribute(): string
+    {
+        return match ($this->currency) {
+            'BDT' => 'Taka',
+            'USD' => 'US Dollar',
+            'EUR' => 'Euro',
+            default => (string) $this->currency,
+        };
+    }
 }

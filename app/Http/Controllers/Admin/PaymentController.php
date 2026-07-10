@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CompanySetting;
 use App\Models\LedgerAccount;
 use App\Models\Party;
 use App\Models\Payment;
@@ -24,7 +25,7 @@ class PaymentController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:accounts.view', only: ['index', 'show']),
+            new Middleware('permission:accounts.view', only: ['index', 'show', 'print']),
             new Middleware('permission:accounts.create', only: ['create', 'store']),
         ];
     }
@@ -116,5 +117,13 @@ class PaymentController extends Controller implements HasMiddleware
         $payment->load(['party', 'account', 'creator']);
 
         return view('admin.payments.show', compact('payment'));
+    }
+
+    public function print(Payment $payment)
+    {
+        $payment->load(['party', 'account', 'creator']);
+        $company = CompanySetting::current();
+
+        return view('admin.payments.print', compact('payment', 'company'));
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Collection;
+use App\Models\CompanySetting;
 use App\Models\LedgerAccount;
 use App\Models\Party;
 use App\Services\LedgerService;
@@ -24,7 +25,7 @@ class CollectionController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:accounts.view', only: ['index', 'show']),
+            new Middleware('permission:accounts.view', only: ['index', 'show', 'print']),
             new Middleware('permission:accounts.create', only: ['create', 'store']),
         ];
     }
@@ -116,5 +117,13 @@ class CollectionController extends Controller implements HasMiddleware
         $collection->load(['party', 'account', 'creator']);
 
         return view('admin.collections.show', compact('collection'));
+    }
+
+    public function print(Collection $collection)
+    {
+        $collection->load(['party', 'account', 'creator']);
+        $company = CompanySetting::current();
+
+        return view('admin.collections.print', compact('collection', 'company'));
     }
 }

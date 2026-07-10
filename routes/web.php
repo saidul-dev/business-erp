@@ -104,7 +104,9 @@ Route::prefix('admin')->group(function () {
             ->parameters(['bank-accounts' => 'bankAccount']);
         Route::patch('/bank-accounts/{bankAccount}/toggle-status', [LedgerAccountController::class, 'toggleStatus'])->name('bank-accounts.toggle-status');
         Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show']);
+        Route::get('/payments/{payment}/print', [PaymentController::class, 'print'])->name('payments.print');
         Route::resource('collections', CollectionController::class)->only(['index', 'create', 'store', 'show']);
+        Route::get('/collections/{collection}/print', [CollectionController::class, 'print'])->name('collections.print');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
