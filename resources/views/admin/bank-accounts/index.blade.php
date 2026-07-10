@@ -58,6 +58,10 @@
                     </td>
                     <td class="px-5 py-3">
                         <div class="flex items-center justify-end gap-1">
+                            <a href="{{ route('bank-accounts.ledger', $account) }}" title="{{ __('View Ledger') }}"
+                               class="rounded-lg p-2 text-slate-400 hover:bg-accent-50 hover:text-accent-600">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/></svg>
+                            </a>
                             @can('accounts.edit')
                             <a href="{{ route('bank-accounts.edit', $account) }}" title="{{ __('Edit') }}"
                                class="rounded-lg p-2 text-slate-400 hover:bg-brand-50 hover:text-brand-700">
