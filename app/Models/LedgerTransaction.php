@@ -16,7 +16,9 @@ class LedgerTransaction extends Model
      */
     public const TYPES = [
         'purchase',
+        'purchase_return',
         'sale',
+        'sales_return',
         'payment_out',
         'payment_in',
         'expense',
@@ -33,7 +35,9 @@ class LedgerTransaction extends Model
      */
     public const PREFIXES = [
         'purchase' => 'PUR',
+        'purchase_return' => 'PRT',
         'sale' => 'SAL',
+        'sales_return' => 'SRT',
         'payment_out' => 'PAY',
         'payment_in' => 'REC',
         'expense' => 'EXP',
@@ -51,7 +55,9 @@ class LedgerTransaction extends Model
      */
     public const TYPE_LABELS = [
         'purchase' => 'Purchase Receipt',
+        'purchase_return' => 'Purchase Return',
         'sale' => 'Sale Delivery',
+        'sales_return' => 'Sales Return',
         'payment_out' => 'Payment',
         'payment_in' => 'Collection',
         'expense' => 'Expense',
@@ -112,7 +118,9 @@ class LedgerTransaction extends Model
 
         return match ($this->reference_type) {
             \App\Models\PurchaseReceipt::class => route('purchases.show', $this->reference->purchase_id),
+            \App\Models\PurchaseReturn::class => route('purchases.show', $this->reference->purchase_id),
             \App\Models\SaleDelivery::class => route('sales.show', $this->reference->sale_id),
+            \App\Models\SaleReturn::class => route('sales.show', $this->reference->sale_id),
             \App\Models\Payment::class => route('payments.show', $this->reference_id),
             \App\Models\Collection::class => route('collections.show', $this->reference_id),
             \App\Models\Expense::class => route('expenses.show', $this->reference_id),

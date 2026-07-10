@@ -60,7 +60,9 @@
                 @php
                     $typeStyles = [
                         'purchase' => 'bg-amber-50 text-amber-700 ring-amber-200',
+                        'purchase_return' => 'bg-lime-50 text-lime-700 ring-lime-200',
                         'sale' => 'bg-sky-50 text-sky-700 ring-sky-200',
+                        'sales_return' => 'bg-cyan-50 text-cyan-700 ring-cyan-200',
                         'payment_out' => 'bg-rose-50 text-rose-700 ring-rose-200',
                         'payment_in' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
                         'expense' => 'bg-orange-50 text-orange-700 ring-orange-200',

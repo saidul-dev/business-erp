@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Purchase;
 use App\Models\PurchaseReceipt;
+use App\Models\PurchaseReturn;
 use App\Models\Site;
 use App\Models\StockMovement;
 use App\Services\LedgerService;
@@ -25,9 +26,9 @@ class PurchaseController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:sourcing.view', only: ['index', 'show', 'printOrder', 'printReceipt']),
+            new Middleware('permission:sourcing.view', only: ['index', 'show', 'printOrder', 'printReceipt', 'printReturn']),
             new Middleware('permission:sourcing.create', only: ['create', 'store']),
-            new Middleware('permission:sourcing.approve', only: ['receiveForm', 'receive']),
+            new Middleware('permission:sourcing.approve', only: ['receiveForm', 'receive', 'returnForm', 'storeReturn']),
             new Middleware('permission:sourcing.edit', only: ['cancel']),
         ];
     }
@@ -140,6 +141,7 @@ class PurchaseController extends Controller implements HasMiddleware
             'party', 'site', 'creator',
             'items.product.stockUnit', 'items.productVariant.attributeValues',
             'receipts.receivedBy', 'receipts.items.purchaseItem.product',
+            'returns.returnedBy', 'returns.items.purchaseItem.product',
         ]);
 
         return view('admin.purchases.show', compact('purchase'));
@@ -303,6 +305,150 @@ class PurchaseController extends Controller implements HasMiddleware
         });
 
         return redirect()->route('purchases.show', $purchase)->with('success', 'Goods received.');
+    }
+
+    public function printReturn(PurchaseReturn $purchaseReturn)
+    {
+        $purchaseReturn->load([
+            'purchase.party', 'purchase.site', 'returnedBy',
+            'items.purchaseItem.product.stockUnit', 'items.purchaseItem.productVariant.attributeValues',
+        ]);
+        $company = CompanySetting::current();
+
+        return view('admin.purchases.return-print', ['purchaseReturn' => $purchaseReturn, 'company' => $company]);
+    }
+
+    /**
+     * Return form: every line shows how much is still eligible to send
+     * back (received so far, minus what's already been returned) — same
+     * "leave a line at 0 to skip it" convention as receiveForm().
+     */
+    public function returnForm(Purchase $purchase)
+    {
+        $purchase->load(['party', 'site', 'items.product.stockUnit', 'items.productVariant.attributeValues']);
+
+        if ($purchase->items->sum(fn ($item) => $item->returnable()) <= 0) {
+            return redirect()->route('purchases.show', $purchase)->with('error', 'Nothing on this purchase is eligible to return.');
+        }
+
+        return view('admin.purchases.return', compact('purchase'));
+    }
+
+    /**
+     * Posts everything checked in on this return pass: one
+     * stock_movements row per line (`purchase_return`, goods physically
+     * leave again) plus exactly one ledger_transactions entry for the
+     * whole return — Dr Accounts Payable, Cr Inventory, the mirror image
+     * of receive()'s posting — via LedgerService::post(). Valued at each
+     * line's original unit_cost from the purchase, not the (possibly
+     * since-changed) current average cost.
+     */
+    public function storeReturn(Request $request, Purchase $purchase)
+    {
+        $validated = $request->validate([
+            'return_date' => ['required', 'date'],
+            'note' => ['nullable', 'string', 'max:1000'],
+            'items' => ['required', 'array'],
+            'items.*.quantity' => ['nullable', 'numeric', 'min:0'],
+            'items.*.batch_no' => ['nullable', 'string', 'max:100'],
+            'items.*.expiry_date' => ['nullable', 'date'],
+            'items.*.serial_no' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $purchase->load('items.product');
+
+        $lines = [];
+        foreach ($validated['items'] as $purchaseItemId => $row) {
+            $quantity = (float) ($row['quantity'] ?? 0);
+
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $item = $purchase->items->firstWhere('id', (int) $purchaseItemId);
+
+            if (! $item) {
+                throw ValidationException::withMessages(["items.{$purchaseItemId}" => 'Invalid item.']);
+            }
+
+            if ($quantity > $item->returnable() + 0.00001) {
+                throw ValidationException::withMessages([
+                    "items.{$purchaseItemId}.quantity" => "{$item->product->name}: cannot return more than the returnable {$item->returnable()}.",
+                ]);
+            }
+
+            $lines[] = [
+                'item' => $item,
+                'quantity' => $quantity,
+                'batch_no' => $row['batch_no'] ?? null,
+                'expiry_date' => $row['expiry_date'] ?? null,
+                'serial_no' => $row['serial_no'] ?? null,
+            ];
+        }
+
+        if (empty($lines)) {
+            throw ValidationException::withMessages(['items' => 'Enter a quantity for at least one item.']);
+        }
+
+        DB::transaction(function () use ($purchase, $validated, $lines) {
+            $return = PurchaseReturn::create([
+                'purchase_id' => $purchase->id,
+                'return_no' => 'PENDING',
+                'return_date' => $validated['return_date'],
+                'note' => $validated['note'] ?? null,
+                'returned_by' => Auth::id(),
+            ]);
+            $return->update(['return_no' => 'RTN-'.str_pad($return->id, 6, '0', STR_PAD_LEFT)]);
+
+            $totalValue = 0;
+
+            foreach ($lines as $row) {
+                $item = $row['item'];
+
+                $return->items()->create([
+                    'purchase_item_id' => $item->id,
+                    'quantity' => $row['quantity'],
+                    'batch_no' => $row['batch_no'],
+                    'expiry_date' => $row['expiry_date'],
+                    'serial_no' => $row['serial_no'],
+                ]);
+
+                StockMovement::create([
+                    'product_id' => $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
+                    'site_id' => $purchase->site_id,
+                    'type' => 'purchase_return',
+                    'quantity' => $row['quantity'],
+                    'unit_cost' => $item->unit_cost,
+                    'batch_no' => $row['batch_no'],
+                    'expiry_date' => $row['expiry_date'],
+                    'serial_no' => $row['serial_no'],
+                    'moved_at' => $validated['return_date'],
+                    'created_by' => Auth::id(),
+                    'reference_type' => PurchaseReturn::class,
+                    'reference_id' => $return->id,
+                ]);
+
+                $item->update(['returned_quantity' => $item->returned_quantity + $row['quantity']]);
+
+                $totalValue += round($row['quantity'] * $item->unit_cost, 2);
+            }
+
+            LedgerService::post([
+                'type' => 'purchase_return',
+                'date' => $validated['return_date'],
+                'site_id' => $purchase->site_id,
+                'narration' => "Goods returned against {$purchase->purchase_no}",
+                'reference' => $return,
+                'created_by' => Auth::id(),
+                'lines' => [
+                    ['account' => 'accounts_payable', 'debit' => $totalValue, 'party_id' => $purchase->party_id],
+                    ['account' => 'inventory', 'credit' => $totalValue],
+                ],
+            ]);
+        });
+
+        return redirect()->route('purchases.show', $purchase)->with('success', 'Return posted.');
     }
 
     /**

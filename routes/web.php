@@ -91,6 +91,9 @@ Route::prefix('admin')->group(function () {
         Route::post('/purchases/{purchase}/receive', [PurchaseController::class, 'receive'])->name('purchases.receive.store');
         Route::post('/purchases/{purchase}/cancel', [PurchaseController::class, 'cancel'])->name('purchases.cancel');
         Route::get('/purchase-receipts/{receipt}/print', [PurchaseController::class, 'printReceipt'])->name('purchases.receipts.print');
+        Route::get('/purchases/{purchase}/return', [PurchaseController::class, 'returnForm'])->name('purchases.return.create');
+        Route::post('/purchases/{purchase}/return', [PurchaseController::class, 'storeReturn'])->name('purchases.return.store');
+        Route::get('/purchase-returns/{purchaseReturn}/print', [PurchaseController::class, 'printReturn'])->name('purchases.returns.print');
 
         Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show']);
         Route::get('/sales/{sale}/print', [SaleController::class, 'printOrder'])->name('sales.print');
@@ -98,6 +101,9 @@ Route::prefix('admin')->group(function () {
         Route::post('/sales/{sale}/deliver', [SaleController::class, 'deliver'])->name('sales.deliver.store');
         Route::post('/sales/{sale}/cancel', [SaleController::class, 'cancel'])->name('sales.cancel');
         Route::get('/sale-deliveries/{delivery}/print', [SaleController::class, 'printDelivery'])->name('sales.deliveries.print');
+        Route::get('/sales/{sale}/return', [SaleController::class, 'returnForm'])->name('sales.return.create');
+        Route::post('/sales/{sale}/return', [SaleController::class, 'storeReturn'])->name('sales.return.store');
+        Route::get('/sale-returns/{saleReturn}/print', [SaleController::class, 'printReturn'])->name('sales.returns.print');
 
         Route::resource('parties', PartyController::class)->except('show');
         Route::patch('/parties/{party}/toggle-status', [PartyController::class, 'toggleStatus'])->name('parties.toggle-status');

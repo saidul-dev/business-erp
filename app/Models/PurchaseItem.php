@@ -16,6 +16,7 @@ class PurchaseItem extends Model
         'unit_cost',
         'subtotal',
         'received_quantity',
+        'returned_quantity',
     ];
 
     protected $casts = [
@@ -23,6 +24,7 @@ class PurchaseItem extends Model
         'unit_cost' => 'decimal:4',
         'subtotal' => 'decimal:2',
         'received_quantity' => 'decimal:4',
+        'returned_quantity' => 'decimal:4',
     ];
 
     public function purchase(): BelongsTo
@@ -45,8 +47,22 @@ class PurchaseItem extends Model
         return $this->hasMany(PurchaseReceiptItem::class);
     }
 
+    public function returnItems(): HasMany
+    {
+        return $this->hasMany(PurchaseReturnItem::class);
+    }
+
     public function remaining(): float
     {
         return round((float) $this->quantity - (float) $this->received_quantity, 4);
+    }
+
+    /**
+     * How much of what's been received on this line is still eligible to
+     * send back to the supplier — never more than what actually arrived.
+     */
+    public function returnable(): float
+    {
+        return round((float) $this->received_quantity - (float) $this->returned_quantity, 4);
     }
 }

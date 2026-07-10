@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Sale;
 use App\Models\SaleDelivery;
+use App\Models\SaleReturn;
 use App\Models\Site;
 use App\Models\StockMovement;
 use App\Services\LedgerService;
@@ -25,9 +26,9 @@ class SaleController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:sales.view', only: ['index', 'show', 'printOrder', 'printDelivery']),
+            new Middleware('permission:sales.view', only: ['index', 'show', 'printOrder', 'printDelivery', 'printReturn']),
             new Middleware('permission:sales.create', only: ['create', 'store']),
-            new Middleware('permission:sales.approve', only: ['deliverForm', 'deliver']),
+            new Middleware('permission:sales.approve', only: ['deliverForm', 'deliver', 'returnForm', 'storeReturn']),
             new Middleware('permission:sales.edit', only: ['cancel']),
         ];
     }
@@ -150,6 +151,7 @@ class SaleController extends Controller implements HasMiddleware
             'party', 'site', 'creator',
             'items.product.stockUnit', 'items.productVariant.attributeValues',
             'deliveries.deliveredBy', 'deliveries.items.saleItem.product',
+            'returns.returnedBy', 'returns.items.saleItem.product',
         ]);
 
         return view('admin.sales.show', compact('sale'));
@@ -331,6 +333,159 @@ class SaleController extends Controller implements HasMiddleware
         });
 
         return redirect()->route('sales.show', $sale)->with('success', 'Goods delivered.');
+    }
+
+    public function printReturn(SaleReturn $saleReturn)
+    {
+        $saleReturn->load([
+            'sale.party', 'sale.site', 'returnedBy',
+            'items.saleItem.product.stockUnit', 'items.saleItem.productVariant.attributeValues',
+        ]);
+        $company = CompanySetting::current();
+
+        return view('admin.sales.return-print', ['saleReturn' => $saleReturn, 'company' => $company]);
+    }
+
+    /**
+     * Return form: every line shows how much is still eligible to accept
+     * back (delivered so far, minus what's already been returned) — same
+     * "leave a line at 0 to skip it" convention as deliverForm().
+     */
+    public function returnForm(Sale $sale)
+    {
+        $sale->load(['party', 'site', 'items.product.stockUnit', 'items.productVariant.attributeValues']);
+
+        if ($sale->items->sum(fn ($item) => $item->returnable()) <= 0) {
+            return redirect()->route('sales.show', $sale)->with('error', 'Nothing on this sale is eligible to return.');
+        }
+
+        return view('admin.sales.return', compact('sale'));
+    }
+
+    /**
+     * Posts everything checked in on this return pass: one
+     * stock_movements row per line (`sales_return`, goods physically come
+     * back) plus exactly one ledger_transactions entry for the whole
+     * return — Dr Sales Revenue / Cr Accounts Receivable (reversing the
+     * revenue at the original unit_price) and Dr Inventory / Cr Cost of
+     * Goods Sold (valued at the *current* average cost, not necessarily
+     * what was booked at delivery time — a known simplification, same
+     * spirit as Party::postOpeningBalanceToLedger()'s documented gaps).
+     * The discount originally prorated onto the sale is deliberately not
+     * reversed here, to keep this step simple; only the gross revenue and
+     * COGS are unwound. See docs/accounting-foundation.md.
+     */
+    public function storeReturn(Request $request, Sale $sale)
+    {
+        $validated = $request->validate([
+            'return_date' => ['required', 'date'],
+            'note' => ['nullable', 'string', 'max:1000'],
+            'items' => ['required', 'array'],
+            'items.*.quantity' => ['nullable', 'numeric', 'min:0'],
+            'items.*.batch_no' => ['nullable', 'string', 'max:100'],
+            'items.*.expiry_date' => ['nullable', 'date'],
+            'items.*.serial_no' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $sale->load('items.product');
+
+        $lines = [];
+        foreach ($validated['items'] as $saleItemId => $row) {
+            $quantity = (float) ($row['quantity'] ?? 0);
+
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $item = $sale->items->firstWhere('id', (int) $saleItemId);
+
+            if (! $item) {
+                throw ValidationException::withMessages(["items.{$saleItemId}" => 'Invalid item.']);
+            }
+
+            if ($quantity > $item->returnable() + 0.00001) {
+                throw ValidationException::withMessages([
+                    "items.{$saleItemId}.quantity" => "{$item->product->name}: cannot return more than the returnable {$item->returnable()}.",
+                ]);
+            }
+
+            $lines[] = [
+                'item' => $item,
+                'quantity' => $quantity,
+                'batch_no' => $row['batch_no'] ?? null,
+                'expiry_date' => $row['expiry_date'] ?? null,
+                'serial_no' => $row['serial_no'] ?? null,
+            ];
+        }
+
+        if (empty($lines)) {
+            throw ValidationException::withMessages(['items' => 'Enter a quantity for at least one item.']);
+        }
+
+        DB::transaction(function () use ($sale, $validated, $lines) {
+            $return = SaleReturn::create([
+                'sale_id' => $sale->id,
+                'return_no' => 'PENDING',
+                'return_date' => $validated['return_date'],
+                'note' => $validated['note'] ?? null,
+                'returned_by' => Auth::id(),
+            ]);
+            $return->update(['return_no' => 'SRN-'.str_pad($return->id, 6, '0', STR_PAD_LEFT)]);
+
+            $revenueValue = 0;
+            $cogsValue = 0;
+
+            foreach ($lines as $row) {
+                $item = $row['item'];
+                $avgCost = (float) ($item->productVariant?->estimated_cost ?? $item->product->estimated_cost);
+
+                $return->items()->create([
+                    'sale_item_id' => $item->id,
+                    'quantity' => $row['quantity'],
+                    'batch_no' => $row['batch_no'],
+                    'expiry_date' => $row['expiry_date'],
+                    'serial_no' => $row['serial_no'],
+                ]);
+
+                StockMovement::create([
+                    'product_id' => $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
+                    'site_id' => $sale->site_id,
+                    'type' => 'sales_return',
+                    'quantity' => $row['quantity'],
+                    'unit_cost' => $avgCost,
+                    'batch_no' => $row['batch_no'],
+                    'expiry_date' => $row['expiry_date'],
+                    'serial_no' => $row['serial_no'],
+                    'moved_at' => $validated['return_date'],
+                    'created_by' => Auth::id(),
+                    'reference_type' => SaleReturn::class,
+                    'reference_id' => $return->id,
+                ]);
+
+                $item->update(['returned_quantity' => $item->returned_quantity + $row['quantity']]);
+
+                $revenueValue += round($row['quantity'] * $item->unit_price, 2);
+                $cogsValue += round($row['quantity'] * $avgCost, 2);
+            }
+
+            LedgerService::post([
+                'type' => 'sales_return',
+                'date' => $validated['return_date'],
+                'site_id' => $sale->site_id,
+                'narration' => "Goods returned against {$sale->sale_no}",
+                'reference' => $return,
+                'created_by' => Auth::id(),
+                'lines' => [
+                    ['account' => 'sales_revenue', 'debit' => $revenueValue],
+                    ['account' => 'accounts_receivable', 'credit' => $revenueValue, 'party_id' => $sale->party_id],
+                    ['account' => 'inventory', 'debit' => $cogsValue],
+                    ['account' => 'cost_of_goods_sold', 'credit' => $cogsValue],
+                ],
+            ]);
+        });
+
+        return redirect()->route('sales.show', $sale)->with('success', 'Return posted.');
     }
 
     /**

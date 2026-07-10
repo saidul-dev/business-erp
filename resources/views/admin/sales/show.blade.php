@@ -74,6 +74,15 @@
             </form>
             @endcan
             @endif
+            @can('sales.approve')
+            @if ($sale->items->sum(fn ($item) => $item->returnable()) > 0)
+            <a href="{{ route('sales.return.create', $sale) }}"
+               class="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-100">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"/></svg>
+                {{ __('Return Items') }}
+            </a>
+            @endif
+            @endcan
             @can('accounts.create')
             <a href="{{ route('collections.create', ['party_id' => $sale->party_id]) }}"
                class="inline-flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-800 hover:bg-brand-100">
@@ -92,6 +101,7 @@
                     <th class="px-5 py-3 font-semibold">{{ __('Item') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Ordered') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Delivered') }}</th>
+                    <th class="px-5 py-3 font-semibold text-right">{{ __('Returned') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Remaining') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Unit Price') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Subtotal') }}</th>
@@ -108,6 +118,7 @@
                     </td>
                     <td class="px-5 py-3 text-right text-slate-800">{{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') ?: '0' }} {{ $item->product->stockUnit?->short_name }}</td>
                     <td class="px-5 py-3 text-right text-slate-600">{{ rtrim(rtrim(number_format($item->delivered_quantity, 4), '0'), '.') ?: '0' }}</td>
+                    <td class="px-5 py-3 text-right {{ $item->returned_quantity > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400' }}">{{ rtrim(rtrim(number_format($item->returned_quantity, 4), '0'), '.') ?: '0' }}</td>
                     <td class="px-5 py-3 text-right {{ $item->remaining() > 0 ? 'text-amber-600 font-semibold' : 'text-slate-400' }}">{{ rtrim(rtrim(number_format($item->remaining(), 4), '0'), '.') ?: '0' }}</td>
                     <td class="px-5 py-3 text-right text-slate-600">{{ number_format($item->unit_price, 2) }}</td>
                     <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ number_format($item->subtotal, 2) }}</td>
@@ -149,6 +160,40 @@
         </div>
         @empty
         <p class="px-5 py-10 text-center text-slate-400">{{ __('Nothing delivered yet.') }}</p>
+        @endforelse
+    </div>
+
+    <div class="mt-4 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-100">
+            <h3 class="font-bold text-brand-900">{{ __('Returns') }}</h3>
+        </div>
+        @forelse ($sale->returns as $return)
+        <div class="px-5 py-4 border-b border-slate-100 last:border-0">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="font-semibold text-slate-800">{{ $return->return_no }}</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-slate-400">{{ $return->return_date->format('d M, Y') }} {{ __('by') }} {{ $return->returnedBy->name ?? '—' }}</span>
+                    <a href="{{ route('sales.returns.print', $return) }}" target="_blank"
+                       class="text-xs font-semibold text-brand-800 hover:text-brand-700">{{ __('Print') }}</a>
+                </div>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600">
+                @foreach ($return->items as $ri)
+                <span>
+                    {{ $ri->saleItem->product->name }}:
+                    <span class="font-semibold text-slate-800">{{ rtrim(rtrim(number_format($ri->quantity, 4), '0'), '.') ?: '0' }}</span>
+                    @if ($ri->batch_no || $ri->expiry_date || $ri->serial_no)
+                        <span class="text-xs text-slate-400">({{ collect([$ri->batch_no, $ri->expiry_date?->format('d M, Y'), $ri->serial_no])->filter()->implode(' · ') }})</span>
+                    @endif
+                </span>
+                @endforeach
+            </div>
+            @if ($return->note)
+            <p class="mt-1 text-xs text-slate-400">{{ $return->note }}</p>
+            @endif
+        </div>
+        @empty
+        <p class="px-5 py-10 text-center text-slate-400">{{ __('Nothing returned yet.') }}</p>
         @endforelse
     </div>
 </x-app-layout>
