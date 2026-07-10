@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CollectionController;
 use App\Http\Controllers\Admin\DayBookController;
 use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\IncomeController;
 use App\Http\Controllers\Admin\InitialStockController;
 use App\Http\Controllers\Admin\LedgerAccountController;
 use App\Http\Controllers\Admin\PartyController;
@@ -113,6 +114,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/collections/{collection}/print', [CollectionController::class, 'print'])->name('collections.print');
         Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 'store', 'show']);
         Route::get('/expenses/{expense}/print', [ExpenseController::class, 'print'])->name('expenses.print');
+        Route::resource('incomes', IncomeController::class)->only(['index', 'create', 'store', 'show']);
+        Route::get('/incomes/{income}/print', [IncomeController::class, 'print'])->name('incomes.print');
         Route::get('/day-book', [DayBookController::class, 'index'])->name('day-book.index');
         Route::get('/trial-balance', [TrialBalanceController::class, 'index'])->name('trial-balance.index');
 

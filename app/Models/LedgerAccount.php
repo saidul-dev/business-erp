@@ -36,6 +36,10 @@ class LedgerAccount extends Model
         'salary_expense' => 'Salary Expense',
         'office_expense' => 'Office Expense',
         'other_expense' => 'Other Expense',
+        'interest_income' => 'Interest Income',
+        'rental_income' => 'Rental Income',
+        'commission_income' => 'Commission Income',
+        'other_income' => 'Other Income',
     ];
 
     protected $fillable = [

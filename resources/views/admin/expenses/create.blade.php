@@ -95,6 +95,10 @@
                         </p>
                     </template>
                 </div>
+                <div class="border-t border-slate-100 bg-amber-50/60 px-5 py-4">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">{{ __("This Month's Expenses") }}</p>
+                    <p class="mt-1 text-lg font-bold text-amber-800">{{ number_format($monthTotal, 2) }}</p>
+                </div>
                 <div class="hidden lg:block border-t border-slate-100 p-5">
                     <button type="submit" class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-700">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>

@@ -32,6 +32,15 @@ class LedgerAccountSeeder extends Seeder
             ['code' => 'office_expense', 'name' => 'Office Expense', 'group' => 'income_expense', 'nature' => 'debit'],
             ['code' => 'other_expense', 'name' => 'Other Expense', 'group' => 'income_expense', 'nature' => 'debit'],
 
+            // Manual income categories — see IncomeController. Distinct
+            // from sales_revenue above, which only ever gets posted
+            // automatically and is excluded from the Income form's
+            // category picker.
+            ['code' => 'interest_income', 'name' => 'Interest Income', 'group' => 'income_expense', 'nature' => 'credit'],
+            ['code' => 'rental_income', 'name' => 'Rental Income', 'group' => 'income_expense', 'nature' => 'credit'],
+            ['code' => 'commission_income', 'name' => 'Commission Income', 'group' => 'income_expense', 'nature' => 'credit'],
+            ['code' => 'other_income', 'name' => 'Other Income', 'group' => 'income_expense', 'nature' => 'credit'],
+
             ['code' => 'opening_balance_equity', 'name' => 'Opening Balance Equity', 'group' => 'equity_adjustment', 'nature' => 'credit'],
         ];
 
