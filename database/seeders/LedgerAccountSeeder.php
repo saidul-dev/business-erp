@@ -18,6 +18,9 @@ class LedgerAccountSeeder extends Seeder
             ['code' => 'accounts_payable', 'name' => 'Accounts Payable', 'group' => 'party', 'nature' => 'credit'],
             ['code' => 'inventory', 'name' => 'Inventory', 'group' => 'inventory', 'nature' => 'debit'],
             ['code' => 'purchase_expense', 'name' => 'Purchase Expense', 'group' => 'income_expense', 'nature' => 'debit'],
+            ['code' => 'sales_revenue', 'name' => 'Sales Revenue', 'group' => 'income_expense', 'nature' => 'credit'],
+            ['code' => 'cost_of_goods_sold', 'name' => 'Cost of Goods Sold', 'group' => 'income_expense', 'nature' => 'debit'],
+            ['code' => 'discount_allowed', 'name' => 'Discount Allowed', 'group' => 'income_expense', 'nature' => 'debit'],
             ['code' => 'opening_balance_equity', 'name' => 'Opening Balance Equity', 'group' => 'equity_adjustment', 'nature' => 'credit'],
         ];
 

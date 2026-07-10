@@ -73,10 +73,18 @@
                         @endcan
 
                         @can('sales.view')
-                        <x-sidebar-link href="#" :title="__('Sales')">
-                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
-                            <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Sales') }}</span>
-                        </x-sidebar-link>
+                        <x-sidebar-dropdown :title="__('Sales')" :active="request()->routeIs('sales.*')">
+                            <x-slot name="icon">
+                                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+                            </x-slot>
+
+                            <x-sidebar-sublink :href="route('sales.index')" :active="request()->routeIs('sales.index', 'sales.show', 'sales.deliver.*', 'sales.print', 'sales.deliveries.print')">
+                                {{ __('Sales List') }}
+                            </x-sidebar-sublink>
+                            <x-sidebar-sublink :href="route('sales.create')" :active="request()->routeIs('sales.create', 'sales.store')">
+                                {{ __('New Sale') }}
+                            </x-sidebar-sublink>
+                        </x-sidebar-dropdown>
                         @endcan
 
                         @can('inventory.view')

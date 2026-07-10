@@ -191,6 +191,46 @@ Alpine.data('purchaseCart', (initial) => ({
     },
 }));
 
+Alpine.data('saleCart', (initial) => ({
+    itemOptions: initial.itemOptions || [],
+    items: [],
+    query: '',
+    open: false,
+    discount: '',
+
+    get filtered() {
+        const chosen = new Set(this.items.map((i) => i.id));
+        const pool = this.itemOptions.filter((o) => !chosen.has(o.id));
+        if (!this.query) return pool;
+        const q = this.query.toLowerCase();
+        return pool.filter((o) => o.name.toLowerCase().includes(q));
+    },
+
+    get subtotal() {
+        return this.items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.unit_price) || 0), 0);
+    },
+
+    get total() {
+        return Math.max(this.subtotal - (Number(this.discount) || 0), 0);
+    },
+
+    addItem(opt) {
+        this.items.push({
+            id: opt.id,
+            name: opt.name,
+            unit: opt.unit,
+            quantity: '',
+            unit_price: opt.price || '',
+        });
+        this.query = '';
+        this.open = false;
+    },
+
+    removeItem(id) {
+        this.items = this.items.filter((i) => i.id !== id);
+    },
+}));
+
 window.Alpine = Alpine;
 window.Chart = Chart;
 

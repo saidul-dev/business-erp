@@ -28,6 +28,9 @@ class LedgerAccount extends Model
         'inventory' => 'Inventory',
         'opening_balance_equity' => 'Opening Balance Equity',
         'purchase_expense' => 'Purchase Expense',
+        'sales_revenue' => 'Sales Revenue',
+        'cost_of_goods_sold' => 'Cost of Goods Sold',
+        'discount_allowed' => 'Discount Allowed',
     ];
 
     protected $fillable = [
