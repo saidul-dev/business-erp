@@ -63,8 +63,11 @@
                                 <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z"/></svg>
                             </x-slot>
 
-                            <x-sidebar-sublink :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
+                            <x-sidebar-sublink :href="route('purchases.index')" :active="request()->routeIs('purchases.index', 'purchases.show', 'purchases.receive.*', 'purchases.print', 'purchases.receipts.print')">
                                 {{ __('Purchase List') }}
+                            </x-sidebar-sublink>
+                            <x-sidebar-sublink :href="route('purchases.create')" :active="request()->routeIs('purchases.create', 'purchases.store')">
+                                {{ __('New Purchase') }}
                             </x-sidebar-sublink>
                         </x-sidebar-dropdown>
                         @endcan
