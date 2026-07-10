@@ -127,16 +127,24 @@
                 left: 0;
                 width: 100%;
                 max-width: 100%;
+                min-height: calc(297mm - 24mm);
+                display: flex;
+                flex-direction: column;
                 box-shadow: none;
                 border: none;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
             .print-footer {
+                margin-top: auto !important;
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
-            @page { margin: 12mm; }
+            @page { size: A4; margin: 12mm; }
         }
     </style>
+
+    <script>
+        window.addEventListener('load', function () { window.print(); });
+    </script>
 </x-app-layout>

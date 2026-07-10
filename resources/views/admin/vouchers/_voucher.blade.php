@@ -10,9 +10,9 @@
 @endphp
 
 <div class="print-area voucher-print mx-auto max-w-3xl rounded-2xl bg-white p-8 ring-1 ring-slate-200">
-    <div class="h-1.5 -mx-8 -mt-8 mb-6 rounded-t-2xl" style="background:{{ $palette['solid'] }}"></div>
+    <div class="h-1.5 -mx-8 -mt-8 mb-6 rounded-t-2xl bg-brand-800"></div>
 
-    <div class="flex items-start justify-between gap-6 border-b-2 pb-6" style="border-color:{{ $palette['solid'] }}">
+    <div class="flex items-start justify-between gap-6 border-b-2 border-brand-800 pb-6">
         <div class="flex items-center gap-3">
             @if ($company->logo_url)
             <img src="{{ $company->logo_url }}" alt="{{ $company->name }}" class="h-14 w-14 rounded-lg object-cover">
@@ -91,7 +91,7 @@
             </div>
         </div>
 
-        <div class="h-1.5 -mx-8 -mb-8 mt-8 rounded-b-2xl" style="background:{{ $palette['solid'] }}"></div>
+        <div class="h-1.5 -mx-8 -mb-8 mt-8 rounded-b-2xl bg-brand-800"></div>
     </div>
 </div>
 
@@ -139,15 +139,19 @@
             left: 0;
             width: 100%;
             max-width: 100%;
+            min-height: calc(297mm - 24mm);
+            display: flex;
+            flex-direction: column;
             box-shadow: none;
             border: none;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
         .print-footer {
+            margin-top: auto !important;
             page-break-inside: avoid;
             break-inside: avoid;
         }
-        @page { margin: 12mm; }
+        @page { size: A4; margin: 12mm; }
     }
 </style>

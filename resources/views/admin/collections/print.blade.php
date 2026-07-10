@@ -37,4 +37,8 @@
         'counterSignLabel' => __('Customer Signature'),
         'company' => $company,
     ])
+
+    <script>
+        window.addEventListener('load', function () { window.print(); });
+    </script>
 </x-app-layout>

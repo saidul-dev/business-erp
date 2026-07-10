@@ -37,4 +37,8 @@
         'counterSignLabel' => __('Payee Signature'),
         'company' => $company,
     ])
+
+    <script>
+        window.addEventListener('load', function () { window.print(); });
+    </script>
 </x-app-layout>
