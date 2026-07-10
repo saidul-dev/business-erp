@@ -15,7 +15,7 @@ class PartyController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:parties.view', only: ['index']),
+            new Middleware('permission:parties.view', only: ['index', 'ledger']),
             new Middleware('permission:parties.create', only: ['create', 'store']),
             new Middleware('permission:parties.edit', only: ['edit', 'update', 'toggleStatus']),
             new Middleware('permission:parties.delete', only: ['destroy']),
@@ -61,6 +61,25 @@ class PartyController extends Controller implements HasMiddleware
     public function edit(Party $party)
     {
         return view('admin.parties.edit', ['party' => $party]);
+    }
+
+    public function ledger(Party $party)
+    {
+        $lines = $party->lines()
+            ->with(['transaction', 'account'])
+            ->join('ledger_transactions', 'ledger_transactions.id', '=', 'ledger_transaction_lines.ledger_transaction_id')
+            ->orderBy('ledger_transactions.date')
+            ->orderBy('ledger_transaction_lines.id')
+            ->select('ledger_transaction_lines.*')
+            ->get();
+
+        // Accounts Receivable is debit-normal (positive = they owe us),
+        // Accounts Payable is credit-normal (positive = we owe them) — a
+        // Customer+Supplier party can carry both balances at once.
+        $receivable = (float) $lines->where('account.code', 'accounts_receivable')->sum(fn ($line) => $line->debit - $line->credit);
+        $payable = (float) $lines->where('account.code', 'accounts_payable')->sum(fn ($line) => $line->credit - $line->debit);
+
+        return view('admin.parties.ledger', compact('party', 'lines', 'receivable', 'payable'));
     }
 
     public function update(Request $request, Party $party)

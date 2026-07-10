@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Services\LedgerService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Party extends Model
 {
@@ -39,6 +41,13 @@ class Party extends Model
         'status' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        static::created(function (Party $party) {
+            $party->postOpeningBalanceToLedger();
+        });
+    }
+
     public function getRoleLabelAttribute(): string
     {
         return match (true) {
@@ -46,5 +55,60 @@ class Party extends Model
             $this->is_supplier => 'Supplier',
             default => 'Customer',
         };
+    }
+
+    public function lines(): HasMany
+    {
+        return $this->hasMany(LedgerTransactionLine::class);
+    }
+
+    /**
+     * One-time entry that gets this party's ledger balance in sync with the
+     * `opening_balance`/`opening_balance_type` fields captured on the form.
+     * Only ever runs once, right after creation (see booted()) — editing
+     * opening_balance later does NOT currently adjust the ledger; that
+     * needs a reversing-entry mechanism, deferred until it's actually
+     * needed. `App\Console\Commands\BackfillPartyOpeningBalances` covers
+     * parties created before this existed.
+     */
+    public function postOpeningBalanceToLedger(): void
+    {
+        $amount = round((float) $this->opening_balance, 2);
+
+        if ($amount <= 0) {
+            return;
+        }
+
+        // A party that's only a Supplier posts against Accounts Payable;
+        // everyone else (Customer, or Customer+Supplier) posts against
+        // Accounts Receivable — same default-to-Customer precedent as the
+        // party form (is_customer defaults true).
+        $usePayable = $this->is_supplier && ! $this->is_customer;
+        $controlCode = $usePayable ? 'accounts_payable' : 'accounts_receivable';
+        $isDue = $this->opening_balance_type === 'due';
+
+        // Customer + due = customer owes us -> Debit Accounts Receivable.
+        // Supplier + due = we owe the supplier -> Credit Accounts Payable.
+        // "advance" flips the same account the other way.
+        $controlIsDebit = $usePayable ? ! $isDue : $isDue;
+
+        LedgerService::post([
+            'type' => 'opening_balance',
+            'narration' => "Opening balance for {$this->name}",
+            'reference' => $this,
+            'lines' => [
+                [
+                    'account' => $controlCode,
+                    'party_id' => $this->id,
+                    'debit' => $controlIsDebit ? $amount : 0,
+                    'credit' => $controlIsDebit ? 0 : $amount,
+                ],
+                [
+                    'account' => 'opening_balance_equity',
+                    'debit' => $controlIsDebit ? 0 : $amount,
+                    'credit' => $controlIsDebit ? $amount : 0,
+                ],
+            ],
+        ]);
     }
 }

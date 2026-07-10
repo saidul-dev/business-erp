@@ -419,5 +419,36 @@
     "Cancel :no? Stock will be reversed back at :site.": ":no বাতিল করবেন? স্টক :site এ ফিরিয়ে দেওয়া হবে।",
 
     "Every active product already has stock movement history at :site (opening stock or otherwise). Use Adjustment to correct a quantity.": ":site এ প্রতিটি সক্রিয় পণ্যের ইতিমধ্যে স্টক মুভমেন্ট ইতিহাস আছে (প্রারম্ভিক স্টক বা অন্য কিছু)। পরিমাণ ঠিক করতে সমন্বয় ব্যবহার করুন।",
-    ":count variant|:count variants": ":count টি ভ্যারিয়েন্ট|:count টি ভ্যারিয়েন্ট"
+    ":count variant|:count variants": ":count টি ভ্যারিয়েন্ট|:count টি ভ্যারিয়েন্ট",
+
+    "Bank Accounts": "ব্যাংক অ্যাকাউন্ট",
+    "Add Bank Account": "ব্যাংক অ্যাকাউন্ট যোগ করুন",
+    "Edit Bank Account": "ব্যাংক অ্যাকাউন্ট সম্পাদনা করুন",
+    "Register a bank account or cash drawer for the accounting ledger": "হিসাব খতিয়ানের জন্য একটি ব্যাংক অ্যাকাউন্ট বা ক্যাশ ড্রয়ার নিবন্ধন করুন",
+    "Cash and bank accounts the accounting ledger posts against": "হিসাব খতিয়ান যেসব ক্যাশ ও ব্যাংক অ্যাকাউন্টে এন্ট্রি করে",
+    "Account Name": "অ্যাকাউন্টের নাম",
+    "Account": "অ্যাকাউন্ট",
+    "e.g. City Bank – CA 1234 or Petty Cash": "যেমন সিটি ব্যাংক – সিএ ১২৩৪ অথবা পেটি ক্যাশ",
+    "Site (optional)": "সাইট (ঐচ্ছিক)",
+    "Company-wide — shared across all sites": "কোম্পানি-ব্যাপী — সব সাইটে ব্যবহৃত হয়",
+    "Leave blank for a shared account (e.g. the main bank account); pick a Site for a branch-specific cash drawer.": "একটি শেয়ার্ড অ্যাকাউন্টের জন্য খালি রাখুন (যেমন প্রধান ব্যাংক অ্যাকাউন্ট); শাখা-নির্দিষ্ট ক্যাশ ড্রয়ারের জন্য একটি সাইট বেছে নিন।",
+    "This is a system account used by the accounting ledger — it can be renamed but not deleted.": "এটি হিসাব খতিয়ানে ব্যবহৃত একটি সিস্টেম অ্যাকাউন্ট — এর নাম পরিবর্তন করা যাবে তবে মুছে ফেলা যাবে না।",
+    "Update Account": "অ্যাকাউন্ট আপডেট করুন",
+    "Create Account": "অ্যাকাউন্ট তৈরি করুন",
+    "System account": "সিস্টেম অ্যাকাউন্ট",
+    "Company-wide": "কোম্পানি-ব্যাপী",
+    "No bank accounts yet.": "এখনো কোনো ব্যাংক অ্যাকাউন্ট নেই।",
+    "Delete account :name? This cannot be undone.": ":name অ্যাকাউন্টটি মুছবেন? এটি ফিরিয়ে আনা যাবে না।",
+
+    "Ledger": "খতিয়ান",
+    "Party Ledger": "পার্টি খতিয়ান",
+    "Every accounting transaction posted against this party": "এই পার্টির বিপরীতে পোস্ট করা প্রতিটি হিসাব লেনদেন",
+    "Receivable (they owe us)": "প্রাপ্য (তারা আমাদের কাছে দেনাদার)",
+    "Payable (we owe them)": "প্রদেয় (আমরা তাদের কাছে দেনাদার)",
+    "Voucher": "ভাউচার",
+    "Narration": "বিবরণ",
+    "Debit": "ডেবিট",
+    "Credit": "ক্রেডিট",
+    "No ledger transactions yet.": "এখনো কোনো খতিয়ান লেনদেন নেই।",
+    "Back to Parties": "পার্টি তালিকায় ফিরুন"
 }

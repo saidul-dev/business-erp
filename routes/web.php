@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\InitialStockController;
+use App\Http\Controllers\Admin\LedgerAccountController;
 use App\Http\Controllers\Admin\PartyController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
@@ -76,6 +77,14 @@ Route::prefix('admin')->group(function () {
 
         Route::resource('parties', PartyController::class)->except('show');
         Route::patch('/parties/{party}/toggle-status', [PartyController::class, 'toggleStatus'])->name('parties.toggle-status');
+        Route::get('/parties/{party}/ledger', [PartyController::class, 'ledger'])->name('parties.ledger');
+
+        // Accounting foundation — see docs/accounting-foundation.md. Only
+        // Bank Accounts has a CRUD screen in Phase 1; every other
+        // ledger_accounts group is system-seeded.
+        Route::resource('bank-accounts', LedgerAccountController::class)->except('show')
+            ->parameters(['bank-accounts' => 'bankAccount']);
+        Route::patch('/bank-accounts/{bankAccount}/toggle-status', [LedgerAccountController::class, 'toggleStatus'])->name('bank-accounts.toggle-status');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
