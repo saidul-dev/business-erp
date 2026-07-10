@@ -1,0 +1,127 @@
+<x-app-layout>
+    <x-slot name="title">{{ $purchase->purchase_no }}</x-slot>
+    <x-slot name="header">
+        <div>
+            <h2 class="text-2xl font-bold text-brand-900">{{ $purchase->purchase_no }}</h2>
+            <p class="text-sm text-slate-500 mt-0.5">{{ __('Purchase detail') }}</p>
+        </div>
+    </x-slot>
+
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-6 mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 text-sm">
+                <span class="font-semibold text-slate-800">{{ $purchase->party->name }}</span>
+                <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+                <span class="font-semibold text-slate-800">{{ $purchase->site->name }}</span>
+            </div>
+            <x-purchase-status-badge :status="$purchase->status" class="!px-3 !py-1" />
+        </div>
+
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm">
+            <div>
+                <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Order Date') }}</span>
+                <span class="block text-slate-700">{{ $purchase->order_date->format('d M, Y') }}</span>
+            </div>
+            <div>
+                <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Created By') }}</span>
+                <span class="block text-slate-700">{{ $purchase->creator->name ?? '—' }}</span>
+            </div>
+            <div>
+                <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Total') }}</span>
+                <span class="block font-semibold text-slate-800">{{ number_format($purchase->total_amount, 2) }}</span>
+            </div>
+            @if ($purchase->note)
+            <div>
+                <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Note') }}</span>
+                <span class="block text-slate-700">{{ $purchase->note }}</span>
+            </div>
+            @endif
+        </div>
+
+        @if (in_array($purchase->status, ['pending', 'partial']))
+        <div class="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
+            @can('sourcing.approve')
+            <a href="{{ route('purchases.receive.create', $purchase) }}"
+               class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                {{ __('Receive Items') }}
+            </a>
+            @endcan
+            @can('sourcing.edit')
+            <form method="POST" action="{{ route('purchases.cancel', $purchase) }}"
+                  onsubmit="return confirm('{{ __('Cancel :no? Only the remaining un-received quantity is affected.', ['no' => $purchase->purchase_no]) }}');">
+                @csrf
+                <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-100">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                    {{ __('Cancel Purchase') }}
+                </button>
+            </form>
+            @endcan
+        </div>
+        @endif
+    </div>
+
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden mb-4">
+        <div class="overflow-x-auto">
+        <table class="w-full min-w-[760px] text-sm">
+            <thead>
+                <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                    <th class="px-5 py-3 font-semibold">{{ __('Item') }}</th>
+                    <th class="px-5 py-3 font-semibold text-right">{{ __('Ordered') }}</th>
+                    <th class="px-5 py-3 font-semibold text-right">{{ __('Received') }}</th>
+                    <th class="px-5 py-3 font-semibold text-right">{{ __('Remaining') }}</th>
+                    <th class="px-5 py-3 font-semibold text-right">{{ __('Unit Cost') }}</th>
+                    <th class="px-5 py-3 font-semibold text-right">{{ __('Subtotal') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @foreach ($purchase->items as $item)
+                <tr class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <span class="block font-semibold text-slate-800">
+                            {{ $item->product->name }}{{ $item->productVariant ? ' — '.$item->productVariant->label : '' }}
+                        </span>
+                        <span class="block text-xs text-slate-400">{{ $item->productVariant->sku ?? $item->product->sku }}</span>
+                    </td>
+                    <td class="px-5 py-3 text-right text-slate-800">{{ rtrim(rtrim(number_format($item->quantity, 4), '0'), '.') ?: '0' }} {{ $item->product->stockUnit?->short_name }}</td>
+                    <td class="px-5 py-3 text-right text-slate-600">{{ rtrim(rtrim(number_format($item->received_quantity, 4), '0'), '.') ?: '0' }}</td>
+                    <td class="px-5 py-3 text-right {{ $item->remaining() > 0 ? 'text-amber-600 font-semibold' : 'text-slate-400' }}">{{ rtrim(rtrim(number_format($item->remaining(), 4), '0'), '.') ?: '0' }}</td>
+                    <td class="px-5 py-3 text-right text-slate-600">{{ number_format($item->unit_cost, 2) }}</td>
+                    <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ number_format($item->subtotal, 2) }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-100">
+            <h3 class="font-bold text-brand-900">{{ __('Goods Receipts') }}</h3>
+        </div>
+        @forelse ($purchase->receipts as $receipt)
+        <div class="px-5 py-4 border-b border-slate-100 last:border-0">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="font-semibold text-slate-800">{{ $receipt->receipt_no }}</span>
+                <span class="text-xs text-slate-400">{{ $receipt->received_date->format('d M, Y') }} {{ __('by') }} {{ $receipt->receivedBy->name ?? '—' }}</span>
+            </div>
+            <div class="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600">
+                @foreach ($receipt->items as $ri)
+                <span>
+                    {{ $ri->purchaseItem->product->name }}:
+                    <span class="font-semibold text-slate-800">{{ rtrim(rtrim(number_format($ri->quantity, 4), '0'), '.') ?: '0' }}</span>
+                    @if ($ri->batch_no || $ri->expiry_date || $ri->serial_no)
+                        <span class="text-xs text-slate-400">({{ collect([$ri->batch_no, $ri->expiry_date?->format('d M, Y'), $ri->serial_no])->filter()->implode(' · ') }})</span>
+                    @endif
+                </span>
+                @endforeach
+            </div>
+            @if ($receipt->note)
+            <p class="mt-1 text-xs text-slate-400">{{ $receipt->note }}</p>
+            @endif
+        </div>
+        @empty
+        <p class="px-5 py-10 text-center text-slate-400">{{ __('Nothing received yet.') }}</p>
+        @endforelse
+    </div>
+</x-app-layout>

@@ -158,20 +158,45 @@ Resolved (previously "Open questions" — implemented as follows):
   both), plus the full transaction history.
 - `resources/lang/bn.json` — translations for all of the above.
 
-## What's still needed before Purchase specifically
+## Purchase (built)
 
-1. ~~`ledger_accounts` + seeder + Bank Accounts screen~~ — done.
-2. ~~`ledger_transactions` + `ledger_transaction_lines` migrations~~ — done.
-3. ~~`LedgerService::post()`~~ — done.
-4. ~~Party ledger/statement page~~ — done.
-5. **Purchase itself** — posts a `stock_movements` row (existing system,
-   unchanged) **and** a `ledger_transactions` row (Dr Inventory, Cr Accounts
-   Payable — or Cr Cash/Bank directly if paid immediately) via
-   `LedgerService::post()`. Not started.
+All 5 steps of the "before Purchase" slice are done, including Purchase
+itself. See `App\Http\Controllers\Admin\PurchaseController` and
+`App\Models\{Purchase,PurchaseItem,PurchaseReceipt,PurchaseReceiptItem}`.
 
-Not required before Purchase: a full Cash/Bank *register* (drill-down
-transaction list per account, like the Party Ledger page has), Expense
-module, generic Chart-of-Accounts screen, any Phase 2 report.
+- **Order** (`purchases` + `purchase_items`, status `pending`): pick a
+  Supplier + Site, cart-style product/variant picker (quantity + unit cost,
+  no stock-balance filter — unlike Stock Transfer, ordering doesn't require
+  existing stock). **No stock or ledger effect yet** — a PO alone doesn't
+  create inventory or a payable.
+- **Receive** (`purchase_receipts` + `purchase_receipt_items`, one GRN per
+  receiving event, repeatable): enter a quantity per line, capped at that
+  line's remaining (`PurchaseItem::remaining()`), plus batch/expiry/serial
+  when the product tracks them. Supports **partial receipt** — receive part
+  of an order now, the rest later across as many receipts as needed.
+  `Purchase::recalculateStatus()` moves `pending → partial → received` off
+  `SUM(received_quantity)` vs `SUM(quantity)`, never backward.
+- Each receipt posts, atomically: one `stock_movements` row per line
+  (`type = purchase`, reference = the `PurchaseReceipt`) **and** exactly one
+  `LedgerService::post()` call for the whole receipt — `Dr Inventory /
+  Cr Accounts Payable(party_id)` for `SUM(quantity × unit_cost)` across its
+  lines. This is the concrete implementation of the "cash-paid Purchase
+  always goes through Accounts Payable" decision above — nothing here
+  special-cases payment; a Payment module settling the payable is a
+  separate, not-yet-built concern.
+- **Cancel**: only from `pending`/`partial`, and only affects the
+  *remaining* un-received quantity — nothing to reverse since nothing was
+  posted for it yet. Whatever was already received via earlier receipts
+  stands.
+- Gated by the existing `sourcing.*` permissions (view/create/approve/edit)
+  — `sourcing.approve` for receiving, matching the
+  `inventory.approve`-for-StockTransfer-receive precedent (Store-keeper can
+  view but not approve/receive; Manager can).
+
+Not built: discount/tax/freight on the PO total (kept to
+`SUM(quantity × unit_cost)` only, to avoid a total that the ledger doesn't
+fully back), any Payment/Collection screen to settle the Accounts Payable
+this creates, a Cash/Bank register, Expense module, or any Phase 2 report.
 
 ## Phase 1 scope (unchanged)
 
