@@ -14,6 +14,7 @@ class WebsiteController extends Controller
     {
         $categories = Category::whereNull('parent_id')->where('status', true)
             ->withCount('products')
+            ->with(['products' => fn ($q) => $q->where('status', true)->whereNotNull('image_path')->limit(1)])
             ->having('products_count', '>', 0)
             ->orderBy('name')
             ->get();
@@ -23,6 +24,11 @@ class WebsiteController extends Controller
             ->orderByDesc('id')
             ->limit(20)
             ->get();
+
+        // Top-of-page highlight row — prefer products with a real photo
+        // (they carry the card visually), topped up with the newest
+        // otherwise so the row still has 3 even with no photos uploaded yet.
+        $featuredProducts = $products->sortByDesc(fn (Product $p) => $p->image_path ? 1 : 0)->take(3)->values();
 
         $branches = Site::where('status', true)->orderBy('name')->get();
 
@@ -48,6 +54,7 @@ class WebsiteController extends Controller
             'company' => CompanySetting::current(),
             'categories' => $categories,
             'products' => $products,
+            'featuredProducts' => $featuredProducts,
             'branches' => $branches,
             'heroStats' => $heroStats,
             'businessStats' => $businessStats,

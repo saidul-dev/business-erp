@@ -80,9 +80,25 @@ class SettingController extends Controller implements HasMiddleware
             'about_text' => ['nullable', 'string', 'max:2000'],
             'mission_text' => ['nullable', 'string', 'max:1000'],
             'vision_text' => ['nullable', 'string', 'max:1000'],
+            'hero_image' => ['nullable', 'image', 'max:4096'],
+            'remove_hero_image' => ['nullable', 'boolean'],
         ]);
 
-        CompanySetting::current()->update($validated);
+        $company = CompanySetting::current();
+
+        if ($request->boolean('remove_hero_image') && $company->hero_image_path) {
+            Storage::disk('public')->delete($company->hero_image_path);
+            $validated['hero_image_path'] = null;
+        }
+
+        if ($request->hasFile('hero_image')) {
+            if ($company->hero_image_path) {
+                Storage::disk('public')->delete($company->hero_image_path);
+            }
+            $validated['hero_image_path'] = $request->file('hero_image')->store('company', 'public');
+        }
+
+        $company->update(collect($validated)->except(['hero_image', 'remove_hero_image'])->all());
 
         return redirect()->route('settings.website.edit')->with('success', 'Website content updated.');
     }

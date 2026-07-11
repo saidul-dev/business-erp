@@ -15,6 +15,7 @@ class CompanySetting extends Model
         'mission_text',
         'vision_text',
         'logo_path',
+        'hero_image_path',
         'email',
         'phone',
         'address',
@@ -40,6 +41,11 @@ class CompanySetting extends Model
     public function getLogoUrlAttribute(): ?string
     {
         return $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null;
+    }
+
+    public function getHeroImageUrlAttribute(): ?string
+    {
+        return $this->hero_image_path ? Storage::disk('public')->url($this->hero_image_path) : null;
     }
 
     /**
