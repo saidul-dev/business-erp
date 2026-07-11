@@ -7,7 +7,11 @@
         </div>
     </x-slot>
 
-    <form method="POST" action="{{ route('sales.deliver.store', $sale) }}" x-data="{ fillRemaining() { this.$refs.form.querySelectorAll('[data-remaining]').forEach(el => { el.value = el.dataset.remaining; }); } }" x-ref="form">
+    <form method="POST" action="{{ route('sales.deliver.store', $sale) }}"
+          x-data="{
+              fulfillmentType: '{{ old('fulfillment_type', 'self') }}',
+              fillRemaining() { this.$refs.form.querySelectorAll('[data-remaining]').forEach(el => { el.value = el.dataset.remaining; }); },
+          }" x-ref="form">
         @csrf
 
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-4">
@@ -17,6 +21,44 @@
                     <x-text-input id="delivered_date" name="delivered_date" type="date" class="mt-1 block w-full"
                                   :value="old('delivered_date', now()->toDateString())" required />
                     <x-input-error class="mt-2" :messages="$errors->get('delivered_date')" />
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <x-input-label :value="__('Fulfillment Method')" />
+                <div class="mt-1 flex gap-4">
+                    <label class="flex items-center gap-2 text-sm text-slate-700">
+                        <input type="radio" name="fulfillment_type" value="self" x-model="fulfillmentType" class="text-brand-800 focus:ring-accent-500">
+                        {{ __('Self Delivery') }}
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-slate-700">
+                        <input type="radio" name="fulfillment_type" value="courier" x-model="fulfillmentType" class="text-brand-800 focus:ring-accent-500">
+                        {{ __('Courier') }}
+                    </label>
+                </div>
+                <x-input-error class="mt-2" :messages="$errors->get('fulfillment_type')" />
+            </div>
+
+            <div x-show="fulfillmentType === 'courier'" x-cloak class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl">
+                <div>
+                    <x-input-label for="delivery_partner_id" :value="__('Courier')" />
+                    <div class="mt-1">
+                        <x-searchable-select name="delivery_partner_id" :options="$deliveryPartners" :selected="old('delivery_partner_id')"
+                                              placeholder="{{ __('Select a courier…') }}" />
+                    </div>
+                    <x-input-error class="mt-2" :messages="$errors->get('delivery_partner_id')" />
+                </div>
+                <div>
+                    <x-input-label for="cod_amount" :value="__('COD Amount (if any)')" />
+                    <x-text-input id="cod_amount" name="cod_amount" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                                  :value="old('cod_amount')" placeholder="0.00" />
+                    <x-input-error class="mt-2" :messages="$errors->get('cod_amount')" />
+                </div>
+                <div>
+                    <x-input-label for="tracking_no" :value="__('Tracking No. (optional)')" />
+                    <x-text-input id="tracking_no" name="tracking_no" type="text" class="mt-1 block w-full"
+                                  :value="old('tracking_no')" />
+                    <x-input-error class="mt-2" :messages="$errors->get('tracking_no')" />
                 </div>
             </div>
         </div>

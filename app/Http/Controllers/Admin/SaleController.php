@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CompanySetting;
+use App\Models\CourierConsignment;
+use App\Models\DeliveryPartner;
 use App\Models\Party;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -19,6 +21,7 @@ use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class SaleController extends Controller implements HasMiddleware
@@ -197,7 +200,7 @@ class SaleController extends Controller implements HasMiddleware
         $sale->load([
             'party', 'site', 'creator',
             'items.product.stockUnit', 'items.productVariant.attributeValues',
-            'deliveries.deliveredBy', 'deliveries.items.saleItem.product',
+            'deliveries.deliveredBy', 'deliveries.items.saleItem.product', 'deliveries.consignment.deliveryPartner',
             'returns.returnedBy', 'returns.items.saleItem.product',
         ]);
 
@@ -238,8 +241,9 @@ class SaleController extends Controller implements HasMiddleware
         }
 
         $sale->load(['party', 'site', 'items.product.stockUnit', 'items.productVariant.attributeValues']);
+        $deliveryPartners = DeliveryPartner::where('status', true)->orderBy('name')->get(['id', 'name']);
 
-        return view('admin.sales.deliver', compact('sale'));
+        return view('admin.sales.deliver', compact('sale', 'deliveryPartners'));
     }
 
     /**
@@ -262,6 +266,10 @@ class SaleController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'delivered_date' => ['required', 'date'],
             'note' => ['nullable', 'string', 'max:1000'],
+            'fulfillment_type' => ['required', Rule::in(SaleDelivery::FULFILLMENT_TYPES)],
+            'delivery_partner_id' => ['required_if:fulfillment_type,courier', 'nullable', 'integer', 'exists:delivery_partners,id'],
+            'cod_amount' => ['nullable', 'numeric', 'min:0'],
+            'tracking_no' => ['nullable', 'string', 'max:100'],
             'items' => ['required', 'array'],
             'items.*.quantity' => ['nullable', 'numeric', 'min:0'],
             'items.*.batch_no' => ['nullable', 'string', 'max:100'],
@@ -308,11 +316,23 @@ class SaleController extends Controller implements HasMiddleware
             $delivery = SaleDelivery::create([
                 'sale_id' => $sale->id,
                 'delivery_no' => 'PENDING',
+                'fulfillment_type' => $validated['fulfillment_type'],
                 'delivered_date' => $validated['delivered_date'],
                 'note' => $validated['note'] ?? null,
                 'delivered_by' => Auth::id(),
             ]);
             $delivery->update(['delivery_no' => 'INV-'.str_pad($delivery->id, 6, '0', STR_PAD_LEFT)]);
+
+            if ($validated['fulfillment_type'] === 'courier') {
+                CourierConsignment::create([
+                    'sale_delivery_id' => $delivery->id,
+                    'delivery_partner_id' => $validated['delivery_partner_id'],
+                    'tracking_no' => $validated['tracking_no'] ?? null,
+                    'cod_amount' => $validated['cod_amount'] ?? 0,
+                    'status' => 'booked',
+                    'booked_by' => Auth::id(),
+                ]);
+            }
 
             $grossRevenue = 0;
             $cogsValue = 0;

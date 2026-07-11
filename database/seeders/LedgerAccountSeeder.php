@@ -32,6 +32,10 @@ class LedgerAccountSeeder extends Seeder
             ['code' => 'office_expense', 'name' => 'Office Expense', 'group' => 'income_expense', 'nature' => 'debit'],
             ['code' => 'other_expense', 'name' => 'Other Expense', 'group' => 'income_expense', 'nature' => 'debit'],
 
+            // Courier fee, deducted from a COD remittance — see
+            // CourierConsignmentController::settleCod().
+            ['code' => 'courier_expense', 'name' => 'Courier & Delivery Expense', 'group' => 'income_expense', 'nature' => 'debit'],
+
             // Manual income categories — see IncomeController. Distinct
             // from sales_revenue above, which only ever gets posted
             // automatically and is excluded from the Income form's

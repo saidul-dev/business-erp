@@ -182,10 +182,20 @@
                         @endcan
 
                         @can('delivery.view')
-                        <x-sidebar-link href="#" :title="__('Delivery')">
-                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
-                            <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Delivery') }}</span>
-                        </x-sidebar-link>
+                        <x-sidebar-dropdown :title="__('Delivery')" :active="request()->routeIs('courier-consignments.*', 'delivery-partners.*')">
+                            <x-slot name="icon">
+                                <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
+                            </x-slot>
+
+                            <x-sidebar-sublink :href="route('courier-consignments.index')" :active="request()->routeIs('courier-consignments.*')">
+                                {{ __('Courier Consignments') }}
+                            </x-sidebar-sublink>
+                            @can('delivery.edit')
+                            <x-sidebar-sublink :href="route('delivery-partners.index')" :active="request()->routeIs('delivery-partners.*')">
+                                {{ __('Delivery Partners') }}
+                            </x-sidebar-sublink>
+                            @endcan
+                        </x-sidebar-dropdown>
                         @endcan
 
                         @can('tasks.view')

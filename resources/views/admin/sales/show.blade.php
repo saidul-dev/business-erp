@@ -145,7 +145,24 @@
         @forelse ($sale->deliveries as $delivery)
         <div class="px-5 py-4 border-b border-slate-100 last:border-0">
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <span class="font-semibold text-slate-800">{{ $delivery->delivery_no }}</span>
+                <div class="flex items-center gap-2">
+                    <span class="font-semibold text-slate-800">{{ $delivery->delivery_no }}</span>
+                    @if ($delivery->consignment)
+                        @can('delivery.view')
+                        <a href="{{ route('courier-consignments.show', $delivery->consignment) }}"
+                           class="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700 ring-1 ring-violet-200 hover:bg-violet-100">
+                            {{ $delivery->consignment->deliveryPartner->name }}
+                            <x-courier-consignment-status-badge :status="$delivery->consignment->status" class="!bg-transparent !ring-0 !px-0 !py-0" />
+                        </a>
+                        @else
+                        <span class="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-semibold text-violet-700 ring-1 ring-violet-200">
+                            {{ $delivery->consignment->deliveryPartner->name }}
+                        </span>
+                        @endcan
+                    @else
+                    <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-500 ring-1 ring-slate-200">{{ __('Self Delivery') }}</span>
+                    @endif
+                </div>
                 <div class="flex items-center gap-3">
                     <span class="text-xs text-slate-400">{{ $delivery->delivered_date->format('d M, Y') }} {{ __('by') }} {{ $delivery->deliveredBy->name ?? '—' }}</span>
                     <a href="{{ route('sales.deliveries.print', $delivery) }}" target="_blank"

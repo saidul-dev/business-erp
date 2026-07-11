@@ -5,7 +5,9 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CapitalTransactionController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CollectionController;
+use App\Http\Controllers\Admin\CourierConsignmentController;
 use App\Http\Controllers\Admin\DayBookController;
+use App\Http\Controllers\Admin\DeliveryPartnerController;
 use App\Http\Controllers\Admin\DueReportController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FundTransferController;
@@ -108,6 +110,14 @@ Route::prefix('admin')->group(function () {
         Route::get('/sales/{sale}/return', [SaleController::class, 'returnForm'])->name('sales.return.create');
         Route::post('/sales/{sale}/return', [SaleController::class, 'storeReturn'])->name('sales.return.store');
         Route::get('/sale-returns/{saleReturn}/print', [SaleController::class, 'printReturn'])->name('sales.returns.print');
+
+        Route::resource('delivery-partners', DeliveryPartnerController::class)->except('show')
+            ->parameters(['delivery-partners' => 'deliveryPartner']);
+        Route::patch('/delivery-partners/{deliveryPartner}/toggle-status', [DeliveryPartnerController::class, 'toggleStatus'])->name('delivery-partners.toggle-status');
+        Route::get('/courier-consignments', [CourierConsignmentController::class, 'index'])->name('courier-consignments.index');
+        Route::get('/courier-consignments/{courierConsignment}', [CourierConsignmentController::class, 'show'])->name('courier-consignments.show');
+        Route::patch('/courier-consignments/{courierConsignment}/status', [CourierConsignmentController::class, 'updateStatus'])->name('courier-consignments.status');
+        Route::post('/courier-consignments/{courierConsignment}/settle-cod', [CourierConsignmentController::class, 'settleCod'])->name('courier-consignments.settle-cod');
 
         Route::resource('parties', PartyController::class)->except('show');
         Route::patch('/parties/{party}/toggle-status', [PartyController::class, 'toggleStatus'])->name('parties.toggle-status');

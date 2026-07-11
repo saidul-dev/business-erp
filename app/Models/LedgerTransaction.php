@@ -123,6 +123,7 @@ class LedgerTransaction extends Model
             \App\Models\SaleReturn::class => route('sales.show', $this->reference->sale_id),
             \App\Models\Payment::class => route('payments.show', $this->reference_id),
             \App\Models\Collection::class => route('collections.show', $this->reference_id),
+            \App\Models\CourierConsignment::class => route('courier-consignments.show', $this->reference_id),
             \App\Models\Expense::class => route('expenses.show', $this->reference_id),
             \App\Models\Income::class => route('incomes.show', $this->reference_id),
             \App\Models\FundTransfer::class => route('fund-transfers.show', $this->reference_id),
