@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CapitalTransactionController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CollectionController;
 use App\Http\Controllers\Admin\CourierConsignmentController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DayBookController;
 use App\Http\Controllers\Admin\DeliveryPartnerController;
 use App\Http\Controllers\Admin\DueReportController;
@@ -46,9 +47,8 @@ Route::post('/language/{locale}', [LanguageController::class, 'switch'])->name('
 // (and its optional e-commerce storefront, toggled from Settings) can
 // live at the root without colliding with these routes.
 Route::prefix('admin')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->middleware(['auth', 'verified', 'current-site'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->middleware(['auth', 'verified', 'current-site'])->name('dashboard');
 
     Route::middleware(['auth', 'current-site'])->group(function () {
         Route::get('/select-site', [CurrentSiteController::class, 'select'])->name('sites.select');
