@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BalanceSheetController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CapitalTransactionController;
 use App\Http\Controllers\Admin\CategoryController;
@@ -135,6 +136,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/capital-transactions/{capitalTransaction}/print', [CapitalTransactionController::class, 'print'])->name('capital-transactions.print');
         Route::get('/day-book', [DayBookController::class, 'index'])->name('day-book.index');
         Route::get('/trial-balance', [TrialBalanceController::class, 'index'])->name('trial-balance.index');
+        Route::get('/balance-sheet', [BalanceSheetController::class, 'index'])->name('balance-sheet.index');
         Route::get('/due-report', [DueReportController::class, 'index'])->name('due-report.index');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
