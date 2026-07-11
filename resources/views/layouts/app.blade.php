@@ -87,6 +87,9 @@
                             <x-sidebar-sublink :href="route('sales.create')" :active="request()->routeIs('sales.create', 'sales.store')">
                                 {{ __('New Sale') }}
                             </x-sidebar-sublink>
+                            <x-sidebar-sublink :href="route('sales.manual')" :active="request()->routeIs('sales.manual')">
+                                {{ __('User Manual') }}
+                            </x-sidebar-sublink>
                         </x-sidebar-dropdown>
                         @endcan
 

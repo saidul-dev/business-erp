@@ -26,11 +26,16 @@ class SaleController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:sales.view', only: ['index', 'show', 'printOrder', 'printDelivery', 'printReturn']),
+            new Middleware('permission:sales.view', only: ['index', 'show', 'printOrder', 'printDelivery', 'printReturn', 'manual']),
             new Middleware('permission:sales.create', only: ['create', 'store']),
             new Middleware('permission:sales.approve', only: ['deliverForm', 'deliver', 'returnForm', 'storeReturn']),
             new Middleware('permission:sales.edit', only: ['cancel']),
         ];
+    }
+
+    public function manual()
+    {
+        return view('admin.sales.manual');
     }
 
     public function index(Request $request)

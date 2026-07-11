@@ -96,6 +96,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/purchases/{purchase}/return', [PurchaseController::class, 'storeReturn'])->name('purchases.return.store');
         Route::get('/purchase-returns/{purchaseReturn}/print', [PurchaseController::class, 'printReturn'])->name('purchases.returns.print');
 
+        Route::get('/sales/manual', [SaleController::class, 'manual'])->name('sales.manual');
         Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show']);
         Route::get('/sales/{sale}/print', [SaleController::class, 'printOrder'])->name('sales.print');
         Route::get('/sales/{sale}/deliver', [SaleController::class, 'deliverForm'])->name('sales.deliver.create');
