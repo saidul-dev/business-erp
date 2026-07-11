@@ -15,11 +15,20 @@ class Sale extends Model
      */
     public const STATUSES = ['pending', 'partial', 'delivered', 'cancelled'];
 
+    /**
+     * Where the order originated — 'pos' (admin panel) vs 'online' (the
+     * e-commerce storefront, once it can place orders). Purely descriptive:
+     * every other rule (statuses, delivery, ledger posting) is identical
+     * for both channels.
+     */
+    public const CHANNELS = ['pos', 'online'];
+
     protected $fillable = [
         'sale_no',
         'party_id',
         'site_id',
         'status',
+        'channel',
         'order_date',
         'note',
         'subtotal_amount',

@@ -7,6 +7,7 @@ use App\Models\CompanySetting;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller implements HasMiddleware
@@ -21,7 +22,10 @@ class SettingController extends Controller implements HasMiddleware
 
     public function edit()
     {
-        return view('admin.settings.edit', ['company' => CompanySetting::current()]);
+        return view('admin.settings.edit', [
+            'company' => CompanySetting::current(),
+            'canManageEcommerce' => Auth::user()->hasRole('Super Admin'),
+        ]);
     }
 
     public function update(Request $request)
@@ -42,8 +46,15 @@ class SettingController extends Controller implements HasMiddleware
 
         $company = CompanySetting::current();
 
-        // Checkboxes omit the field entirely when unchecked, so read it directly.
-        $validated['ecommerce_enabled'] = $request->boolean('ecommerce_enabled');
+        // Vendor-only control — never surfaced to a client's Admin role
+        // (see admin.settings.edit), and enforced here too in case of a
+        // crafted request. Omitted entirely (not just left unchanged) when
+        // the requester isn't Super Admin, so update() can't silently flip
+        // it via a field that was never meant to be visible to them.
+        if (Auth::user()->hasRole('Super Admin')) {
+            // Checkboxes omit the field entirely when unchecked, so read it directly.
+            $validated['ecommerce_enabled'] = $request->boolean('ecommerce_enabled');
+        }
 
         if ($request->boolean('remove_logo') && $company->logo_path) {
             Storage::disk('public')->delete($company->logo_path);

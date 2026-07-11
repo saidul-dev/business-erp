@@ -134,7 +134,8 @@
             </div>
         </div>
 
-        <!-- Website & e-commerce -->
+        @if ($canManageEcommerce)
+        <!-- Website & e-commerce (Super Admin only — see SettingController) -->
         <div class="mt-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="mb-4">
                 <h3 class="font-bold text-brand-900">{{ __('Website & E-commerce') }}</h3>
@@ -154,6 +155,7 @@
             </label>
             <x-input-error class="mt-2" :messages="$errors->get('ecommerce_enabled')" />
         </div>
+        @endif
 
         <div class="mt-5 flex items-center gap-3">
             <x-primary-button>{{ __('Save Changes') }}</x-primary-button>
