@@ -550,5 +550,8 @@
     "Enter the amount and payment method": "টাকার পরিমাণ ও গ্রহণের মাধ্যম দিন",
     "Enter how much is being collected and select which Bank Account/Cash it is being deposited into.": "কত টাকা নিচ্ছেন লিখুন এবং কোন Bank Account/Cash-এ জমা হচ্ছে তা সিলেক্ট করুন।",
     "Save the collection": "Save করুন",
-    "As soon as it is saved, the customer's Accounts Receivable balance is automatically reduced and a Collection Receipt is created, which can be printed.": "জমা হওয়ার সাথে সাথে কাস্টমারের বকেয়া (Accounts Receivable) স্বয়ংক্রিয়ভাবে কমে যাবে এবং একটি Collection Receipt তৈরি হবে, যা Print করা যায়।"
+    "As soon as it is saved, the customer's Accounts Receivable balance is automatically reduced and a Collection Receipt is created, which can be printed.": "জমা হওয়ার সাথে সাথে কাস্টমারের বকেয়া (Accounts Receivable) স্বয়ংক্রিয়ভাবে কমে যাবে এবং একটি Collection Receipt তৈরি হবে, যা Print করা যায়।",
+
+    "Sale Total": "বিক্রয়ের মোট পরিমাণ",
+    "The delivery man will collect this amount from the customer and deposit it to the business later.": "ডেলিভারিম্যান এই টাকা কাস্টমারের কাছ থেকে সংগ্রহ করে পরে ব্যবসায় জমা দেবে।"
 }

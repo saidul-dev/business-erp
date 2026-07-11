@@ -89,10 +89,15 @@
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <h3 class="font-bold text-brand-900 mb-1">{{ __('Settle COD') }}</h3>
             <p class="text-xs text-slate-400 mb-4">{{ __('Net remittance = COD amount minus the courier\'s fee — posted as one entry against the customer\'s receivable.') }}</p>
-            <form method="POST" action="{{ route('courier-consignments.settle-cod', $consignment) }}" class="space-y-4">
+            <form method="POST" action="{{ route('courier-consignments.settle-cod', $consignment) }}" class="space-y-4"
+                  x-data="{ fee: {{ (float) old('courier_fee', 0) }}, codAmount: {{ (float) $consignment->cod_amount }} }">
                 @csrf
                 <div>
                     <x-input-label for="ledger_account_id" :value="__('Received Into')" />
+                    <p class="mt-1 text-sm font-semibold text-emerald-600">
+                        {{ __('Amount you will receive from the delivery man') }}:
+                        <span x-text="(codAmount - fee).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
+                    </p>
                     <div class="mt-1">
                         <x-searchable-select name="ledger_account_id" :options="$accounts" :selected="old('ledger_account_id')"
                                               placeholder="{{ __('Select Cash/Bank account…') }}" />
@@ -102,7 +107,7 @@
                 <div>
                     <x-input-label for="courier_fee" :value="__('Courier Fee')" />
                     <x-text-input id="courier_fee" name="courier_fee" type="number" step="0.01" min="0" max="{{ $consignment->cod_amount }}"
-                                  class="mt-1 block w-full" :value="old('courier_fee', 0)" />
+                                  class="mt-1 block w-full" :value="old('courier_fee', 0)" x-model.number="fee" />
                     <x-input-error class="mt-2" :messages="$errors->get('courier_fee')" />
                 </div>
                 <div>
