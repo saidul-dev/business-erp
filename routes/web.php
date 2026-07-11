@@ -39,6 +39,10 @@ use Illuminate\Support\Facades\Route;
 // Public company website — the e-commerce storefront link only appears
 // once "Enable E-commerce" is switched on from Admin > Settings.
 Route::get('/', [WebsiteController::class, 'home'])->name('home');
+Route::get('/about', [WebsiteController::class, 'about'])->name('about');
+Route::get('/media', [WebsiteController::class, 'media'])->name('media');
+Route::get('/career', [WebsiteController::class, 'career'])->name('career');
+Route::get('/contact', [WebsiteController::class, 'contact'])->name('contact');
 Route::get('/shop', [WebsiteController::class, 'shop'])->name('shop');
 
 // UI language switch — not an authenticated action, just a session preference.

@@ -78,6 +78,8 @@ class SettingController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'tagline' => ['nullable', 'string', 'max:255'],
             'about_text' => ['nullable', 'string', 'max:2000'],
+            'mission_text' => ['nullable', 'string', 'max:1000'],
+            'vision_text' => ['nullable', 'string', 'max:1000'],
         ]);
 
         CompanySetting::current()->update($validated);

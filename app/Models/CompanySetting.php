@@ -12,6 +12,8 @@ class CompanySetting extends Model
         'legal_name',
         'tagline',
         'about_text',
+        'mission_text',
+        'vision_text',
         'logo_path',
         'email',
         'phone',

@@ -26,6 +26,22 @@
                           placeholder="{{ __('A short paragraph about what your business does — shown in the About section of your public homepage.') }}">{{ old('about_text', $company->about_text) }}</textarea>
                 <x-input-error class="mt-2" :messages="$errors->get('about_text')" />
             </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <x-input-label for="mission_text" :value="__('Mission')" />
+                    <textarea id="mission_text" name="mission_text" rows="4"
+                              class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-accent-500 focus:ring-accent-500"
+                              placeholder="{{ __('What your business does, day to day, for its customers.') }}">{{ old('mission_text', $company->mission_text) }}</textarea>
+                    <x-input-error class="mt-2" :messages="$errors->get('mission_text')" />
+                </div>
+                <div>
+                    <x-input-label for="vision_text" :value="__('Vision')" />
+                    <textarea id="vision_text" name="vision_text" rows="4"
+                              class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-accent-500 focus:ring-accent-500"
+                              placeholder="{{ __('Where you want the business to be in the future.') }}">{{ old('vision_text', $company->vision_text) }}</textarea>
+                    <x-input-error class="mt-2" :messages="$errors->get('vision_text')" />
+                </div>
+            </div>
         </div>
 
         <div class="mt-5 flex items-center gap-3">

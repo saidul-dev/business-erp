@@ -5,8 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ $company->name ?? config('app.name', 'Business ERP') }} — {{ $title ?? 'Enterprise ERP Software' }}</title>
-        <meta name="description" content="{{ $description ?? 'All-in-one ERP for purchase, production, sales, inventory, accounting and HR — with an optional online store.' }}">
+        <title>{{ $title ?? '' ? ($company->name ?? config('app.name', 'Business ERP')).' — '.$title : ($company->name ?? config('app.name', 'Business ERP')) }}</title>
+        <meta name="description" content="{{ $description ?? $company->tagline ?? $company->about_text ?? 'Quality products and trusted service.' }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -34,13 +34,14 @@
                     </a>
 
                     <div class="hidden lg:flex items-center gap-8">
-                        <a href="{{ route('home') }}#features" class="text-sm font-medium text-brand-100 hover:text-white">Features</a>
-                        <a href="{{ route('home') }}#modules" class="text-sm font-medium text-brand-100 hover:text-white">Modules</a>
-                        <a href="{{ route('home') }}#about" class="text-sm font-medium text-brand-100 hover:text-white">About</a>
+                        <a href="{{ route('home') }}" class="text-sm font-medium {{ request()->routeIs('home') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Home</a>
+                        <a href="{{ route('about') }}" class="text-sm font-medium {{ request()->routeIs('about') ? 'text-white' : 'text-brand-100 hover:text-white' }}">About</a>
+                        <a href="{{ route('media') }}" class="text-sm font-medium {{ request()->routeIs('media') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Media</a>
+                        <a href="{{ route('career') }}" class="text-sm font-medium {{ request()->routeIs('career') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Career</a>
                         @if ($company->ecommerce_enabled)
-                            <a href="{{ route('shop') }}" class="text-sm font-medium text-brand-100 hover:text-white">Shop</a>
+                            <a href="{{ route('shop') }}" class="text-sm font-medium {{ request()->routeIs('shop') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Shop</a>
                         @endif
-                        <a href="{{ route('home') }}#contact" class="text-sm font-medium text-brand-100 hover:text-white">Contact</a>
+                        <a href="{{ route('contact') }}" class="text-sm font-medium {{ request()->routeIs('contact') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Contact</a>
                     </div>
 
                     <div class="hidden lg:flex items-center gap-3">
@@ -63,13 +64,14 @@
 
                 <!-- Mobile nav -->
                 <div x-show="mobileNavOpen" x-transition class="lg:hidden pb-4 space-y-1" style="display:none">
-                    <a href="{{ route('home') }}#features" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Features</a>
-                    <a href="{{ route('home') }}#modules" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Modules</a>
-                    <a href="{{ route('home') }}#about" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">About</a>
+                    <a href="{{ route('home') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Home</a>
+                    <a href="{{ route('about') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">About</a>
+                    <a href="{{ route('media') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Media</a>
+                    <a href="{{ route('career') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Career</a>
                     @if ($company->ecommerce_enabled)
                         <a href="{{ route('shop') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Shop</a>
                     @endif
-                    <a href="{{ route('home') }}#contact" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Contact</a>
+                    <a href="{{ route('contact') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Contact</a>
                     <div class="pt-2">
                         @auth
                             <a href="{{ route('dashboard') }}" class="block rounded-lg bg-accent-500 px-3 py-2 text-center text-sm font-semibold text-brand-950">Go to Dashboard</a>
@@ -93,26 +95,26 @@
                         <x-application-logo class="h-8 w-8" />
                         <span class="text-base font-bold text-white">{{ $company->name ?? 'Business ERP' }}</span>
                     </div>
-                    <p class="text-sm">Any product business. Only the modules you need.</p>
-                </div>
-
-                <div>
-                    <p class="text-sm font-semibold text-white mb-3">Product</p>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="{{ route('home') }}#features" class="hover:text-white">Features</a></li>
-                        <li><a href="{{ route('home') }}#modules" class="hover:text-white">Modules</a></li>
-                        @if ($company->ecommerce_enabled)
-                            <li><a href="{{ route('shop') }}" class="hover:text-white">Shop</a></li>
-                        @endif
-                    </ul>
+                    <p class="text-sm">{{ $company->tagline ?: 'Quality products, trusted service.' }}</p>
                 </div>
 
                 <div>
                     <p class="text-sm font-semibold text-white mb-3">Company</p>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="{{ route('home') }}#about" class="hover:text-white">About</a></li>
-                        <li><a href="{{ route('home') }}#contact" class="hover:text-white">Contact</a></li>
-                        <li><a href="{{ route('login') }}" class="hover:text-white">Login</a></li>
+                        <li><a href="{{ route('about') }}" class="hover:text-white">About</a></li>
+                        <li><a href="{{ route('media') }}" class="hover:text-white">Media</a></li>
+                        <li><a href="{{ route('career') }}" class="hover:text-white">Career</a></li>
+                        @if ($company->ecommerce_enabled)
+                            <li><a href="{{ route('shop') }}" class="hover:text-white">Online Store</a></li>
+                        @endif
+                    </ul>
+                </div>
+
+                <div>
+                    <p class="text-sm font-semibold text-white mb-3">Get in Touch</p>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{{ route('contact') }}" class="hover:text-white">Contact Us</a></li>
+                        <li><a href="{{ route('login') }}" class="hover:text-white">Staff Login</a></li>
                     </ul>
                 </div>
 
