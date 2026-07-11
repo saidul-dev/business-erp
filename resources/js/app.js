@@ -158,10 +158,10 @@ Alpine.data('transferCart', (initial) => ({
 
 Alpine.data('purchaseCart', (initial) => ({
     itemOptions: initial.itemOptions || [],
-    items: [],
+    items: initial.items || [],
     query: '',
     open: false,
-    discount: '',
+    discount: initial.discount ?? '',
 
     get filtered() {
         const chosen = new Set(this.items.map((i) => i.id));
@@ -198,10 +198,10 @@ Alpine.data('purchaseCart', (initial) => ({
 
 Alpine.data('saleCart', (initial) => ({
     itemOptions: initial.itemOptions || [],
-    items: [],
+    items: initial.items || [],
     query: '',
     open: false,
-    discount: '',
+    discount: initial.discount ?? '',
 
     get filtered() {
         const chosen = new Set(this.items.map((i) => i.id));

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CapitalTransactionController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CollectionController;
 use App\Http\Controllers\Admin\DayBookController;
+use App\Http\Controllers\Admin\DueReportController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FundTransferController;
 use App\Http\Controllers\Admin\IncomeController;
@@ -86,7 +87,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/stock/transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('stock.transfers.cancel');
 
         Route::get('/purchases/manual', [PurchaseController::class, 'manual'])->name('purchases.manual');
-        Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store', 'show']);
+        Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
         Route::get('/purchases/{purchase}/print', [PurchaseController::class, 'printOrder'])->name('purchases.print');
         Route::get('/purchases/{purchase}/receive', [PurchaseController::class, 'receiveForm'])->name('purchases.receive.create');
         Route::post('/purchases/{purchase}/receive', [PurchaseController::class, 'receive'])->name('purchases.receive.store');
@@ -97,7 +98,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/purchase-returns/{purchaseReturn}/print', [PurchaseController::class, 'printReturn'])->name('purchases.returns.print');
 
         Route::get('/sales/manual', [SaleController::class, 'manual'])->name('sales.manual');
-        Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show']);
+        Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
         Route::get('/sales/{sale}/print', [SaleController::class, 'printOrder'])->name('sales.print');
         Route::get('/sales/{sale}/deliver', [SaleController::class, 'deliverForm'])->name('sales.deliver.create');
         Route::post('/sales/{sale}/deliver', [SaleController::class, 'deliver'])->name('sales.deliver.store');
@@ -134,6 +135,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/capital-transactions/{capitalTransaction}/print', [CapitalTransactionController::class, 'print'])->name('capital-transactions.print');
         Route::get('/day-book', [DayBookController::class, 'index'])->name('day-book.index');
         Route::get('/trial-balance', [TrialBalanceController::class, 'index'])->name('trial-balance.index');
+        Route::get('/due-report', [DueReportController::class, 'index'])->name('due-report.index');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');

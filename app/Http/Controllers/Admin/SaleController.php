@@ -29,7 +29,7 @@ class SaleController extends Controller implements HasMiddleware
             new Middleware('permission:sales.view', only: ['index', 'show', 'printOrder', 'printDelivery', 'printReturn', 'manual']),
             new Middleware('permission:sales.create', only: ['create', 'store']),
             new Middleware('permission:sales.approve', only: ['deliverForm', 'deliver', 'returnForm', 'storeReturn']),
-            new Middleware('permission:sales.edit', only: ['cancel']),
+            new Middleware('permission:sales.edit', only: ['edit', 'update', 'cancel']),
         ];
     }
 
@@ -86,46 +86,7 @@ class SaleController extends Controller implements HasMiddleware
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'party_id' => ['required', 'integer', 'exists:parties,id'],
-            'site_id' => ['required', 'integer', 'exists:sites,id'],
-            'order_date' => ['required', 'date'],
-            'discount_amount' => ['nullable', 'numeric', 'min:0'],
-            'note' => ['nullable', 'string', 'max:1000'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.item' => ['required', 'string'],
-            'items.*.quantity' => ['required', 'numeric', 'min:0.0001'],
-            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
-        ]);
-
-        $party = Party::findOrFail($validated['party_id']);
-        if (! $party->is_customer) {
-            throw ValidationException::withMessages(['party_id' => 'Pick a party marked as a Customer.']);
-        }
-
-        $rows = [];
-        foreach ($validated['items'] as $i => $row) {
-            [$product, $variant] = $this->resolveItem($row['item']);
-
-            if (! $product) {
-                throw ValidationException::withMessages(["items.{$i}.item" => 'Pick a valid product or variant.']);
-            }
-
-            $rows[] = [
-                'product' => $product,
-                'variant' => $variant,
-                'quantity' => $row['quantity'],
-                'unit_price' => $row['unit_price'],
-                'subtotal' => round($row['quantity'] * $row['unit_price'], 2),
-            ];
-        }
-
-        $subtotal = collect($rows)->sum('subtotal');
-        $discount = min((float) ($validated['discount_amount'] ?? 0), $subtotal);
-
-        if ($discount < (float) ($validated['discount_amount'] ?? 0)) {
-            throw ValidationException::withMessages(['discount_amount' => 'Discount cannot exceed the order subtotal.']);
-        }
+        [$validated, $rows, $subtotal, $discount] = $this->validateOrderRequest($request);
 
         $sale = DB::transaction(function () use ($validated, $rows, $subtotal, $discount) {
             $sale = Sale::create([
@@ -157,6 +118,78 @@ class SaleController extends Controller implements HasMiddleware
 
         return redirect()->route('sales.show', $sale)
             ->with('success', "Sale {$sale->sale_no} created — ".count($rows).' item(s).');
+    }
+
+    /**
+     * Only open while nothing has been delivered yet — status stays
+     * 'pending' until the first deliver() call, at which point
+     * Sale::recalculateStatus() moves it to 'partial'/'delivered' and this
+     * becomes a dead end, since a stock_movements/ledger row would already
+     * reference the old item quantities.
+     */
+    public function edit(Sale $sale)
+    {
+        if ($sale->status !== 'pending') {
+            return redirect()->route('sales.show', $sale)->with('error', 'Only a pending sale (nothing delivered yet) can be edited.');
+        }
+
+        $sale->load(['items.product.stockUnit', 'items.productVariant.attributeValues']);
+
+        $sites = Site::where('status', true)->orderBy('name')->get();
+        $customers = Party::where('is_customer', true)->where('status', true)->orderBy('name')->get(['id', 'name']);
+        $itemOptions = $this->itemOptions();
+
+        $items = $sale->items->map(fn ($item) => [
+            'id' => $item->product_variant_id ? "variant-{$item->product_variant_id}" : "product-{$item->product_id}",
+            'name' => $item->productVariant
+                ? "{$item->product->name} — {$item->productVariant->label} ({$item->productVariant->sku})"
+                : "{$item->product->name} ({$item->product->sku})",
+            'unit' => $item->product->stockUnit?->short_name,
+            'quantity' => (float) $item->quantity,
+            'unit_price' => (float) $item->unit_price,
+        ])->values();
+
+        return view('admin.sales.edit', compact('sale', 'sites', 'customers', 'itemOptions', 'items'));
+    }
+
+    /**
+     * Replaces every line wholesale rather than diffing — safe only because
+     * edit() already gates on status === 'pending', which guarantees zero
+     * deliveries exist to reference the old sale_item rows.
+     */
+    public function update(Request $request, Sale $sale)
+    {
+        if ($sale->status !== 'pending') {
+            return back()->with('error', 'Only a pending sale (nothing delivered yet) can be edited.');
+        }
+
+        [$validated, $rows, $subtotal, $discount] = $this->validateOrderRequest($request);
+
+        DB::transaction(function () use ($sale, $validated, $rows, $subtotal, $discount) {
+            $sale->update([
+                'party_id' => $validated['party_id'],
+                'site_id' => $validated['site_id'],
+                'order_date' => $validated['order_date'],
+                'note' => $validated['note'] ?? null,
+                'subtotal_amount' => $subtotal,
+                'discount_amount' => $discount,
+                'total_amount' => $subtotal - $discount,
+            ]);
+
+            $sale->items()->delete();
+
+            foreach ($rows as $row) {
+                $sale->items()->create([
+                    'product_id' => $row['product']->id,
+                    'product_variant_id' => $row['variant']?->id,
+                    'quantity' => $row['quantity'],
+                    'unit_price' => $row['unit_price'],
+                    'subtotal' => $row['subtotal'],
+                ]);
+            }
+        });
+
+        return redirect()->route('sales.show', $sale)->with('success', "Sale {$sale->sale_no} updated.");
     }
 
     public function show(Sale $sale)
@@ -581,5 +614,56 @@ class SaleController extends Controller implements HasMiddleware
         }
 
         return [null, null];
+    }
+
+    /**
+     * Shared by store() and update(): validates the order form, resolves
+     * each picker row back into a Product/ProductVariant, and computes the
+     * subtotal/discount/total. Returns [$validated, $rows, $subtotal, $discount].
+     */
+    protected function validateOrderRequest(Request $request): array
+    {
+        $validated = $request->validate([
+            'party_id' => ['required', 'integer', 'exists:parties,id'],
+            'site_id' => ['required', 'integer', 'exists:sites,id'],
+            'order_date' => ['required', 'date'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'note' => ['nullable', 'string', 'max:1000'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.item' => ['required', 'string'],
+            'items.*.quantity' => ['required', 'numeric', 'min:0.0001'],
+            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $party = Party::findOrFail($validated['party_id']);
+        if (! $party->is_customer) {
+            throw ValidationException::withMessages(['party_id' => 'Pick a party marked as a Customer.']);
+        }
+
+        $rows = [];
+        foreach ($validated['items'] as $i => $row) {
+            [$product, $variant] = $this->resolveItem($row['item']);
+
+            if (! $product) {
+                throw ValidationException::withMessages(["items.{$i}.item" => 'Pick a valid product or variant.']);
+            }
+
+            $rows[] = [
+                'product' => $product,
+                'variant' => $variant,
+                'quantity' => $row['quantity'],
+                'unit_price' => $row['unit_price'],
+                'subtotal' => round($row['quantity'] * $row['unit_price'], 2),
+            ];
+        }
+
+        $subtotal = collect($rows)->sum('subtotal');
+        $discount = min((float) ($validated['discount_amount'] ?? 0), $subtotal);
+
+        if ($discount < (float) ($validated['discount_amount'] ?? 0)) {
+            throw ValidationException::withMessages(['discount_amount' => 'Discount cannot exceed the order subtotal.']);
+        }
+
+        return [$validated, $rows, $subtotal, $discount];
     }
 }
