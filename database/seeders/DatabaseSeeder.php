@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call(AttributeSeeder::class);
         $this->call(ProductSeeder::class);
         $this->call(PartySeeder::class);
+        $this->call(DeliveryPartnerSeeder::class);
 
         User::firstOrCreate(
             ['email' => 'admin@businesserp.test'],
