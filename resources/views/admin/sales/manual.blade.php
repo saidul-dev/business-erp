@@ -69,10 +69,67 @@
             </ol>
         </div>
 
+        {{-- Courier Delivery --}}
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div class="mb-4">
+                <h3 class="font-bold text-brand-900">{{ __('2. Delivering via Courier (with Cash on Delivery)') }}</h3>
+                <p class="text-xs text-slate-400">{{ __('Use this when goods are shipped through a third-party courier instead of your own delivery') }}</p>
+            </div>
+
+            <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 px-4 py-3 mb-4">
+                <p class="text-xs text-amber-800">{{ __('Note: there is no live courier API yet — consignment status and COD must be updated manually by whoever handles the courier relationship day-to-day.') }}</p>
+            </div>
+
+            <ol class="space-y-4">
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">1</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('On the Deliver page, set Fulfillment Method to "Courier"') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Open the sale and click "Deliver" as usual, then choose "Courier" instead of "Self Delivery".') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">2</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Select the Courier, and enter COD Amount / Tracking No.') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Pick the delivery partner. If the customer is paying cash-on-delivery, enter the COD Amount — the courier will collect this on your behalf. Tracking No. is optional and can be added later.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">3</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Post the delivery') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('This delivers the items exactly like a normal delivery, and also books a Consignment for the courier automatically, starting in "Booked" status.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">4</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Track and update its status') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Go to Delivery menu → Courier Consignments, open the consignment, and update its status as it moves: Booked → Picked Up → In Transit → Delivered (or Returned / Lost if it doesn\'t reach the customer). Status only moves forward.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">5</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Settle the COD once delivered') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Once status is "Delivered" and there is a COD amount, use "Settle COD" on the consignment page: choose which Cash/Bank account the courier paid you into and enter the courier\'s fee (if any). This posts one entry — reducing the customer\'s Accounts Receivable by the full COD amount, recording the courier fee as an expense, and depositing the net amount into your account. This can only be done once per consignment.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">6</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Set up Delivery Partners first') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Before a courier can be selected on the Deliver page, add it under Delivery menu → Delivery Partners, with a name, code, phone and contact person.') }}</p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
         {{-- Sale Return --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="mb-4">
-                <h3 class="font-bold text-brand-900">{{ __('2. How to process a Sale Return') }}</h3>
+                <h3 class="font-bold text-brand-900">{{ __('3. How to process a Sale Return') }}</h3>
                 <p class="text-xs text-slate-400">{{ __('Where to record it when a customer returns goods that were sold') }}</p>
             </div>
 
@@ -108,7 +165,7 @@
         {{-- Customer Payment --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="mb-4">
-                <h3 class="font-bold text-brand-900">{{ __('3. Customer Payment (collecting money from a customer)') }}</h3>
+                <h3 class="font-bold text-brand-900">{{ __('4. Customer Payment (collecting money from a customer)') }}</h3>
                 <p class="text-xs text-slate-400">{{ __("Steps to record a payment against a customer's outstanding balance") }}</p>
             </div>
 
