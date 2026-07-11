@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\LedgerAccountController;
 use App\Http\Controllers\Admin\PartyController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProfitLossController;
 use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SaleController;
@@ -147,6 +148,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/day-book', [DayBookController::class, 'index'])->name('day-book.index');
         Route::get('/trial-balance', [TrialBalanceController::class, 'index'])->name('trial-balance.index');
         Route::get('/balance-sheet', [BalanceSheetController::class, 'index'])->name('balance-sheet.index');
+        Route::get('/profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index');
         Route::get('/due-report', [DueReportController::class, 'index'])->name('due-report.index');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
