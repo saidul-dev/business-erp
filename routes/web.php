@@ -153,6 +153,10 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::get('/settings/website', [SettingController::class, 'editWebsite'])->name('settings.website.edit');
+        Route::put('/settings/website', [SettingController::class, 'updateWebsite'])->name('settings.website.update');
+        Route::get('/settings/ecommerce', [SettingController::class, 'editEcommerce'])->name('settings.ecommerce.edit');
+        Route::put('/settings/ecommerce', [SettingController::class, 'updateEcommerce'])->name('settings.ecommerce.update');
     });
 });
 

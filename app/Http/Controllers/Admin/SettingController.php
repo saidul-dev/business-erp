@@ -7,25 +7,30 @@ use App\Models\CompanySetting;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Three separate pages over the same single CompanySetting row, split by
+ * who should touch what: General (accounting/invoice profile) and Website
+ * (public homepage copy) are both fine for a client's own Admin role to
+ * edit — Ecommerce is the one page gated to Super Admin only (see
+ * editEcommerce()), since turning that on/off is a vendor decision, not a
+ * client one.
+ */
 class SettingController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:settings.view', only: ['edit']),
-            new Middleware('permission:settings.edit', only: ['update']),
+            new Middleware('permission:settings.view', only: ['edit', 'editWebsite', 'editEcommerce']),
+            new Middleware('permission:settings.edit', only: ['update', 'updateWebsite', 'updateEcommerce']),
+            new Middleware('role:Super Admin', only: ['editEcommerce', 'updateEcommerce']),
         ];
     }
 
     public function edit()
     {
-        return view('admin.settings.edit', [
-            'company' => CompanySetting::current(),
-            'canManageEcommerce' => Auth::user()->hasRole('Super Admin'),
-        ]);
+        return view('admin.settings.edit', ['company' => CompanySetting::current()]);
     }
 
     public function update(Request $request)
@@ -46,16 +51,6 @@ class SettingController extends Controller implements HasMiddleware
 
         $company = CompanySetting::current();
 
-        // Vendor-only control — never surfaced to a client's Admin role
-        // (see admin.settings.edit), and enforced here too in case of a
-        // crafted request. Omitted entirely (not just left unchanged) when
-        // the requester isn't Super Admin, so update() can't silently flip
-        // it via a field that was never meant to be visible to them.
-        if (Auth::user()->hasRole('Super Admin')) {
-            // Checkboxes omit the field entirely when unchecked, so read it directly.
-            $validated['ecommerce_enabled'] = $request->boolean('ecommerce_enabled');
-        }
-
         if ($request->boolean('remove_logo') && $company->logo_path) {
             Storage::disk('public')->delete($company->logo_path);
             $validated['logo_path'] = null;
@@ -71,5 +66,35 @@ class SettingController extends Controller implements HasMiddleware
         $company->update(collect($validated)->except(['logo', 'remove_logo'])->all());
 
         return redirect()->route('settings.edit')->with('success', 'Business profile updated.');
+    }
+
+    public function editWebsite()
+    {
+        return view('admin.settings.website', ['company' => CompanySetting::current()]);
+    }
+
+    public function updateWebsite(Request $request)
+    {
+        $validated = $request->validate([
+            'tagline' => ['nullable', 'string', 'max:255'],
+            'about_text' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        CompanySetting::current()->update($validated);
+
+        return redirect()->route('settings.website.edit')->with('success', 'Website content updated.');
+    }
+
+    public function editEcommerce()
+    {
+        return view('admin.settings.ecommerce', ['company' => CompanySetting::current()]);
+    }
+
+    public function updateEcommerce(Request $request)
+    {
+        // Checkboxes omit the field entirely when unchecked, so read it directly.
+        CompanySetting::current()->update(['ecommerce_enabled' => $request->boolean('ecommerce_enabled')]);
+
+        return redirect()->route('settings.ecommerce.edit')->with('success', 'E-commerce setting updated.');
     }
 }

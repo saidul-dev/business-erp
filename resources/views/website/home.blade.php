@@ -1,4 +1,4 @@
-<x-website-layout :title="'Enterprise ERP Software'">
+<x-website-layout :title="$company->name ?? 'Business ERP'">
 
     <!-- Hero -->
     <section class="relative overflow-hidden bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800">
@@ -6,106 +6,54 @@
         <div class="pointer-events-none absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-brand-500/30 blur-3xl"></div>
 
         <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 sm:py-32 text-center">
-            <span class="inline-block rounded-full bg-white/10 px-4 py-1 text-xs font-semibold tracking-wide text-accent-300 ring-1 ring-white/20">
-                One ERP. Every product business.
-            </span>
-            <h1 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight">
-                Run purchase, production, sales &amp;
-                <span class="text-accent-400">accounting</span> — in one place
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight">
+                {{ $company->name ?? 'Business ERP' }}
             </h1>
+            @if ($company->tagline)
             <p class="mt-6 max-w-2xl mx-auto text-lg text-brand-200/90">
-                {{ $company->name ?? 'Business ERP' }} brings sourcing, inventory, sales, delivery, HR and finance
-                together under role-based access — with an optional online store you can switch on anytime.
+                {{ $company->tagline }}
             </p>
+            @endif
             <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
                 <a href="#contact" class="rounded-lg bg-accent-500 px-6 py-3 text-sm font-semibold text-brand-950 hover:bg-accent-400">
-                    Get Started
+                    Get in Touch
                 </a>
-                <a href="{{ route('login') }}" class="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10">
-                    Login to Dashboard
+                @if ($company->ecommerce_enabled)
+                <a href="{{ route('shop') }}" class="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10">
+                    Visit Our Shop
                 </a>
-            </div>
-
-            <!-- Stats -->
-            <div class="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-3xl mx-auto">
-                <div>
-                    <p class="text-3xl font-extrabold text-white">8+</p>
-                    <p class="mt-1 text-sm text-brand-300/80">Core Modules</p>
-                </div>
-                <div>
-                    <p class="text-3xl font-extrabold text-white">100%</p>
-                    <p class="mt-1 text-sm text-brand-300/80">Role-based Access</p>
-                </div>
-                <div>
-                    <p class="text-3xl font-extrabold text-white">Real-time</p>
-                    <p class="mt-1 text-sm text-brand-300/80">Reports &amp; Insights</p>
-                </div>
-                <div>
-                    <p class="text-3xl font-extrabold text-white">Optional</p>
-                    <p class="mt-1 text-sm text-brand-300/80">E-commerce Storefront</p>
-                </div>
+                @endif
             </div>
         </div>
     </section>
 
-    <!-- Features -->
-    <section id="features" class="bg-white py-20 sm:py-28">
+    @if ($categories->isNotEmpty())
+    <!-- Product Categories -->
+    <section id="categories" class="bg-white py-20 sm:py-28">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto">
-                <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">Why {{ $company->name ?? 'Business ERP' }}</p>
+                <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">What We Offer</p>
                 <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold text-brand-950 tracking-tight">
-                    Built for how growing businesses actually work
-                </h2>
-            </div>
-
-            <div class="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                @php
-                    $features = [
-                        ['title' => 'Role-based Access', 'desc' => 'Give every team member exactly the permissions their role needs — nothing more.', 'icon' => 'M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z'],
-                        ['title' => 'Real-time Reports', 'desc' => 'Track sales, stock and cash flow as they happen, not at month end.', 'icon' => 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z'],
-                        ['title' => 'Multi-branch Ready', 'desc' => 'Manage several branches or warehouses from a single dashboard.', 'icon' => 'm21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9'],
-                        ['title' => 'Optional Online Store', 'desc' => 'Switch on e-commerce anytime from Settings — no separate platform needed.', 'icon' => 'M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z'],
-                        ['title' => 'Cloud-based', 'desc' => 'Access your business from anywhere, on any device, securely.', 'icon' => 'M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z'],
-                        ['title' => 'Audit-ready Accounting', 'desc' => 'Every transaction is traceable — built for VAT, BIN and financial-year reporting.', 'icon' => 'M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z'],
-                    ];
-                @endphp
-
-                @foreach ($features as $feature)
-                    <div class="rounded-2xl border border-slate-200 p-6 hover:shadow-lg hover:shadow-brand-100 transition">
-                        <div class="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-700">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $feature['icon'] }}"/></svg>
-                        </div>
-                        <h3 class="mt-4 text-lg font-bold text-brand-950">{{ $feature['title'] }}</h3>
-                        <p class="mt-2 text-sm text-slate-600">{{ $feature['desc'] }}</p>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    <!-- Modules -->
-    <section id="modules" class="bg-slate-50 py-20 sm:py-28">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-2xl mx-auto">
-                <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">End-to-end coverage</p>
-                <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold text-brand-950 tracking-tight">
-                    Every module your business needs, none you don't
+                    Our Product Categories
                 </h2>
             </div>
 
             <div class="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach ([
-                    'Sourcing & Purchase', 'Production', 'Sales & POS', 'Inventory',
-                    'Accounts & Finance', 'Delivery', 'HR & Payroll', 'Reports & Analytics',
-                ] as $module)
-                    <div class="flex items-center gap-3 rounded-xl bg-white border border-slate-200 px-5 py-4">
-                        <span class="h-2.5 w-2.5 rounded-full bg-accent-500 shrink-0"></span>
-                        <span class="font-semibold text-brand-950">{{ $module }}</span>
+                @foreach ($categories as $category)
+                    <div class="flex items-center gap-3 rounded-xl bg-slate-50 border border-slate-200 px-5 py-4">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m6 4.125 2.25 2.25m0 0 2.25-2.25M12 13.875V6.75m-8.25.75h16.5A2.25 2.25 0 0 0 18 5.25H6A2.25 2.25 0 0 0 3.75 7.5Z"/></svg>
+                        </span>
+                        <span>
+                            <span class="block font-semibold text-brand-950">{{ $category->name }}</span>
+                            <span class="block text-xs text-slate-400">{{ trans_choice(':count item|:count items', $category->products_count, ['count' => $category->products_count]) }}</span>
+                        </span>
                     </div>
                 @endforeach
             </div>
         </div>
     </section>
+    @endif
 
     @if ($company->ecommerce_enabled)
     <!-- E-commerce teaser -->
@@ -136,8 +84,7 @@
                 {{ $company->legal_name ?? $company->name ?? 'Business ERP' }}
             </h2>
             <p class="mt-6 text-lg text-slate-600 max-w-3xl mx-auto">
-                We help product-based businesses replace spreadsheets and disconnected tools with one system —
-                from sourcing raw materials to delivering finished orders and closing the books.
+                {{ $company->about_text ?: 'Details about our business will appear here once added in Admin > Settings > Website Settings.' }}
             </p>
         </div>
     </section>

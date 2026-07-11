@@ -2,13 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\CompanySetting;
 
 class WebsiteController extends Controller
 {
     public function home()
     {
-        return view('website.home', ['company' => CompanySetting::current()]);
+        $categories = Category::whereNull('parent_id')->where('status', true)
+            ->withCount('products')
+            ->having('products_count', '>', 0)
+            ->orderBy('name')
+            ->get();
+
+        return view('website.home', ['company' => CompanySetting::current(), 'categories' => $categories]);
     }
 
     public function shop()
