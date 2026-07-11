@@ -26,11 +26,16 @@ class PurchaseController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:sourcing.view', only: ['index', 'show', 'printOrder', 'printReceipt', 'printReturn']),
+            new Middleware('permission:sourcing.view', only: ['index', 'show', 'printOrder', 'printReceipt', 'printReturn', 'manual']),
             new Middleware('permission:sourcing.create', only: ['create', 'store']),
             new Middleware('permission:sourcing.approve', only: ['receiveForm', 'receive', 'returnForm', 'storeReturn']),
             new Middleware('permission:sourcing.edit', only: ['cancel']),
         ];
+    }
+
+    public function manual()
+    {
+        return view('admin.purchases.manual');
     }
 
     public function index(Request $request)

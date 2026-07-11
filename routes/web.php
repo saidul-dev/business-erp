@@ -85,6 +85,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/stock/transfers/{transfer}/receive', [StockTransferController::class, 'receive'])->name('stock.transfers.receive');
         Route::post('/stock/transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('stock.transfers.cancel');
 
+        Route::get('/purchases/manual', [PurchaseController::class, 'manual'])->name('purchases.manual');
         Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store', 'show']);
         Route::get('/purchases/{purchase}/print', [PurchaseController::class, 'printOrder'])->name('purchases.print');
         Route::get('/purchases/{purchase}/receive', [PurchaseController::class, 'receiveForm'])->name('purchases.receive.create');
