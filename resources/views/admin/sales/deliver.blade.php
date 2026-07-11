@@ -22,6 +22,10 @@
                                   :value="old('delivered_date', now()->toDateString())" required />
                     <x-input-error class="mt-2" :messages="$errors->get('delivered_date')" />
                 </div>
+                <div class="rounded-xl bg-brand-50/70 ring-1 ring-brand-100 p-3">
+                    <span class="text-[11px] font-semibold uppercase tracking-wide text-brand-400">{{ __('Sale Total') }}</span>
+                    <span class="mt-1 block text-xl font-bold text-brand-900">{{ number_format($sale->total_amount, 2) }}</span>
+                </div>
             </div>
 
             <div class="mt-4">
@@ -52,6 +56,9 @@
                     <x-input-label for="cod_amount" :value="__('COD Amount (if any)')" />
                     <x-text-input id="cod_amount" name="cod_amount" type="number" step="0.01" min="0" class="mt-1 block w-full"
                                   :value="old('cod_amount')" placeholder="0.00" />
+                    <p class="mt-1 text-xs text-slate-400">
+                        {{ __('The delivery man will collect this amount from the customer and deposit it to the business later.') }}
+                    </p>
                     <x-input-error class="mt-2" :messages="$errors->get('cod_amount')" />
                 </div>
                 <div>

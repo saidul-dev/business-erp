@@ -553,5 +553,6 @@
     "As soon as it is saved, the customer's Accounts Receivable balance is automatically reduced and a Collection Receipt is created, which can be printed.": "জমা হওয়ার সাথে সাথে কাস্টমারের বকেয়া (Accounts Receivable) স্বয়ংক্রিয়ভাবে কমে যাবে এবং একটি Collection Receipt তৈরি হবে, যা Print করা যায়।",
 
     "Sale Total": "বিক্রয়ের মোট পরিমাণ",
-    "The delivery man will collect this amount from the customer and deposit it to the business later.": "ডেলিভারিম্যান এই টাকা কাস্টমারের কাছ থেকে সংগ্রহ করে পরে ব্যবসায় জমা দেবে।"
+    "The delivery man will collect this amount from the customer and deposit it to the business later.": "ডেলিভারিম্যান এই টাকা কাস্টমারের কাছ থেকে সংগ্রহ করে পরে ব্যবসায় জমা দেবে।",
+    "Amount you will receive from the delivery man": "ডেলিভারিম্যানের কাছ থেকে আপনি যে টাকা পাবেন"
 }
