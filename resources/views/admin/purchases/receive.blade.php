@@ -7,7 +7,8 @@
         </div>
     </x-slot>
 
-    <form method="POST" action="{{ route('purchases.receive.store', $purchase) }}" x-data="{ fillRemaining() { this.$refs.form.querySelectorAll('[data-remaining]').forEach(el => { el.value = el.dataset.remaining; }); } }" x-ref="form">
+    <form method="POST" action="{{ route('purchases.receive.store', $purchase) }}"
+          x-data="{ fillRemaining() { this.$refs.form.querySelectorAll('[data-remaining]').forEach(el => { el.value = el.dataset.remaining; }); }, chargeVia: '{{ old('charge_paid_via', 'supplier') }}' }" x-ref="form">
         @csrf
 
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-4">
@@ -17,6 +18,49 @@
                     <x-text-input id="received_date" name="received_date" type="date" class="mt-1 block w-full"
                                   :value="old('received_date', now()->toDateString())" required />
                     <x-input-error class="mt-2" :messages="$errors->get('received_date')" />
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-4">
+            <h3 class="mb-3 font-bold text-brand-900">{{ __('Delivery / Other Charge (optional)') }}</h3>
+            <p class="mb-4 text-xs text-slate-400">{{ __('Freight, loading, or any other cost for this shipment — added on top of item cost when valuing stock.') }}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
+                <div>
+                    <x-input-label for="delivery_charge" :value="__('Delivery Charge')" />
+                    <x-text-input id="delivery_charge" name="delivery_charge" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                                  :value="old('delivery_charge')" placeholder="0.00" />
+                    <x-input-error class="mt-2" :messages="$errors->get('delivery_charge')" />
+                </div>
+                <div>
+                    <x-input-label for="other_charge" :value="__('Other Charge')" />
+                    <x-text-input id="other_charge" name="other_charge" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                                  :value="old('other_charge')" placeholder="0.00" />
+                    <x-input-error class="mt-2" :messages="$errors->get('other_charge')" />
+                </div>
+            </div>
+
+            <div class="mt-4 max-w-xl">
+                <x-input-label :value="__('Paid Via')" />
+                <div class="mt-1 flex gap-4">
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                        <input type="radio" name="charge_paid_via" value="supplier" x-model="chargeVia" class="border-slate-300 text-accent-600 focus:ring-accent-500">
+                        {{ __("Add to supplier's bill") }}
+                    </label>
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                        <input type="radio" name="charge_paid_via" value="cash_bank" x-model="chargeVia" class="border-slate-300 text-accent-600 focus:ring-accent-500">
+                        {{ __('Pay from Cash/Bank') }}
+                    </label>
+                </div>
+                <x-input-error class="mt-2" :messages="$errors->get('charge_paid_via')" />
+
+                <div class="mt-3" x-show="chargeVia === 'cash_bank'" x-cloak>
+                    <x-input-label for="charge_account_id" :value="__('Account')" />
+                    <div class="mt-1">
+                        <x-searchable-select name="charge_account_id" :options="$cashBankAccounts" :selected="old('charge_account_id')"
+                                              placeholder="{{ __('Select a cash/bank account…') }}" />
+                    </div>
+                    <x-input-error class="mt-2" :messages="$errors->get('charge_account_id')" />
                 </div>
             </div>
         </div>

@@ -66,6 +66,8 @@
                     <th class="py-2 pr-2">#</th>
                     <th class="py-2 pr-2">{{ __('Item') }}</th>
                     <th class="py-2 pr-2 text-right">{{ __('Qty Received') }}</th>
+                    <th class="py-2 pr-2 text-right">{{ __('Unit Cost') }}</th>
+                    <th class="py-2 pr-2 text-right">{{ __('Value') }}</th>
                     <th class="py-2">{{ __('Batch / Expiry / Serial') }}</th>
                 </tr>
             </thead>
@@ -79,6 +81,8 @@
                     <td class="py-2 pr-2 text-right align-top">
                         {{ rtrim(rtrim(number_format($ri->quantity, 4), '0'), '.') ?: '0' }} {{ $ri->purchaseItem->product->stockUnit?->short_name }}
                     </td>
+                    <td class="py-2 pr-2 text-right align-top">{{ number_format($ri->unit_cost, 2) }}</td>
+                    <td class="py-2 pr-2 text-right align-top">{{ number_format($ri->quantity * $ri->unit_cost, 2) }}</td>
                     <td class="py-2 align-top text-slate-500">
                         {{ collect([$ri->batch_no, $ri->expiry_date?->format('d M, Y'), $ri->serial_no])->filter()->implode(' · ') ?: '—' }}
                     </td>
@@ -86,6 +90,29 @@
                 @endforeach
             </tbody>
         </table>
+
+        @if ($receipt->landedCost() > 0)
+        <div class="mt-4 flex justify-end">
+            <table class="w-64 text-sm">
+                @if ($receipt->delivery_charge > 0)
+                <tr>
+                    <td class="py-1 text-slate-500">{{ __('Delivery Charge') }}</td>
+                    <td class="py-1 text-right text-slate-800">{{ number_format($receipt->delivery_charge, 2) }}</td>
+                </tr>
+                @endif
+                @if ($receipt->other_charge > 0)
+                <tr>
+                    <td class="py-1 text-slate-500">{{ __('Other Charge') }}</td>
+                    <td class="py-1 text-right text-slate-800">{{ number_format($receipt->other_charge, 2) }}</td>
+                </tr>
+                @endif
+                <tr class="border-t border-slate-300 font-semibold">
+                    <td class="py-1 text-slate-600">{{ __('Paid Via') }}</td>
+                    <td class="py-1 text-right text-slate-800">{{ $receipt->charge_paid_via === 'cash_bank' ? ($receipt->chargeAccount->name ?? __('Cash/Bank')) : __("Supplier's Bill") }}</td>
+                </tr>
+            </table>
+        </div>
+        @endif
 
         @if ($receipt->note)
         <div class="mt-6 text-sm">

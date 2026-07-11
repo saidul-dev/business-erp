@@ -163,6 +163,14 @@
                 </span>
                 @endforeach
             </div>
+            @if ($receipt->landedCost() > 0)
+            <p class="mt-2 text-xs text-slate-500">
+                {{ __('Landed cost') }}:
+                @if ($receipt->delivery_charge > 0) {{ __('Delivery') }} {{ number_format($receipt->delivery_charge, 2) }} @endif
+                @if ($receipt->other_charge > 0) · {{ __('Other') }} {{ number_format($receipt->other_charge, 2) }} @endif
+                — {{ __('paid via') }} {{ $receipt->charge_paid_via === 'cash_bank' ? ($receipt->chargeAccount->name ?? __('Cash/Bank')) : __("supplier's bill") }}
+            </p>
+            @endif
             @if ($receipt->note)
             <p class="mt-1 text-xs text-slate-400">{{ $receipt->note }}</p>
             @endif

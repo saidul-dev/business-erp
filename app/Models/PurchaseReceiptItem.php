@@ -11,6 +11,7 @@ class PurchaseReceiptItem extends Model
         'purchase_receipt_id',
         'purchase_item_id',
         'quantity',
+        'unit_cost',
         'batch_no',
         'expiry_date',
         'serial_no',
@@ -18,6 +19,7 @@ class PurchaseReceiptItem extends Model
 
     protected $casts = [
         'quantity' => 'decimal:4',
+        'unit_cost' => 'decimal:4',
         'expiry_date' => 'date',
     ];
 

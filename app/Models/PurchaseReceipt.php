@@ -16,10 +16,16 @@ class PurchaseReceipt extends Model
         'received_date',
         'note',
         'received_by',
+        'delivery_charge',
+        'other_charge',
+        'charge_paid_via',
+        'charge_account_id',
     ];
 
     protected $casts = [
         'received_date' => 'date',
+        'delivery_charge' => 'decimal:2',
+        'other_charge' => 'decimal:2',
     ];
 
     public function purchase(): BelongsTo
@@ -35,6 +41,16 @@ class PurchaseReceipt extends Model
     public function receivedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by');
+    }
+
+    public function chargeAccount(): BelongsTo
+    {
+        return $this->belongsTo(LedgerAccount::class, 'charge_account_id');
+    }
+
+    public function landedCost(): float
+    {
+        return round((float) $this->delivery_charge + (float) $this->other_charge, 2);
     }
 
     public function movements(): MorphMany

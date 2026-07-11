@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CompanySetting;
+use App\Models\LedgerAccount;
 use App\Models\Party;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Purchase;
+use App\Models\PurchaseItem;
 use App\Models\PurchaseReceipt;
 use App\Models\PurchaseReturn;
 use App\Models\Site;
@@ -239,21 +241,27 @@ class PurchaseController extends Controller implements HasMiddleware
 
         $purchase->load(['party', 'site', 'items.product.stockUnit', 'items.productVariant.attributeValues']);
 
-        return view('admin.purchases.receive', compact('purchase'));
+        $cashBankAccounts = LedgerAccount::where('group', 'cash_bank')->where('status', true)->orderBy('name')->get(['id', 'name']);
+
+        return view('admin.purchases.receive', compact('purchase', 'cashBankAccounts'));
     }
 
     /**
      * Posts everything checked in on this receiving pass: one
      * stock_movements row per line (goods physically arrive) plus exactly
      * one ledger_transactions entry for the whole receipt (Dr Inventory,
-     * Cr Accounts Payable) via LedgerService::post() — see
+     * Cr Accounts Payable, plus a Cr Cash/Bank line when this receipt's
+     * delivery/other charge is paid on the spot rather than added to the
+     * supplier's bill) via LedgerService::post() — see
      * docs/accounting-foundation.md. Quantities not received now stay
      * open for a later receipt. The order's discount (see
      * Purchase::discountRate()) is baked directly into each line's
      * unit_cost for this receipt — unlike Sale's separate Discount
      * Allowed line, a purchase discount just lowers the real cost, so
      * Inventory/Accounts Payable and the stock_movements valuation used
-     * for average costing stay in agreement.
+     * for average costing stay in agreement. This receipt's own landed
+     * cost (delivery_charge + other_charge) is similarly baked in, prorated
+     * across only this receipt's lines by value — see landedCostRate below.
      */
     public function receive(Request $request, Purchase $purchase)
     {
@@ -264,12 +272,24 @@ class PurchaseController extends Controller implements HasMiddleware
         $validated = $request->validate([
             'received_date' => ['required', 'date'],
             'note' => ['nullable', 'string', 'max:1000'],
+            'delivery_charge' => ['nullable', 'numeric', 'min:0'],
+            'other_charge' => ['nullable', 'numeric', 'min:0'],
+            'charge_paid_via' => ['required', 'in:supplier,cash_bank'],
+            'charge_account_id' => ['required_if:charge_paid_via,cash_bank', 'nullable', 'integer', 'exists:ledger_accounts,id'],
             'items' => ['required', 'array'],
             'items.*.quantity' => ['nullable', 'numeric', 'min:0'],
             'items.*.batch_no' => ['nullable', 'string', 'max:100'],
             'items.*.expiry_date' => ['nullable', 'date'],
             'items.*.serial_no' => ['nullable', 'string', 'max:100'],
         ]);
+
+        $deliveryCharge = (float) ($validated['delivery_charge'] ?? 0);
+        $otherCharge = (float) ($validated['other_charge'] ?? 0);
+        $chargeAccount = null;
+
+        if ($validated['charge_paid_via'] === 'cash_bank' && ($deliveryCharge > 0 || $otherCharge > 0)) {
+            $chargeAccount = LedgerAccount::where('group', 'cash_bank')->findOrFail($validated['charge_account_id']);
+        }
 
         $purchase->load('items.product');
 
@@ -306,26 +326,44 @@ class PurchaseController extends Controller implements HasMiddleware
             throw ValidationException::withMessages(['items' => 'Enter a quantity for at least one item.']);
         }
 
-        DB::transaction(function () use ($purchase, $validated, $lines) {
+        DB::transaction(function () use ($purchase, $validated, $lines, $deliveryCharge, $otherCharge, $chargeAccount) {
             $receipt = PurchaseReceipt::create([
                 'purchase_id' => $purchase->id,
                 'receipt_no' => 'PENDING',
                 'received_date' => $validated['received_date'],
                 'note' => $validated['note'] ?? null,
                 'received_by' => Auth::id(),
+                'delivery_charge' => $deliveryCharge,
+                'other_charge' => $otherCharge,
+                'charge_paid_via' => $validated['charge_paid_via'],
+                'charge_account_id' => $chargeAccount?->id,
             ]);
             $receipt->update(['receipt_no' => 'GRN-'.str_pad($receipt->id, 6, '0', STR_PAD_LEFT)]);
 
             $discountRate = $purchase->discountRate();
-            $totalValue = 0;
+
+            // Landed cost (delivery + other charge) is specific to this
+            // receipt, not the whole order — spread across only the lines
+            // being received right now, in proportion to their (discount-
+            // adjusted) value, same pro-rata-by-value convention as
+            // Purchase::discountRate().
+            $goodsValue = collect($lines)->sum(fn ($row) => round((float) $row['quantity'] * (float) $row['item']->unit_cost * (1 - $discountRate), 2));
+            $landedCost = round($deliveryCharge + $otherCharge, 2);
+            $landedCostRate = $goodsValue > 0 ? $landedCost / $goodsValue : 0;
+
+            // Includes the landed cost baked into netUnitCost above — this
+            // is the full amount that lands in Inventory, not just the
+            // goods' own price.
+            $totalInventoryValue = 0;
 
             foreach ($lines as $row) {
                 $item = $row['item'];
-                $netUnitCost = round((float) $item->unit_cost * (1 - $discountRate), 4);
+                $netUnitCost = round((float) $item->unit_cost * (1 - $discountRate) * (1 + $landedCostRate), 4);
 
                 $receipt->items()->create([
                     'purchase_item_id' => $item->id,
                     'quantity' => $row['quantity'],
+                    'unit_cost' => $netUnitCost,
                     'batch_no' => $row['batch_no'],
                     'expiry_date' => $row['expiry_date'],
                     'serial_no' => $row['serial_no'],
@@ -349,7 +387,18 @@ class PurchaseController extends Controller implements HasMiddleware
 
                 $item->update(['received_quantity' => $item->received_quantity + $row['quantity']]);
 
-                $totalValue += round($row['quantity'] * $netUnitCost, 2);
+                $totalInventoryValue += round($row['quantity'] * $netUnitCost, 2);
+            }
+
+            $payableLine = ['account' => 'accounts_payable', 'credit' => $chargeAccount ? round($totalInventoryValue - $landedCost, 2) : $totalInventoryValue, 'party_id' => $purchase->party_id];
+
+            $ledgerLines = [
+                ['account' => 'inventory', 'debit' => $totalInventoryValue],
+                $payableLine,
+            ];
+
+            if ($chargeAccount && $landedCost > 0) {
+                $ledgerLines[] = ['account' => $chargeAccount, 'credit' => $landedCost];
             }
 
             LedgerService::post([
@@ -359,10 +408,7 @@ class PurchaseController extends Controller implements HasMiddleware
                 'narration' => "Goods received against {$purchase->purchase_no}",
                 'reference' => $receipt,
                 'created_by' => Auth::id(),
-                'lines' => [
-                    ['account' => 'inventory', 'debit' => $totalValue],
-                    ['account' => 'accounts_payable', 'credit' => $totalValue, 'party_id' => $purchase->party_id],
-                ],
+                'lines' => $ledgerLines,
             ]);
 
             $purchase->recalculateStatus();
@@ -404,8 +450,14 @@ class PurchaseController extends Controller implements HasMiddleware
      * leave again) plus exactly one ledger_transactions entry for the
      * whole return — Dr Accounts Payable, Cr Inventory, the mirror image
      * of receive()'s posting — via LedgerService::post(). Valued at each
-     * line's original unit_cost from the purchase, not the (possibly
-     * since-changed) current average cost.
+     * line's weighted-average landed unit cost across every receipt that
+     * contributed to it (see averageLandedUnitCost()) — not the (possibly
+     * since-changed) current stock average cost. Discount is a single
+     * order-wide rate so it's uniform across receipts, but landed cost
+     * (delivery/other charge) is entered per receipt and can differ
+     * between them, so a straight discount-only recompute isn't enough
+     * once landed cost is involved — the return has no way to know which
+     * physical units (i.e. which receipt) are being sent back.
      */
     public function storeReturn(Request $request, Purchase $purchase)
     {
@@ -464,12 +516,11 @@ class PurchaseController extends Controller implements HasMiddleware
             ]);
             $return->update(['return_no' => 'RTN-'.str_pad($return->id, 6, '0', STR_PAD_LEFT)]);
 
-            $discountRate = $purchase->discountRate();
             $totalValue = 0;
 
             foreach ($lines as $row) {
                 $item = $row['item'];
-                $netUnitCost = round((float) $item->unit_cost * (1 - $discountRate), 4);
+                $netUnitCost = $this->averageLandedUnitCost($item, $purchase);
 
                 $return->items()->create([
                     'purchase_item_id' => $item->id,
@@ -515,6 +566,26 @@ class PurchaseController extends Controller implements HasMiddleware
         });
 
         return redirect()->route('purchases.show', $purchase)->with('success', 'Return posted.');
+    }
+
+    /**
+     * Weighted-average of PurchaseReceiptItem.unit_cost across every
+     * receipt of this line, weighted by quantity — each receipt already
+     * carries its own discount- and landed-cost-adjusted cost (see
+     * receive()), so this is the fairest single cost to reverse against
+     * when the return can't be tied to one specific receipt.
+     */
+    protected function averageLandedUnitCost(PurchaseItem $item, Purchase $purchase): float
+    {
+        $totals = $item->receiptItems()->selectRaw('SUM(quantity) as qty, SUM(quantity * unit_cost) as value')->first();
+
+        $qty = (float) ($totals->qty ?? 0);
+
+        if ($qty <= 0) {
+            return round((float) $item->unit_cost * (1 - $purchase->discountRate()), 4);
+        }
+
+        return round((float) $totals->value / $qty, 4);
     }
 
     /**
