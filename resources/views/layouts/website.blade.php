@@ -39,12 +39,21 @@
                         <a href="{{ route('media') }}" class="text-sm font-medium {{ request()->routeIs('media') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Media</a>
                         <a href="{{ route('career') }}" class="text-sm font-medium {{ request()->routeIs('career') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Career</a>
                         @if ($company->ecommerce_enabled)
-                            <a href="{{ route('shop') }}" class="text-sm font-medium {{ request()->routeIs('shop') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Shop</a>
+                            <a href="{{ route('shop') }}" class="text-sm font-medium {{ request()->routeIs('shop', 'shop.product') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Shop</a>
+                            <a href="{{ route('track-order') }}" class="text-sm font-medium {{ request()->routeIs('track-order*') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Track Order</a>
                         @endif
                         <a href="{{ route('contact') }}" class="text-sm font-medium {{ request()->routeIs('contact') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Contact</a>
                     </div>
 
                     <div class="hidden lg:flex items-center gap-3">
+                        @if ($company->ecommerce_enabled)
+                            <a href="{{ route('cart') }}" class="relative rounded-lg p-2 text-white hover:bg-white/10">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+                                @if ($cartCount > 0)
+                                <span class="absolute -top-1 -right-1 grid h-4 w-4 place-items-center rounded-full bg-accent-500 text-[10px] font-bold text-brand-950">{{ $cartCount }}</span>
+                                @endif
+                            </a>
+                        @endif
                         @auth
                             <a href="{{ route('dashboard') }}" class="rounded-lg bg-accent-500 px-4 py-2 text-sm font-semibold text-brand-950 hover:bg-accent-400">
                                 Go to Dashboard
@@ -70,6 +79,8 @@
                     <a href="{{ route('career') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Career</a>
                     @if ($company->ecommerce_enabled)
                         <a href="{{ route('shop') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Shop</a>
+                        <a href="{{ route('cart') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Cart @if ($cartCount > 0)({{ $cartCount }})@endif</a>
+                        <a href="{{ route('track-order') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Track Order</a>
                     @endif
                     <a href="{{ route('contact') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Contact</a>
                     <div class="pt-2">

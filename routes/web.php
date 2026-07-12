@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CurrentSiteController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ShopController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,7 +46,26 @@ Route::get('/media', [WebsiteController::class, 'media'])->name('media');
 Route::get('/career', [WebsiteController::class, 'career'])->name('career');
 Route::get('/contact', [WebsiteController::class, 'contact'])->name('contact');
 Route::post('/contact', [WebsiteController::class, 'submitContact'])->name('contact.submit');
-Route::get('/shop', [WebsiteController::class, 'shop'])->name('shop');
+
+// The storefront — catalog, cart, guest checkout, order tracking. All
+// gated behind the 'ecommerce' middleware (404 until Admin > Settings >
+// E-commerce is switched on).
+Route::middleware('ecommerce')->group(function () {
+    Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+    Route::get('/shop/{product}', [ShopController::class, 'show'])->name('shop.product');
+
+    Route::get('/cart', [ShopController::class, 'cart'])->name('cart');
+    Route::post('/cart', [ShopController::class, 'addToCart'])->name('cart.add');
+    Route::patch('/cart/{itemKey}', [ShopController::class, 'updateCart'])->name('cart.update');
+    Route::delete('/cart/{itemKey}', [ShopController::class, 'removeFromCart'])->name('cart.remove');
+
+    Route::get('/checkout', [ShopController::class, 'checkout'])->name('checkout');
+    Route::post('/checkout', [ShopController::class, 'placeOrder'])->name('checkout.store');
+    Route::get('/order-confirmation/{sale}', [ShopController::class, 'confirmation'])->name('order.confirmation');
+
+    Route::get('/track-order', [ShopController::class, 'trackForm'])->name('track-order');
+    Route::post('/track-order', [ShopController::class, 'track'])->name('track-order.result');
+});
 
 // UI language switch — not an authenticated action, just a session preference.
 Route::post('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');

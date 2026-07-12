@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 class CompanySetting extends Model
@@ -25,11 +26,17 @@ class CompanySetting extends Model
         'bin_no',
         'financial_year_start_month',
         'ecommerce_enabled',
+        'online_site_id',
     ];
 
     protected $casts = [
         'ecommerce_enabled' => 'boolean',
     ];
+
+    public function onlineSite(): BelongsTo
+    {
+        return $this->belongsTo(Site::class, 'online_site_id');
+    }
 
     /**
      * There is only ever one row (id 1) — every tenant has exactly one company profile.

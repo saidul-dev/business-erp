@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'current-site' => \App\Http\Middleware\SetCurrentSite::class,
+            'ecommerce' => \App\Http\Middleware\EnsureEcommerceEnabled::class,
         ]);
 
         $middleware->web(append: [

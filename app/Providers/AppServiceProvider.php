@@ -27,10 +27,13 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('Super Admin') ? true : null;
         });
 
-        // Lets the admin sidebar conditionally show/hide e-commerce-only
-        // menu items (Online Orders, Marketing, ...) without every
-        // controller having to fetch and pass CompanySetting itself.
-        View::composer('layouts.app', function ($view) {
+        // Lets the admin sidebar (and any admin page that needs to
+        // show/hide e-commerce-only UI, e.g. the Sales list's Channel
+        // column) read this without every controller having to fetch and
+        // pass CompanySetting itself. Blade component slots render in
+        // their own data scope, so the layout view alone isn't enough —
+        // each page view that needs it has to be listed here too.
+        View::composer(['layouts.app', 'admin.sales.index'], function ($view) {
             $view->with('ecommerceEnabled', CompanySetting::current()->ecommerce_enabled);
         });
     }

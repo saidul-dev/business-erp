@@ -73,6 +73,17 @@
         </p>
         @endif
 
+        @if ($sale->channel === 'online')
+        <div class="mt-4 rounded-xl bg-accent-50/60 ring-1 ring-accent-100 p-4">
+            <div class="flex items-center gap-2 text-accent-600">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                <span class="text-[11px] font-semibold uppercase tracking-wide">{{ __('Online Order — Delivery Details') }}</span>
+            </div>
+            <p class="mt-2 text-sm font-semibold text-slate-700">{{ $sale->shipping_name }} &middot; {{ $sale->shipping_phone }}</p>
+            <p class="text-sm text-slate-600">{{ $sale->shipping_address }}</p>
+        </div>
+        @endif
+
         <div class="mt-5 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
             @if ($sale->status === 'pending')
             @can('sales.edit')

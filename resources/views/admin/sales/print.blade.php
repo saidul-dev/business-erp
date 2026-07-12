@@ -48,10 +48,15 @@
 
         <div class="mt-6 grid grid-cols-2 gap-6 text-sm">
             <div>
-                <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Customer') }}</p>
-                <p class="font-semibold text-slate-800">{{ $sale->party->name }}</p>
-                @if ($sale->party->phone)<p class="text-slate-600">{{ $sale->party->phone }}</p>@endif
-                @if ($sale->party->address)<p class="text-slate-500">{{ $sale->party->address }}</p>@endif
+                <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ $sale->channel === 'online' ? __('Deliver To') : __('Customer') }}</p>
+                <p class="font-semibold text-slate-800">{{ $sale->channel === 'online' ? ($sale->shipping_name ?: $sale->party->name) : $sale->party->name }}</p>
+                @if ($sale->channel === 'online')
+                    @if ($sale->shipping_phone)<p class="text-slate-600">{{ $sale->shipping_phone }}</p>@endif
+                    @if ($sale->shipping_address)<p class="text-slate-500">{{ $sale->shipping_address }}</p>@endif
+                @else
+                    @if ($sale->party->phone)<p class="text-slate-600">{{ $sale->party->phone }}</p>@endif
+                    @if ($sale->party->address)<p class="text-slate-500">{{ $sale->party->address }}</p>@endif
+                @endif
             </div>
             <div class="text-right">
                 <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Ship From') }}</p>

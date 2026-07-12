@@ -26,6 +26,21 @@
             <x-input-error class="mt-2" :messages="$errors->get('ecommerce_enabled')" />
         </div>
 
+        <div class="mt-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <x-input-label for="online_site_id" :value="__('Online Store Site')" />
+            <select id="online_site_id" name="online_site_id"
+                    class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-accent-500 focus:ring-accent-500">
+                <option value="">{{ __('— Not selected —') }}</option>
+                @foreach ($sites as $site)
+                <option value="{{ $site->id }}" @selected((int) old('online_site_id', $company->online_site_id) === $site->id)>{{ $site->name }}</option>
+                @endforeach
+            </select>
+            <p class="mt-2 text-xs text-slate-500">
+                {{ __('The Site that online orders draw stock from. Checkout stays disabled until this is set.') }}
+            </p>
+            <x-input-error class="mt-2" :messages="$errors->get('online_site_id')" />
+        </div>
+
         <div class="mt-5 flex items-center gap-3">
             <x-primary-button>{{ __('Save Changes') }}</x-primary-button>
         </div>

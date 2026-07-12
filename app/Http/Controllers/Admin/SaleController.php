@@ -46,6 +46,7 @@ class SaleController extends Controller implements HasMiddleware
         $sites = Site::where('status', true)->orderBy('name')->get();
         $status = $request->get('status');
         $siteId = $request->filled('site_id') ? $request->integer('site_id') : null;
+        $channel = $request->get('channel');
         $from = $request->get('from');
         $to = $request->get('to');
         $q = $request->get('q');
@@ -53,6 +54,7 @@ class SaleController extends Controller implements HasMiddleware
         $sales = Sale::with(['party', 'site'])
             ->when($siteId, fn ($qr) => $qr->where('site_id', $siteId))
             ->when($status, fn ($qr) => $qr->where('status', $status))
+            ->when($channel, fn ($qr) => $qr->where('channel', $channel))
             ->when($from, fn ($qr) => $qr->whereDate('order_date', '>=', $from))
             ->when($to, fn ($qr) => $qr->whereDate('order_date', '<=', $to))
             ->when($q, fn ($qr) => $qr->where(fn ($qr2) => $qr2
@@ -64,7 +66,7 @@ class SaleController extends Controller implements HasMiddleware
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.sales.index', compact('sales', 'sites', 'status', 'siteId', 'from', 'to', 'q'));
+        return view('admin.sales.index', compact('sales', 'sites', 'status', 'siteId', 'channel', 'from', 'to', 'q'));
     }
 
     /**

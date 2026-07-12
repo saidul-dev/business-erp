@@ -109,13 +109,4 @@ class WebsiteController extends Controller
 
         return back()->with('success', "Thanks, {$validated['name']} — we've received your message and will get back to you soon.");
     }
-
-    public function shop()
-    {
-        $company = CompanySetting::current();
-
-        abort_unless($company->ecommerce_enabled, 404);
-
-        return view('website.shop', ['company' => $company]);
-    }
 }

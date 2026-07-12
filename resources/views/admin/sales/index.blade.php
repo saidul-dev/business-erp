@@ -1,10 +1,10 @@
 <x-app-layout>
-    <x-slot name="title">{{ __('Sales') }}</x-slot>
+    <x-slot name="title">{{ $channel === 'online' ? __('Online Orders') : __('Sales') }}</x-slot>
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-bold text-brand-900">{{ __('Sales') }}</h2>
-                <p class="text-sm text-slate-500 mt-0.5">{{ __('Sales orders and deliveries to customers') }}</p>
+                <h2 class="text-2xl font-bold text-brand-900">{{ $channel === 'online' ? __('Online Orders') : __('Sales') }}</h2>
+                <p class="text-sm text-slate-500 mt-0.5">{{ $channel === 'online' ? __('Orders placed through the online storefront') : __('Sales orders and deliveries to customers') }}</p>
             </div>
             @can('sales.create')
             <a href="{{ route('sales.create') }}"
@@ -48,8 +48,19 @@
                     @endforeach
                 </select>
             </div>
+            @if ($ecommerceEnabled)
+            <div class="w-40 shrink-0">
+                <x-input-label for="channel" :value="__('Channel')" />
+                <select name="channel"
+                        class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
+                    <option value="">{{ __('All channels') }}</option>
+                    <option value="pos" @selected($channel === 'pos')>{{ __('POS') }}</option>
+                    <option value="online" @selected($channel === 'online')>{{ __('Online') }}</option>
+                </select>
+            </div>
+            @endif
             <button type="submit" class="shrink-0 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">{{ __('Filter') }}</button>
-            @if ($q || $from || $to || $siteId || $status)
+            @if ($q || $from || $to || $siteId || $status || $channel)
             <a href="{{ route('sales.index') }}" class="shrink-0 text-sm font-semibold text-slate-500 hover:text-slate-700">{{ __('Clear') }}</a>
             @endif
         </form>
@@ -64,6 +75,9 @@
                     <th class="px-5 py-3 font-semibold">{{ __('Customer') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Site') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Order Date') }}</th>
+                    @if ($ecommerceEnabled)
+                    <th class="px-5 py-3 font-semibold">{{ __('Channel') }}</th>
+                    @endif
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Total') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Status') }}</th>
                     <th class="px-5 py-3 font-semibold"></th>
@@ -76,6 +90,13 @@
                     <td class="px-5 py-3 text-slate-600">{{ $sale->party->name }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $sale->site->name }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $sale->order_date->format('d M, Y') }}</td>
+                    @if ($ecommerceEnabled)
+                    <td class="px-5 py-3">
+                        <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $sale->channel === 'online' ? 'bg-accent-100 text-accent-700' : 'bg-slate-100 text-slate-600' }}">
+                            {{ $sale->channel === 'online' ? __('Online') : __('POS') }}
+                        </span>
+                    </td>
+                    @endif
                     <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ number_format($sale->total_amount, 2) }}</td>
                     <td class="px-5 py-3">
                         <x-sale-status-badge :status="$sale->status" />
@@ -86,7 +107,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="px-5 py-10 text-center text-slate-400">{{ __('No sales yet.') }}</td>
+                    <td colspan="{{ $ecommerceEnabled ? 8 : 7 }}" class="px-5 py-10 text-center text-slate-400">{{ __('No sales yet.') }}</td>
                 </tr>
                 @endforelse
             </tbody>

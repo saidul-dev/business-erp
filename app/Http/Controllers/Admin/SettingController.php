@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CompanySetting;
+use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -106,13 +107,23 @@ class SettingController extends Controller implements HasMiddleware
 
     public function editEcommerce()
     {
-        return view('admin.settings.ecommerce', ['company' => CompanySetting::current()]);
+        return view('admin.settings.ecommerce', [
+            'company' => CompanySetting::current(),
+            'sites' => Site::where('status', true)->orderBy('name')->get(),
+        ]);
     }
 
     public function updateEcommerce(Request $request)
     {
+        $validated = $request->validate([
+            'online_site_id' => ['nullable', 'integer', 'exists:sites,id'],
+        ]);
+
         // Checkboxes omit the field entirely when unchecked, so read it directly.
-        CompanySetting::current()->update(['ecommerce_enabled' => $request->boolean('ecommerce_enabled')]);
+        CompanySetting::current()->update([
+            'ecommerce_enabled' => $request->boolean('ecommerce_enabled'),
+            'online_site_id' => $validated['online_site_id'] ?? null,
+        ]);
 
         return redirect()->route('settings.ecommerce.edit')->with('success', 'E-commerce setting updated.');
     }
