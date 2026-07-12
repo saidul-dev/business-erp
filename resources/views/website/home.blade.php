@@ -167,51 +167,78 @@
     </section>
     @endif
 
-    <!-- Quick Links -->
-    <section class="bg-accent-500 py-3">
+    <!-- Quick Links CTA -->
+    <section class="bg-white py-16 sm:py-20">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-wrap items-center justify-center gap-3">
-                @if ($company->ecommerce_enabled)
-                <a href="{{ route('shop') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-950 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-900 transition-colors">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
-                    Shop Now
-                </a>
-                @endif
-                <a href="{{ route('contact') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-950 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-900 transition-colors">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a1.5 1.5 0 0 0 1.5-1.5v-3.379a1.5 1.5 0 0 0-1.06-1.436l-4.318-1.318a1.5 1.5 0 0 0-1.567.44l-1.03 1.235a11.25 11.25 0 0 1-5.632-5.633l1.235-1.03a1.5 1.5 0 0 0 .44-1.566L7.755 3.31a1.5 1.5 0 0 0-1.436-1.06H3a1.5 1.5 0 0 0-1.5 1.5v3Z"/></svg>
-                    Contact Us
-                </a>
-                <a href="{{ route('career') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-950 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-900 transition-colors">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
-                    Careers
-                </a>
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800 px-6 py-12 sm:px-12 sm:py-16">
+                <div class="hero-blob pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-accent-500/20 blur-3xl"></div>
+                <div class="hero-blob hero-blob-delay pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-brand-500/30 blur-3xl"></div>
+
+                <div class="relative flex flex-col lg:flex-row items-center justify-between gap-8">
+                    <div class="text-center lg:text-left max-w-lg">
+                        <p class="text-sm font-semibold text-accent-400 tracking-wide uppercase">Ready When You Are</p>
+                        <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                            Explore what {{ $company->name ?? 'we' }} can do for you
+                        </h2>
+                        <p class="mt-3 text-sm text-brand-200/90">
+                            Browse our catalog, reach out with a question, or see current openings — whatever brings you here, we're glad to help.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-center gap-3 shrink-0">
+                        @if ($company->ecommerce_enabled)
+                        <a href="{{ route('shop') }}" class="inline-flex items-center gap-2 rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+                            Shop Now
+                        </a>
+                        @endif
+                        <a href="{{ route('contact') }}" class="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a1.5 1.5 0 0 0 1.5-1.5v-3.379a1.5 1.5 0 0 0-1.06-1.436l-4.318-1.318a1.5 1.5 0 0 0-1.567.44l-1.03 1.235a11.25 11.25 0 0 1-5.632-5.633l1.235-1.03a1.5 1.5 0 0 0 .44-1.566L7.755 3.31a1.5 1.5 0 0 0-1.436-1.06H3a1.5 1.5 0 0 0-1.5 1.5v3Z"/></svg>
+                            Contact Us
+                        </a>
+                        <a href="{{ route('career') }}" class="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+                            Careers
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    @if ($company->mission_text || $company->vision_text)
-    <!-- Mission & Vision -->
-    <section class="bg-white py-20 sm:py-28">
+    @if ($company->mission_text || $company->vision_text || $company->values_text)
+    <!-- Mission, Vision & Values -->
+    <section class="bg-slate-50 py-20 sm:py-28">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="grid gap-6 {{ $company->mission_text && $company->vision_text ? 'sm:grid-cols-2' : '' }} max-w-4xl mx-auto">
-                @if ($company->mission_text)
-                <div class="rounded-2xl border border-slate-200 p-8">
-                    <span class="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-700">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m-15.432 0A8.959 8.959 0 0 1 3 12c0-.778.099-1.533.284-2.253"/></svg>
+            <div class="text-center max-w-2xl mx-auto">
+                <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">What Drives Us</p>
+                <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold text-brand-950 tracking-tight">
+                    Mission, Vision &amp; Values
+                </h2>
+            </div>
+
+            @php
+                $missionCards = collect([
+                    $company->mission_text ? ['title' => 'Our Mission', 'text' => $company->mission_text, 'gradient' => 'from-brand-600 to-brand-800', 'icon' => 'M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m-15.432 0A8.959 8.959 0 0 1 3 12c0-.778.099-1.533.284-2.253'] : null,
+                    $company->vision_text ? ['title' => 'Our Vision', 'text' => $company->vision_text, 'gradient' => 'from-accent-500 to-accent-700', 'icon' => 'M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z|M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z'] : null,
+                    $company->values_text ? ['title' => 'Our Values', 'text' => $company->values_text, 'gradient' => 'from-emerald-500 to-emerald-700', 'icon' => 'M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'] : null,
+                ])->filter()->values();
+            @endphp
+
+            <div class="mt-14 grid gap-6 max-w-5xl mx-auto {{ $missionCards->count() === 1 ? '' : ($missionCards->count() === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3') }}">
+                @foreach ($missionCards as $card)
+                <div class="group rounded-2xl bg-white border border-slate-200 p-8 hover:shadow-xl hover:shadow-brand-100 hover:-translate-y-1 transition-all duration-300">
+                    <span class="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br {{ $card['gradient'] }} text-white shadow-lg">
+                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor">
+                            @foreach (explode('|', $card['icon']) as $path)
+                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $path }}"/>
+                            @endforeach
+                        </svg>
                     </span>
-                    <h3 class="mt-4 text-lg font-bold text-brand-950">Our Mission</h3>
-                    <p class="mt-2 text-sm text-slate-600">{{ $company->mission_text }}</p>
+                    <h3 class="mt-5 text-lg font-bold text-brand-950">{{ $card['title'] }}</h3>
+                    <p class="mt-2 text-sm text-slate-600 leading-relaxed">{{ $card['text'] }}</p>
                 </div>
-                @endif
-                @if ($company->vision_text)
-                <div class="rounded-2xl border border-slate-200 p-8">
-                    <span class="grid h-12 w-12 place-items-center rounded-xl bg-brand-50 text-brand-700">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
-                    </span>
-                    <h3 class="mt-4 text-lg font-bold text-brand-950">Our Vision</h3>
-                    <p class="mt-2 text-sm text-slate-600">{{ $company->vision_text }}</p>
-                </div>
-                @endif
+                @endforeach
             </div>
         </div>
     </section>

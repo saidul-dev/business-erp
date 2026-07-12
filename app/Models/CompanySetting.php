@@ -14,6 +14,7 @@ class CompanySetting extends Model
         'about_text',
         'mission_text',
         'vision_text',
+        'values_text',
         'logo_path',
         'hero_image_path',
         'email',

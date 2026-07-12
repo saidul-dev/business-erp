@@ -80,6 +80,7 @@ class SettingController extends Controller implements HasMiddleware
             'about_text' => ['nullable', 'string', 'max:2000'],
             'mission_text' => ['nullable', 'string', 'max:1000'],
             'vision_text' => ['nullable', 'string', 'max:1000'],
+            'values_text' => ['nullable', 'string', 'max:1000'],
             'hero_image' => ['nullable', 'image', 'max:4096'],
             'remove_hero_image' => ['nullable', 'boolean'],
         ]);

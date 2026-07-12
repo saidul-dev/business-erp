@@ -77,6 +77,14 @@
                               placeholder="{{ __('Where you want the business to be in the future.') }}">{{ old('vision_text', $company->vision_text) }}</textarea>
                     <x-input-error class="mt-2" :messages="$errors->get('vision_text')" />
                 </div>
+                <div class="sm:col-span-2">
+                    <x-input-label for="values_text" :value="__('Core Values')" />
+                    <textarea id="values_text" name="values_text" rows="3"
+                              class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-accent-500 focus:ring-accent-500"
+                              placeholder="{{ __('e.g. Integrity, Customer First, Quality Craftsmanship, Continuous Improvement — shown as a third card next to Mission & Vision.') }}">{{ old('values_text', $company->values_text) }}</textarea>
+                    <p class="mt-1 text-xs text-slate-400">{{ __('Optional. Leave empty to show only Mission & Vision on the homepage.') }}</p>
+                    <x-input-error class="mt-2" :messages="$errors->get('values_text')" />
+                </div>
             </div>
         </div>
 
