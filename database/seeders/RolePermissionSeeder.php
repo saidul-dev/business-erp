@@ -29,6 +29,7 @@ class RolePermissionSeeder extends Seeder
         'tasks'     => ['view', 'create', 'edit', 'delete'],
         'hrm'       => ['view', 'create', 'edit', 'delete', 'approve'],
         'reports'   => ['view'],
+        'website'   => ['view', 'delete'],
         'settings'  => ['view', 'edit'],
         'users'     => ['view', 'create', 'edit', 'delete'],
         'roles'     => ['view', 'create', 'edit', 'delete'],

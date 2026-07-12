@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CapitalTransactionController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CollectionController;
+use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\CourierConsignmentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DayBookController;
@@ -43,6 +44,7 @@ Route::get('/about', [WebsiteController::class, 'about'])->name('about');
 Route::get('/media', [WebsiteController::class, 'media'])->name('media');
 Route::get('/career', [WebsiteController::class, 'career'])->name('career');
 Route::get('/contact', [WebsiteController::class, 'contact'])->name('contact');
+Route::post('/contact', [WebsiteController::class, 'submitContact'])->name('contact.submit');
 Route::get('/shop', [WebsiteController::class, 'shop'])->name('shop');
 
 // UI language switch — not an authenticated action, just a session preference.
@@ -154,6 +156,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/balance-sheet', [BalanceSheetController::class, 'index'])->name('balance-sheet.index');
         Route::get('/profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index');
         Route::get('/due-report', [DueReportController::class, 'index'])->name('due-report.index');
+
+        Route::get('/contact-messages', [ContactMessageController::class, 'index'])->name('contact-messages.index');
+        Route::get('/contact-messages/{contactMessage}', [ContactMessageController::class, 'show'])->name('contact-messages.show');
+        Route::delete('/contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');

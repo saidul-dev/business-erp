@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\CompanySetting;
-use App\Models\Party;
+use App\Models\ContactMessage;
 use App\Models\Product;
 use App\Models\Site;
+use Illuminate\Http\Request;
 
 class WebsiteController extends Controller
 {
@@ -40,16 +41,6 @@ class WebsiteController extends Controller
             'branches' => $branches->count(),
         ];
 
-        // Business-scale stats further down the page. Clients/Suppliers are
-        // real Party data; Employees has no HR module yet (see README —
-        // HRM is a later phase), so it's a static placeholder until that
-        // exists, per an explicit decision to not fake a "real" data source.
-        $businessStats = [
-            'employees' => 25,
-            'clients' => Party::where('is_customer', true)->where('status', true)->count(),
-            'suppliers' => Party::where('is_supplier', true)->where('status', true)->count(),
-        ];
-
         return view('website.home', [
             'company' => CompanySetting::current(),
             'categories' => $categories,
@@ -57,7 +48,6 @@ class WebsiteController extends Controller
             'featuredProducts' => $featuredProducts,
             'branches' => $branches,
             'heroStats' => $heroStats,
-            'businessStats' => $businessStats,
         ]);
     }
 
@@ -89,6 +79,20 @@ class WebsiteController extends Controller
     public function contact()
     {
         return view('website.contact', ['company' => CompanySetting::current()]);
+    }
+
+    public function submitContact(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'message' => ['required', 'string', 'max:5000'],
+        ]);
+
+        ContactMessage::create($validated);
+
+        return back()->with('success', "Thanks, {$validated['name']} — we've received your message and will get back to you soon.");
     }
 
     public function shop()

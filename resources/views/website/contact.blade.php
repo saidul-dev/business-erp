@@ -42,17 +42,9 @@
                     @endif
                 </div>
 
-                <form class="space-y-4">
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <input type="text" placeholder="Your name" class="w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
-                        <input type="email" placeholder="Your email" class="w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
-                    </div>
-                    <textarea rows="4" placeholder="How can we help?" class="w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500"></textarea>
-                    <button type="button" class="w-full sm:w-auto rounded-lg bg-brand-900 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-800">
-                        Send Message
-                    </button>
-                    <p class="text-xs text-slate-400">This form is a preview — message sending will be wired up soon.</p>
-                </form>
+                <div>
+                    @include('website.partials.contact-form')
+                </div>
             </div>
         </div>
     </section>
