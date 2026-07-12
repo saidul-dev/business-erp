@@ -180,7 +180,11 @@ class ProductController extends Controller implements HasMiddleware
             'sale_unit_conversion' => ['required', 'numeric', 'min:0.0001'],
             // Trix's HTML output carries markup overhead beyond the visible
             // text, so this needs far more headroom than a plain textarea.
+            // Only ever posted when the form's e-commerce section is shown.
             'description' => ['nullable', 'string', 'max:20000'],
+            // Shown on the product page regardless of ecommerce_enabled —
+            // see the short_description migration for why it's separate.
+            'short_description' => ['nullable', 'string', 'max:500'],
             'estimated_cost' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
             'compare_at_price' => ['nullable', 'numeric', 'min:0'],

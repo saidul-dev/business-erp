@@ -1,7 +1,7 @@
 <x-website-layout :title="$product->name">
 
     <section class="bg-white py-12">
-        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
             @if (session('success'))
             <div class="mb-6 flex items-center gap-3 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 ring-1 ring-emerald-200">
@@ -70,8 +70,8 @@
                               x-text="inStock ? 'In Stock' : 'Out of Stock'"></span>
                     </p>
 
-                    @if ($product->description)
-                    <div class="trix-content mt-5 text-sm leading-relaxed text-slate-600">{!! $product->description !!}</div>
+                    @if ($product->short_description)
+                    <p class="mt-4 whitespace-pre-line text-sm leading-relaxed text-slate-600">{{ $product->short_description }}</p>
                     @endif
 
                     <form method="POST" action="{{ route('cart.add') }}" class="mt-6 space-y-4">
@@ -105,6 +105,15 @@
                     </form>
                 </div>
             </div>
+
+            @if ($product->description)
+            <div class="mt-16">
+                <h2 class="text-xl font-extrabold text-brand-950 mb-4">Product Description</h2>
+                <div class="trix-content rounded-2xl border border-slate-200 p-6 text-sm leading-relaxed text-slate-600">
+                    {!! $product->description !!}
+                </div>
+            </div>
+            @endif
 
             @if ($relatedProducts->isNotEmpty())
             <div class="mt-16" x-data="{ scroll(dir) { this.$refs.track.scrollBy({ left: dir * 320, behavior: 'smooth' }); } }">

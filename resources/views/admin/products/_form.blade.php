@@ -76,11 +76,11 @@
         </div>
 
         <div>
-            <x-input-label for="description" :value="__('Description (optional)')" />
-            <p class="mb-1.5 text-[11px] text-slate-400">{{ __('Shown on the product\'s page in the online store — formatting (bold, lists, headings) is preserved') }}</p>
-            <input id="description" type="hidden" name="description" value="{{ old('description', $product->description ?? '') }}">
-            <trix-editor input="description" class="mt-1 block w-full"></trix-editor>
-            <x-input-error class="mt-2" :messages="$errors->get('description')" />
+            <x-input-label for="short_description" :value="__('Short Description (optional)')" />
+            <p class="mb-1.5 text-[11px] text-slate-400">{{ __('A brief summary — always shown near the product name, with or without the online store. Each line is kept on its own line.') }}</p>
+            <textarea id="short_description" name="short_description" rows="4" maxlength="500"
+                      class="mt-1 block w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">{{ old('short_description', $product->short_description ?? '') }}</textarea>
+            <x-input-error class="mt-2" :messages="$errors->get('short_description')" />
         </div>
     </div>
 
@@ -360,6 +360,20 @@
 
         @include('admin.products._variants')
     </div>
+
+    @if ($ecommerceEnabled ?? false)
+    <!-- Long Description -->
+    <div class="lg:col-span-3 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <div class="mb-4">
+            <h3 class="font-bold text-brand-900">{{ __('Long Description') }}</h3>
+            <p class="text-xs text-slate-400">{{ __('Shown in the Description section of the product\'s online store page — formatting (bold, lists, headings) is preserved') }}</p>
+        </div>
+
+        <input id="description" type="hidden" name="description" value="{{ old('description', $product->description ?? '') }}">
+        <trix-editor input="description" class="block w-full"></trix-editor>
+        <x-input-error class="mt-2" :messages="$errors->get('description')" />
+    </div>
+    @endif
 </div>
 
 @if (($product ?? null) && $product->has_variants)

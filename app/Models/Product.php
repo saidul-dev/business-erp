@@ -21,6 +21,7 @@ class Product extends Model
         'sale_unit_id',
         'sale_unit_conversion',
         'description',
+        'short_description',
         'estimated_cost',
         'selling_price',
         'compare_at_price',
