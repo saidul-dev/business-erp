@@ -33,27 +33,39 @@ class WebsiteController extends Controller
 
         $branches = Site::where('status', true)->orderBy('name')->get();
 
-        // Real figures for the hero stat row — never invented copy, so it
-        // stays honest as the catalog grows (or starts empty).
-        $heroStats = [
-            'products' => Product::where('status', true)->count(),
-            'categories' => $categories->count(),
-            'branches' => $branches->count(),
-        ];
-
         return view('website.home', [
             'company' => CompanySetting::current(),
             'categories' => $categories,
             'products' => $products,
             'featuredProducts' => $featuredProducts,
             'branches' => $branches,
-            'heroStats' => $heroStats,
+            'heroStats' => $this->catalogStats(),
         ]);
     }
 
     public function about()
     {
-        return view('website.about', ['company' => CompanySetting::current()]);
+        return view('website.about', [
+            'company' => CompanySetting::current(),
+            'branches' => Site::where('status', true)->orderBy('name')->get(),
+            'stats' => $this->catalogStats(),
+        ]);
+    }
+
+    /**
+     * Real figures for the hero/about "at a glance" stat rows — never
+     * invented copy, so it stays honest as the catalog grows (or starts
+     * empty).
+     */
+    private function catalogStats(): array
+    {
+        return [
+            'products' => Product::where('status', true)->count(),
+            'categories' => Category::whereNull('parent_id')->where('status', true)
+                ->whereHas('products', fn ($q) => $q->where('status', true))
+                ->count(),
+            'branches' => Site::where('status', true)->count(),
+        ];
     }
 
     /**
@@ -78,7 +90,10 @@ class WebsiteController extends Controller
 
     public function contact()
     {
-        return view('website.contact', ['company' => CompanySetting::current()]);
+        return view('website.contact', [
+            'company' => CompanySetting::current(),
+            'branches' => Site::where('status', true)->orderBy('name')->get(),
+        ]);
     }
 
     public function submitContact(Request $request)
