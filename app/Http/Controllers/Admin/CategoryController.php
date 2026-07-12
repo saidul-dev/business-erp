@@ -7,6 +7,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller implements HasMiddleware
@@ -37,7 +38,11 @@ class CategoryController extends Controller implements HasMiddleware
     {
         $validated = $this->validated($request);
 
-        $category = Category::create($validated);
+        if ($request->hasFile('icon')) {
+            $validated['icon_path'] = $request->file('icon')->store('categories', 'public');
+        }
+
+        $category = Category::create(collect($validated)->except('icon')->all());
 
         return redirect()->route('categories.index')->with('success', "Category \"{$category->name}\" created.");
     }
@@ -54,7 +59,19 @@ class CategoryController extends Controller implements HasMiddleware
     {
         $validated = $this->validated($request, $category);
 
-        $category->update($validated);
+        if ($request->boolean('remove_icon') && $category->icon_path) {
+            Storage::disk('public')->delete($category->icon_path);
+            $validated['icon_path'] = null;
+        }
+
+        if ($request->hasFile('icon')) {
+            if ($category->icon_path) {
+                Storage::disk('public')->delete($category->icon_path);
+            }
+            $validated['icon_path'] = $request->file('icon')->store('categories', 'public');
+        }
+
+        $category->update(collect($validated)->except(['icon', 'remove_icon'])->all());
 
         return redirect()->route('categories.index')->with('success', "Category \"{$category->name}\" updated.");
     }
@@ -76,6 +93,10 @@ class CategoryController extends Controller implements HasMiddleware
             return back()->with('error', "Category \"{$category->name}\" still has products assigned — reassign them first.");
         }
 
+        if ($category->icon_path) {
+            Storage::disk('public')->delete($category->icon_path);
+        }
+
         $category->delete();
 
         return redirect()->route('categories.index')->with('success', "Category \"{$category->name}\" deleted.");
@@ -91,6 +112,8 @@ class CategoryController extends Controller implements HasMiddleware
                 Rule::exists('categories', 'id'),
                 Rule::notIn([$category?->id]),
             ],
+            'icon' => ['nullable', 'image', 'max:1024'],
+            'remove_icon' => ['nullable', 'boolean'],
         ]);
     }
 }

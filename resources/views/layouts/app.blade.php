@@ -396,6 +396,12 @@
                             {{ __('E-commerce') }}
                         </x-sidebar-sublink>
                         @endif
+                        @if ($ecommerceEnabled)
+                        <x-sidebar-sublink :href="route('hero-slides.index')"
+                            :active="request()->routeIs('hero-slides.*')">
+                            {{ __('Hero Slides') }}
+                        </x-sidebar-sublink>
+                        @endif
                     </x-sidebar-dropdown>
                     @endcan
                 </div>

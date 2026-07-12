@@ -56,7 +56,13 @@
                     @endif
                     <h1 class="mt-1 text-3xl font-extrabold text-brand-950">{{ $product->name }}</h1>
 
-                    <p class="mt-4 text-2xl font-bold text-accent-600" x-text="Number(price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})"></p>
+                    <div class="mt-4 flex items-center gap-3">
+                        <p class="text-2xl font-bold text-accent-600" x-text="Number(price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})"></p>
+                        @if ($product->discount_percent)
+                        <p class="text-base text-slate-400 line-through">{{ number_format($product->compare_at_price, 2) }}</p>
+                        <span class="rounded-full bg-rose-600 px-2 py-0.5 text-xs font-bold text-white">-{{ $product->discount_percent }}%</span>
+                        @endif
+                    </div>
 
                     <p class="mt-2">
                         <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"

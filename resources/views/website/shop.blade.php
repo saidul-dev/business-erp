@@ -122,19 +122,27 @@
                                 <span class="absolute top-3 left-3 rounded-full px-2.5 py-0.5 text-[11px] font-semibold {{ $product->in_stock ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500' }}">
                                     {{ $product->in_stock ? 'In Stock' : 'Out of Stock' }}
                                 </span>
+                                @if ($product->discount_percent)
+                                <span class="absolute top-3 right-3 rounded-full bg-rose-600 px-2 py-0.5 text-[11px] font-bold text-white">-{{ $product->discount_percent }}%</span>
+                                @endif
                             </div>
                             <div class="p-4">
                                 @if ($product->category)
                                 <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ $product->category->name }}</p>
                                 @endif
                                 <p class="mt-1 font-semibold text-brand-950 group-hover:text-accent-700 transition-colors">{{ $product->name }}</p>
-                                <p class="mt-1.5 text-sm font-bold text-accent-600">
-                                    @if ($product->price_from === $product->price_to)
-                                        {{ number_format($product->price_from, 2) }}
-                                    @else
-                                        {{ number_format($product->price_from, 2) }} – {{ number_format($product->price_to, 2) }}
+                                <div class="mt-1.5 flex items-center gap-2">
+                                    <span class="text-sm font-bold text-accent-600">
+                                        @if ($product->price_from === $product->price_to)
+                                            {{ number_format($product->price_from, 2) }}
+                                        @else
+                                            {{ number_format($product->price_from, 2) }} – {{ number_format($product->price_to, 2) }}
+                                        @endif
+                                    </span>
+                                    @if ($product->discount_percent)
+                                    <span class="text-xs text-slate-400 line-through">{{ number_format($product->compare_at_price, 2) }}</span>
                                     @endif
-                                </p>
+                                </div>
                             </div>
                         </a>
                         @endforeach

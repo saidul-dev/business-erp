@@ -23,6 +23,9 @@ class Product extends Model
         'description',
         'estimated_cost',
         'selling_price',
+        'compare_at_price',
+        'is_featured',
+        'is_flash_sale',
         'reorder_level',
         'image_path',
         'status',
@@ -44,6 +47,9 @@ class Product extends Model
         // true total. UI display still formats to 2dp.
         'estimated_cost' => 'decimal:4',
         'selling_price' => 'decimal:2',
+        'compare_at_price' => 'decimal:2',
+        'is_featured' => 'boolean',
+        'is_flash_sale' => 'boolean',
         'purchase_unit_conversion' => 'decimal:4',
         'sale_unit_conversion' => 'decimal:4',
         'reorder_level' => 'integer',
@@ -109,5 +115,19 @@ class Product extends Model
     public function isVariable(): bool
     {
         return (bool) $this->has_variants;
+    }
+
+    /**
+     * Whole-number "% off" for the storefront's discount badge, or null
+     * when there's nothing to show (no compare_at_price, or it's not
+     * actually higher than the selling price).
+     */
+    public function getDiscountPercentAttribute(): ?int
+    {
+        if (! $this->compare_at_price || (float) $this->compare_at_price <= (float) $this->selling_price) {
+            return null;
+        }
+
+        return (int) round((1 - (float) $this->selling_price / (float) $this->compare_at_price) * 100);
     }
 }

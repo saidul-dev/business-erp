@@ -7,7 +7,7 @@
         </div>
     </x-slot>
 
-    <form method="POST" action="{{ route('categories.update', $category) }}">
+    <form method="POST" action="{{ route('categories.update', $category) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         @include('admin.categories._form')

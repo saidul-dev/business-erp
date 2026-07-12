@@ -181,6 +181,9 @@ class ProductController extends Controller implements HasMiddleware
             'description' => ['nullable', 'string', 'max:2000'],
             'estimated_cost' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
+            'compare_at_price' => ['nullable', 'numeric', 'min:0'],
+            'is_featured' => ['nullable', 'boolean'],
+            'is_flash_sale' => ['nullable', 'boolean'],
             'reorder_level' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'max:2048'],
             'remove_image' => ['nullable', 'boolean'],
@@ -195,7 +198,7 @@ class ProductController extends Controller implements HasMiddleware
         ]);
 
         // Normalize booleans (unchecked checkboxes are absent from the request).
-        foreach (['has_variants', 'track_batch', 'track_expiry', 'track_serial'] as $flag) {
+        foreach (['has_variants', 'track_batch', 'track_expiry', 'track_serial', 'is_featured', 'is_flash_sale'] as $flag) {
             $validated[$flag] = $request->boolean($flag);
         }
 

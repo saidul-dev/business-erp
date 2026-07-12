@@ -7,7 +7,7 @@
         </div>
     </x-slot>
 
-    <form method="POST" action="{{ route('categories.store') }}">
+    <form method="POST" action="{{ route('categories.store') }}" enctype="multipart/form-data">
         @csrf
         @include('admin.categories._form')
     </form>

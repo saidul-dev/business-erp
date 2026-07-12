@@ -229,6 +229,29 @@
                 <p class="mt-1 text-[11px] text-slate-400">{{ __('Low-stock alert threshold, in Stock Units (used once stock tracking is added)') }}</p>
                 <x-input-error class="mt-2" :messages="$errors->get('reorder_level')" />
             </div>
+
+            <div>
+                <x-input-label for="compare_at_price" :value="__('Compare at Price (optional)')" />
+                <x-text-input id="compare_at_price" name="compare_at_price" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                              :value="old('compare_at_price', $product->compare_at_price ?? '')" />
+                <p class="mt-1 text-[11px] text-slate-400">{{ __('Original price shown struck-through with a % off badge on the online store, when higher than Selling Price') }}</p>
+                <x-input-error class="mt-2" :messages="$errors->get('compare_at_price')" />
+            </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center gap-6">
+            <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" name="is_featured" value="1" class="rounded border-slate-300 text-accent-600 focus:ring-accent-500"
+                       @checked(old('is_featured', $product->is_featured ?? false))>
+                {{ __('Featured Product') }}
+                <span class="text-xs text-slate-400">({{ __('shown in the online store\'s Featured row') }})</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" name="is_flash_sale" value="1" class="rounded border-slate-300 text-accent-600 focus:ring-accent-500"
+                       @checked(old('is_flash_sale', $product->is_flash_sale ?? false))>
+                {{ __('Flash Sale') }}
+                <span class="text-xs text-slate-400">({{ __('shown in the online store\'s Flash Sale row') }})</span>
+            </label>
         </div>
     </div>
 

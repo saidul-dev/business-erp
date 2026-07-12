@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\DeliveryPartnerController;
 use App\Http\Controllers\Admin\DueReportController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FundTransferController;
+use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\IncomeController;
 use App\Http\Controllers\Admin\InitialStockController;
 use App\Http\Controllers\Admin\LedgerAccountController;
@@ -187,6 +188,10 @@ Route::prefix('admin')->group(function () {
         Route::put('/settings/website', [SettingController::class, 'updateWebsite'])->name('settings.website.update');
         Route::get('/settings/ecommerce', [SettingController::class, 'editEcommerce'])->name('settings.ecommerce.edit');
         Route::put('/settings/ecommerce', [SettingController::class, 'updateEcommerce'])->name('settings.ecommerce.update');
+
+        Route::resource('hero-slides', HeroSlideController::class)->except('show')
+            ->parameters(['hero-slides' => 'heroSlide']);
+        Route::patch('/hero-slides/{heroSlide}/toggle-status', [HeroSlideController::class, 'toggleStatus'])->name('hero-slides.toggle-status');
     });
 });
 

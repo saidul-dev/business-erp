@@ -117,13 +117,37 @@ class SettingController extends Controller implements HasMiddleware
     {
         $validated = $request->validate([
             'online_site_id' => ['nullable', 'integer', 'exists:sites,id'],
+            'side_banner_1' => ['nullable', 'image', 'max:2048'],
+            'remove_side_banner_1' => ['nullable', 'boolean'],
+            'side_banner_2' => ['nullable', 'image', 'max:2048'],
+            'remove_side_banner_2' => ['nullable', 'boolean'],
         ]);
 
-        // Checkboxes omit the field entirely when unchecked, so read it directly.
-        CompanySetting::current()->update([
+        $company = CompanySetting::current();
+
+        $data = [
+            // Checkboxes omit the field entirely when unchecked, so read it directly.
             'ecommerce_enabled' => $request->boolean('ecommerce_enabled'),
             'online_site_id' => $validated['online_site_id'] ?? null,
-        ]);
+        ];
+
+        foreach (['side_banner_1', 'side_banner_2'] as $field) {
+            $pathField = "{$field}_path";
+
+            if ($request->boolean("remove_{$field}") && $company->$pathField) {
+                Storage::disk('public')->delete($company->$pathField);
+                $data[$pathField] = null;
+            }
+
+            if ($request->hasFile($field)) {
+                if ($company->$pathField) {
+                    Storage::disk('public')->delete($company->$pathField);
+                }
+                $data[$pathField] = $request->file($field)->store('company', 'public');
+            }
+        }
+
+        $company->update($data);
 
         return redirect()->route('settings.ecommerce.edit')->with('success', 'E-commerce setting updated.');
     }

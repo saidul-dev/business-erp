@@ -27,6 +27,8 @@ class CompanySetting extends Model
         'financial_year_start_month',
         'ecommerce_enabled',
         'online_site_id',
+        'side_banner_1_path',
+        'side_banner_2_path',
     ];
 
     protected $casts = [
@@ -54,6 +56,16 @@ class CompanySetting extends Model
     public function getHeroImageUrlAttribute(): ?string
     {
         return $this->hero_image_path ? Storage::disk('public')->url($this->hero_image_path) : null;
+    }
+
+    public function getSideBanner1UrlAttribute(): ?string
+    {
+        return $this->side_banner_1_path ? Storage::disk('public')->url($this->side_banner_1_path) : null;
+    }
+
+    public function getSideBanner2UrlAttribute(): ?string
+    {
+        return $this->side_banner_2_path ? Storage::disk('public')->url($this->side_banner_2_path) : null;
     }
 
     /**
