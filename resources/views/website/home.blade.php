@@ -167,44 +167,39 @@
     </section>
     @endif
 
-    <!-- Quick Links CTA -->
-    <section class="bg-white py-16 sm:py-20">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800 px-6 py-12 sm:px-12 sm:py-16">
-                <div class="hero-blob pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-accent-500/20 blur-3xl"></div>
-                <div class="hero-blob hero-blob-delay pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-brand-500/30 blur-3xl"></div>
+    @if ($products->isNotEmpty())
+    <!-- Product Slider -->
+    <section class="bg-white py-20 sm:py-28">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">Fresh From The Catalog</p>
+            <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold text-brand-950 tracking-tight">
+                Our Products
+            </h2>
+        </div>
 
-                <div class="relative flex flex-col lg:flex-row items-center justify-between gap-8">
-                    <div class="text-center lg:text-left max-w-lg">
-                        <p class="text-sm font-semibold text-accent-400 tracking-wide uppercase">Ready When You Are</p>
-                        <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                            Explore what {{ $company->name ?? 'we' }} can do for you
-                        </h2>
-                        <p class="mt-3 text-sm text-brand-200/90">
-                            Browse our catalog, reach out with a question, or see current openings — whatever brings you here, we're glad to help.
-                        </p>
-                    </div>
-
-                    <div class="flex flex-wrap items-center justify-center gap-3 shrink-0">
-                        @if ($company->ecommerce_enabled)
-                        <a href="{{ route('shop') }}" class="inline-flex items-center gap-2 rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
-                            Shop Now
-                        </a>
-                        @endif
-                        <a href="{{ route('contact') }}" class="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a1.5 1.5 0 0 0 1.5-1.5v-3.379a1.5 1.5 0 0 0-1.06-1.436l-4.318-1.318a1.5 1.5 0 0 0-1.567.44l-1.03 1.235a11.25 11.25 0 0 1-5.632-5.633l1.235-1.03a1.5 1.5 0 0 0 .44-1.566L7.755 3.31a1.5 1.5 0 0 0-1.436-1.06H3a1.5 1.5 0 0 0-1.5 1.5v3Z"/></svg>
-                            Contact Us
-                        </a>
-                        <a href="{{ route('career') }}" class="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
-                            Careers
-                        </a>
-                    </div>
-                </div>
+        <div class="marquee mt-14" style="--marquee-duration: 40s;">
+            <div class="marquee-track">
+                @for ($i = 0; $i < 2; $i++)
+                    @foreach ($products as $product)
+                        <div class="w-52 shrink-0 rounded-2xl border border-slate-200 overflow-hidden bg-white">
+                            <div class="aspect-square bg-slate-100 grid place-items-center text-slate-300">
+                                @if ($product->image_url)
+                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="h-full w-full object-cover">
+                                @else
+                                    <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 3h18M3 3l1.5 18h15L21 3H3Z"/></svg>
+                                @endif
+                            </div>
+                            <div class="p-4">
+                                <p class="font-semibold text-brand-950 truncate">{{ $product->name }}</p>
+                                <p class="mt-1 text-sm text-accent-600 font-bold">{{ number_format($product->selling_price, 2) }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                @endfor
             </div>
         </div>
     </section>
+    @endif
 
     @if ($company->mission_text || $company->vision_text || $company->values_text)
     <!-- Mission, Vision & Values -->
@@ -244,40 +239,6 @@
     </section>
     @endif
 
-    @if ($products->isNotEmpty())
-    <!-- Product Slider -->
-    <section class="bg-slate-50 py-20 sm:py-28">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">Fresh From The Catalog</p>
-            <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold text-brand-950 tracking-tight">
-                Our Products
-            </h2>
-        </div>
-
-        <div class="marquee mt-14" style="--marquee-duration: 40s;">
-            <div class="marquee-track">
-                @for ($i = 0; $i < 2; $i++)
-                    @foreach ($products as $product)
-                        <div class="w-52 shrink-0 rounded-2xl border border-slate-200 overflow-hidden bg-white">
-                            <div class="aspect-square bg-slate-100 grid place-items-center text-slate-300">
-                                @if ($product->image_url)
-                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" class="h-full w-full object-cover">
-                                @else
-                                    <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 3h18M3 3l1.5 18h15L21 3H3Z"/></svg>
-                                @endif
-                            </div>
-                            <div class="p-4">
-                                <p class="font-semibold text-brand-950 truncate">{{ $product->name }}</p>
-                                <p class="mt-1 text-sm text-accent-600 font-bold">{{ number_format($product->selling_price, 2) }}</p>
-                            </div>
-                        </div>
-                    @endforeach
-                @endfor
-            </div>
-        </div>
-    </section>
-    @endif
-
     @if ($branches->isNotEmpty())
     <!-- Branch Showcase -->
     <section class="bg-white py-20 sm:py-28">
@@ -308,6 +269,45 @@
         </div>
     </section>
     @endif
+
+    <!-- Quick Links CTA -->
+    <section class="bg-slate-50 py-16 sm:py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800 px-6 py-12 sm:px-12 sm:py-16">
+                <div class="hero-blob pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-accent-500/20 blur-3xl"></div>
+                <div class="hero-blob hero-blob-delay pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-brand-500/30 blur-3xl"></div>
+
+                <div class="relative flex flex-col lg:flex-row items-center justify-between gap-8">
+                    <div class="text-center lg:text-left max-w-lg">
+                        <p class="text-sm font-semibold text-accent-400 tracking-wide uppercase">Ready When You Are</p>
+                        <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                            Explore what {{ $company->name ?? 'we' }} can do for you
+                        </h2>
+                        <p class="mt-3 text-sm text-brand-200/90">
+                            Browse our catalog, reach out with a question, or see current openings — whatever brings you here, we're glad to help.
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-center gap-3 shrink-0">
+                        @if ($company->ecommerce_enabled)
+                        <a href="{{ route('shop') }}" class="inline-flex items-center gap-2 rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+                            Shop Now
+                        </a>
+                        @endif
+                        <a href="{{ route('contact') }}" class="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a1.5 1.5 0 0 0 1.5-1.5v-3.379a1.5 1.5 0 0 0-1.06-1.436l-4.318-1.318a1.5 1.5 0 0 0-1.567.44l-1.03 1.235a11.25 11.25 0 0 1-5.632-5.633l1.235-1.03a1.5 1.5 0 0 0 .44-1.566L7.755 3.31a1.5 1.5 0 0 0-1.436-1.06H3a1.5 1.5 0 0 0-1.5 1.5v3Z"/></svg>
+                            Contact Us
+                        </a>
+                        <a href="{{ route('career') }}" class="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+                            Careers
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Contact -->
     <section id="contact" class="bg-white py-20 sm:py-28">
