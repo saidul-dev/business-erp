@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CourierConsignmentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DayBookController;
 use App\Http\Controllers\Admin\DeliveryPartnerController;
+use App\Http\Controllers\Admin\DeliveryZoneController;
 use App\Http\Controllers\Admin\DueReportController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FundTransferController;
@@ -192,6 +193,10 @@ Route::prefix('admin')->group(function () {
         Route::resource('hero-slides', HeroSlideController::class)->except('show')
             ->parameters(['hero-slides' => 'heroSlide']);
         Route::patch('/hero-slides/{heroSlide}/toggle-status', [HeroSlideController::class, 'toggleStatus'])->name('hero-slides.toggle-status');
+
+        Route::resource('delivery-zones', DeliveryZoneController::class)->except('show')
+            ->parameters(['delivery-zones' => 'deliveryZone']);
+        Route::patch('/delivery-zones/{deliveryZone}/toggle-status', [DeliveryZoneController::class, 'toggleStatus'])->name('delivery-zones.toggle-status');
     });
 });
 

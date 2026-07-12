@@ -16,7 +16,12 @@
             </div>
             @endif
 
-            <div class="mt-6 grid gap-8 lg:grid-cols-[1fr_360px]">
+            <div class="mt-6 grid gap-8 lg:grid-cols-[1fr_360px]"
+                 x-data="{
+                    zones: @js($deliveryZones->map(fn ($z) => ['id' => $z->id, 'name' => $z->name, 'charge' => (float) $z->charge])),
+                    zoneId: '{{ old('delivery_zone_id') }}',
+                    get zone() { return this.zones.find(z => z.id == this.zoneId) ?? null; }
+                 }">
                 <form method="POST" action="{{ route('checkout.store') }}" class="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                     @csrf
 
@@ -41,6 +46,21 @@
                                   class="w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">{{ old('address') }}</textarea>
                         @error('address') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
+
+                    @if ($deliveryZones->isNotEmpty())
+                    <div>
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Delivery Area</label>
+                        <select name="delivery_zone_id" x-model="zoneId" required
+                                class="w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
+                            <option value="">Select your area…</option>
+                            @foreach ($deliveryZones as $zone)
+                            <option value="{{ $zone->id }}">{{ $zone->name }} — {{ number_format($zone->charge, 2) }}</option>
+                            @endforeach
+                        </select>
+                        @error('delivery_zone_id') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                        <p class="mt-1 text-xs text-slate-400">Delivery charge is collected by the courier on delivery — not included in the order total below.</p>
+                    </div>
+                    @endif
 
                     <div>
                         <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Order Note (optional)</label>
@@ -73,9 +93,16 @@
                         @endforeach
                     </div>
                     <div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
-                        <span class="font-semibold text-slate-700">Total</span>
+                        <span class="font-semibold text-slate-700">Total (Cash on Delivery)</span>
                         <span class="text-xl font-bold text-brand-950">{{ number_format($subtotal, 2) }}</span>
                     </div>
+
+                    <template x-if="zone">
+                        <div class="mt-3 flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2 text-sm ring-1 ring-amber-200">
+                            <span class="text-amber-700">Delivery (<span x-text="zone?.name"></span>) — pay courier</span>
+                            <span class="font-semibold text-amber-800" x-text="Number(zone?.charge ?? 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})"></span>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>

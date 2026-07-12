@@ -81,6 +81,12 @@
             </div>
             <p class="mt-2 text-sm font-semibold text-slate-700">{{ $sale->shipping_name }} &middot; {{ $sale->shipping_phone }}</p>
             <p class="text-sm text-slate-600">{{ $sale->shipping_address }}</p>
+            @if ($sale->delivery_zone_name)
+            <p class="mt-2 text-sm font-semibold text-amber-700">
+                {{ __('Delivery') }}: {{ $sale->delivery_zone_name }} — {{ number_format($sale->delivery_charge, 2) }}
+                <span class="font-normal text-amber-600">({{ __('collect from customer via courier — not part of order total') }})</span>
+            </p>
+            @endif
         </div>
         @endif
 

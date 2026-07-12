@@ -53,6 +53,7 @@
                 @if ($sale->channel === 'online')
                     @if ($sale->shipping_phone)<p class="text-slate-600">{{ $sale->shipping_phone }}</p>@endif
                     @if ($sale->shipping_address)<p class="text-slate-500">{{ $sale->shipping_address }}</p>@endif
+                    @if ($sale->delivery_zone_name)<p class="mt-1 font-semibold text-slate-700">{{ __('Delivery') }}: {{ $sale->delivery_zone_name }} — {{ number_format($sale->delivery_charge, 2) }} ({{ __('collect via courier') }})</p>@endif
                 @else
                     @if ($sale->party->phone)<p class="text-slate-600">{{ $sale->party->phone }}</p>@endif
                     @if ($sale->party->address)<p class="text-slate-500">{{ $sale->party->address }}</p>@endif

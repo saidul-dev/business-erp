@@ -32,6 +32,8 @@ class Sale extends Model
         'shipping_name',
         'shipping_phone',
         'shipping_address',
+        'delivery_zone_name',
+        'delivery_charge',
         'order_date',
         'note',
         'subtotal_amount',
@@ -45,6 +47,7 @@ class Sale extends Model
         'subtotal_amount' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'delivery_charge' => 'decimal:2',
     ];
 
     public function party(): BelongsTo

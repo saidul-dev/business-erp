@@ -61,6 +61,13 @@
                     <span class="text-xl font-bold text-brand-950">{{ number_format($sale->total_amount, 2) }}</span>
                 </div>
 
+                @if ($sale->delivery_zone_name)
+                <div class="mt-3 flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2 text-sm ring-1 ring-amber-200">
+                    <span class="text-amber-700">Delivery ({{ $sale->delivery_zone_name }}) — pay courier separately</span>
+                    <span class="font-semibold text-amber-800">{{ number_format($sale->delivery_charge, 2) }}</span>
+                </div>
+                @endif
+
                 @if ($sale->deliveries->isNotEmpty())
                 <div class="mt-5 border-t border-slate-100 pt-4">
                     <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Delivery</p>

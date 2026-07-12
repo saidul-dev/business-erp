@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\CompanySetting;
+use App\Models\DeliveryZone;
 use App\Models\Party;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -14,6 +15,7 @@ use App\Support\Cart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -172,6 +174,7 @@ class ShopController extends Controller
             'lines' => $cart->lines(),
             'subtotal' => $cart->subtotal(),
             'company' => CompanySetting::current(),
+            'deliveryZones' => DeliveryZone::where('status', true)->orderBy('sort_order')->orderBy('id')->get(),
         ]);
     }
 
@@ -200,6 +203,7 @@ class ShopController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:30'],
             'address' => ['required', 'string', 'max:1000'],
+            'delivery_zone_id' => ['nullable', 'integer', Rule::exists('delivery_zones', 'id')->where('status', true)],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -209,7 +213,11 @@ class ShopController extends Controller
             return redirect()->route('cart')->with('error', 'Your cart is empty.');
         }
 
-        $sale = DB::transaction(function () use ($validated, $lines, $company) {
+        $deliveryZone = isset($validated['delivery_zone_id'])
+            ? DeliveryZone::find($validated['delivery_zone_id'])
+            : null;
+
+        $sale = DB::transaction(function () use ($validated, $lines, $company, $deliveryZone) {
             $party = Party::firstOrCreate(
                 ['phone' => $validated['phone']],
                 ['name' => $validated['name'], 'address' => $validated['address'], 'is_customer' => true]
@@ -232,6 +240,11 @@ class ShopController extends Controller
                 'shipping_name' => $validated['name'],
                 'shipping_phone' => $validated['phone'],
                 'shipping_address' => $validated['address'],
+                // Snapshotted for the admin/courier's reference only — see
+                // the delivery_zone_name/delivery_charge migration for why
+                // this never touches subtotal_amount/total_amount.
+                'delivery_zone_name' => $deliveryZone?->name,
+                'delivery_charge' => $deliveryZone?->charge,
                 'order_date' => now()->toDateString(),
                 'note' => $validated['note'] ?? null,
                 'subtotal_amount' => $subtotal,
