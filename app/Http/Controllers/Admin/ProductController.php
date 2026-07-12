@@ -178,7 +178,9 @@ class ProductController extends Controller implements HasMiddleware
             'purchase_unit_conversion' => ['required', 'numeric', 'min:0.0001'],
             'sale_unit_id' => ['nullable', 'integer', 'exists:units,id'],
             'sale_unit_conversion' => ['required', 'numeric', 'min:0.0001'],
-            'description' => ['nullable', 'string', 'max:2000'],
+            // Trix's HTML output carries markup overhead beyond the visible
+            // text, so this needs far more headroom than a plain textarea.
+            'description' => ['nullable', 'string', 'max:20000'],
             'estimated_cost' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
             'compare_at_price' => ['nullable', 'numeric', 'min:0'],

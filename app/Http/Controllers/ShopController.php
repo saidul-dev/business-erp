@@ -104,7 +104,16 @@ class ShopController extends Controller
             ]);
         }
 
-        return view('website.product', compact('product', 'inStock', 'variantOptions'));
+        $relatedProducts = $product->category_id
+            ? Product::where('status', true)
+                ->where('category_id', $product->category_id)
+                ->where('id', '!=', $product->id)
+                ->orderByDesc('id')
+                ->limit(8)
+                ->get()
+            : collect();
+
+        return view('website.product', compact('product', 'inStock', 'variantOptions', 'relatedProducts'));
     }
 
     public function cart()

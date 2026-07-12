@@ -77,8 +77,9 @@
 
         <div>
             <x-input-label for="description" :value="__('Description (optional)')" />
-            <textarea id="description" name="description" rows="3"
-                      class="mt-1 block w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">{{ old('description', $product->description ?? '') }}</textarea>
+            <p class="mb-1.5 text-[11px] text-slate-400">{{ __('Shown on the product\'s page in the online store — formatting (bold, lists, headings) is preserved') }}</p>
+            <input id="description" type="hidden" name="description" value="{{ old('description', $product->description ?? '') }}">
+            <trix-editor input="description" class="mt-1 block w-full"></trix-editor>
             <x-input-error class="mt-2" :messages="$errors->get('description')" />
         </div>
     </div>
@@ -230,6 +231,7 @@
                 <x-input-error class="mt-2" :messages="$errors->get('reorder_level')" />
             </div>
 
+            @if ($ecommerceEnabled ?? false)
             <div>
                 <x-input-label for="compare_at_price" :value="__('Compare at Price (optional)')" />
                 <x-text-input id="compare_at_price" name="compare_at_price" type="number" step="0.01" min="0" class="mt-1 block w-full"
@@ -237,8 +239,10 @@
                 <p class="mt-1 text-[11px] text-slate-400">{{ __('Original price shown struck-through with a % off badge on the online store, when higher than Selling Price') }}</p>
                 <x-input-error class="mt-2" :messages="$errors->get('compare_at_price')" />
             </div>
+            @endif
         </div>
 
+        @if ($ecommerceEnabled ?? false)
         <div class="mt-4 flex flex-wrap items-center gap-6">
             <label class="flex items-center gap-2 text-sm text-slate-700">
                 <input type="checkbox" name="is_featured" value="1" class="rounded border-slate-300 text-accent-600 focus:ring-accent-500"
@@ -253,6 +257,7 @@
                 <span class="text-xs text-slate-400">({{ __('shown in the online store\'s Flash Sale row') }})</span>
             </label>
         </div>
+        @endif
     </div>
 
     <!-- Product Type & Features -->

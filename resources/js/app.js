@@ -4,6 +4,7 @@ import Alpine from 'alpinejs';
 import collapse from '@alpinejs/collapse';
 import Chart from 'chart.js/auto';
 import JsBarcode from 'jsbarcode';
+import 'trix';
 
 Alpine.plugin(collapse);
 

@@ -71,7 +71,7 @@
                     </p>
 
                     @if ($product->description)
-                    <p class="mt-5 text-sm leading-relaxed text-slate-600">{{ $product->description }}</p>
+                    <div class="trix-content mt-5 text-sm leading-relaxed text-slate-600">{!! $product->description !!}</div>
                     @endif
 
                     <form method="POST" action="{{ route('cart.add') }}" class="mt-6 space-y-4">
@@ -105,6 +105,48 @@
                     </form>
                 </div>
             </div>
+
+            @if ($relatedProducts->isNotEmpty())
+            <div class="mt-16" x-data="{ scroll(dir) { this.$refs.track.scrollBy({ left: dir * 320, behavior: 'smooth' }); } }">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-extrabold text-brand-950">Related Products</h2>
+                    <div class="flex items-center gap-2">
+                        <button @click="scroll(-1)" type="button" class="grid h-9 w-9 place-items-center rounded-full ring-1 ring-slate-200 text-slate-500 hover:bg-slate-50">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+                        </button>
+                        <button @click="scroll(1)" type="button" class="grid h-9 w-9 place-items-center rounded-full ring-1 ring-slate-200 text-slate-500 hover:bg-slate-50">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div x-ref="track" class="flex gap-5 overflow-x-auto scroll-smooth snap-x pb-2" style="scrollbar-width: none;">
+                    @foreach ($relatedProducts as $related)
+                    <a href="{{ route('shop.product', $related) }}" class="group w-48 shrink-0 snap-start rounded-2xl border border-slate-200 overflow-hidden bg-white hover:shadow-md transition-shadow">
+                        <div class="relative aspect-square bg-slate-100 grid place-items-center text-slate-300">
+                            @if ($related->discount_percent)
+                            <span class="absolute top-2 left-2 rounded-full bg-rose-600 px-2 py-0.5 text-[11px] font-bold text-white">-{{ $related->discount_percent }}%</span>
+                            @endif
+                            @if ($related->image_url)
+                                <img src="{{ $related->image_url }}" alt="{{ $related->name }}" class="h-full w-full object-cover">
+                            @else
+                                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 3h18M3 3l1.5 18h15L21 3H3Z"/></svg>
+                            @endif
+                        </div>
+                        <div class="p-3">
+                            <p class="text-sm font-semibold text-brand-950 truncate group-hover:text-accent-700">{{ $related->name }}</p>
+                            <div class="mt-1 flex items-center gap-1.5">
+                                <span class="text-sm font-bold text-accent-600">{{ number_format($related->selling_price, 2) }}</span>
+                                @if ($related->discount_percent)
+                                <span class="text-xs text-slate-400 line-through">{{ number_format($related->compare_at_price, 2) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </section>
 

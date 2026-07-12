@@ -21,6 +21,7 @@
     "dependencies": {
         "@alpinejs/collapse": "^3.15.12",
         "chart.js": "^4.5.1",
-        "jsbarcode": "^3.12.3"
+        "jsbarcode": "^3.12.3",
+        "trix": "^2.1.19"
     }
 }
