@@ -7,8 +7,8 @@
             <img src="{{ $company->hero_image_url }}" alt="{{ $company->name }}" class="absolute inset-0 h-full w-full object-cover">
             <div class="absolute inset-0 bg-gradient-to-t from-brand-950/85 via-brand-950/20 to-transparent"></div>
 
-            <div class="absolute inset-x-0 bottom-0 px-4 sm:px-6 lg:px-8 pb-10 sm:pb-14">
-                <div class="mx-auto max-w-7xl">
+            <div class="absolute inset-x-0 bottom-0 pb-10 sm:pb-14">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="hero-in max-w-lg rounded-2xl bg-brand-950/80 backdrop-blur-sm px-6 py-6 sm:px-8 sm:py-8 ring-1 ring-white/10" style="animation-delay:.05s">
                         <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                             {{ $company->name ?? 'Business ERP' }}
