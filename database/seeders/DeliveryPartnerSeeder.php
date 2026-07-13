@@ -15,9 +15,8 @@ class DeliveryPartnerSeeder extends Seeder
         DeliveryPartner::firstOrCreate(
             ['code' => 'PC-001'],
             [
-                'name' => 'Pathao Courier',
-                'phone' => '09678460460',
-                'contact_person' => 'Pathao Support',
+                'name' => 'Default Courier',
+                'provider' => 'manual',
                 'status' => true,
             ]
         );
