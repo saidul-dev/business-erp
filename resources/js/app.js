@@ -121,6 +121,7 @@ Alpine.data('productForm', (initial) => ({
 Alpine.data('productGallery', (initial) => ({
     existing: initial.existing || [],
     newFiles: [],
+    removeIds: [],
 
     // Mirrors the real file input exactly, since re-opening it replaces
     // (not appends to) its selection — appending here would show previews
@@ -133,6 +134,7 @@ Alpine.data('productGallery', (initial) => ({
     },
 
     removeExisting(id) {
+        this.removeIds.push(id);
         this.existing = this.existing.filter((img) => img.id !== id);
     },
 

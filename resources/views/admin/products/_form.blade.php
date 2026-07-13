@@ -103,8 +103,11 @@
                             class="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-white/90 text-rose-600 shadow hover:bg-white">
                         <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
                     </button>
-                    <input type="hidden" name="remove_gallery_ids[]" :value="img.id">
                 </div>
+            </template>
+
+            <template x-for="id in removeIds" :key="'remove-'+id">
+                <input type="hidden" name="remove_gallery_ids[]" :value="id">
             </template>
 
             <template x-for="(item, i) in newFiles" :key="'new-'+i">
