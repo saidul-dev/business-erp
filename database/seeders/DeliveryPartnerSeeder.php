@@ -13,7 +13,7 @@ class DeliveryPartnerSeeder extends Seeder
     public function run(): void
     {
         DeliveryPartner::firstOrCreate(
-            ['code' => 'PC-001'],
+            ['code' => 'DC-001'],
             [
                 'name' => 'Default Courier',
                 'provider' => 'manual',
