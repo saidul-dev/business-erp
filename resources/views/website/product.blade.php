@@ -32,7 +32,7 @@
                     ->values();
             @endphp
 
-            <div class="grid gap-10 lg:grid-cols-2"
+            <div class="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_300px]"
                  x-data="{
                     variants: @js($variantOptions),
                     selected: @js($variantOptions->first()['id'] ?? null),
@@ -51,7 +51,7 @@
                     }
                  }">
 
-                <div>
+                <div class="order-1">
                     <div class="aspect-square rounded-2xl bg-slate-100 grid place-items-center text-slate-300 overflow-hidden">
                         <template x-if="activeImage">
                             <img :src="activeImage" alt="{{ $product->name }}" class="h-full w-full object-cover">
@@ -72,7 +72,7 @@
                     </div>
                 </div>
 
-                <div>
+                <div class="order-2">
                     @if ($product->brand)
                     <p class="text-xs font-semibold uppercase tracking-wide text-accent-600">{{ $product->brand->name }}</p>
                     @endif
@@ -135,136 +135,150 @@
                         </button>
                     </form>
                 </div>
-            </div>
 
-            @if ($product->description)
-            <div class="mt-16">
-                <h2 class="text-xl font-extrabold text-brand-950 mb-4">Product Description</h2>
-                <div class="trix-content rounded-2xl border border-slate-200 p-6 text-sm leading-relaxed text-slate-600">
-                    {!! $product->description !!}
-                </div>
-            </div>
-            @endif
-
-            <div id="reviews" class="mt-16 scroll-mt-20">
-                <h2 class="text-xl font-extrabold text-brand-950 mb-4">Customer Reviews</h2>
-
-                <div class="grid gap-10 lg:grid-cols-[1fr_360px]">
-                    <div class="order-2 lg:order-1 space-y-5">
-                        @forelse ($product->approvedReviews as $review)
-                        <div class="rounded-2xl border border-slate-200 p-5">
-                            <div class="flex flex-wrap items-center justify-between gap-2">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-semibold text-brand-950">{{ $review->name }}</span>
-                                    @if ($review->is_verified_purchase)
-                                    <span class="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 ring-1 ring-emerald-200">{{ __('Verified Purchase') }}</span>
+                <div class="order-4 lg:order-3">
+                    @if ($relatedProducts->isNotEmpty())
+                    <div class="flex flex-col rounded-2xl border border-slate-200 p-4 lg:h-full">
+                        <h2 class="mb-3 shrink-0 text-sm font-extrabold text-brand-950">{{ __('Similar Products') }}</h2>
+                        <div class="space-y-3 overflow-y-auto pr-1 max-h-[420px] lg:max-h-none lg:min-h-0 lg:flex-1">
+                            @foreach ($relatedProducts as $related)
+                            <a href="{{ route('shop.product', $related) }}" class="group flex gap-3 rounded-xl border border-slate-200 p-2 transition-shadow hover:shadow-sm">
+                                <div class="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-100 grid place-items-center text-slate-300">
+                                    @if ($related->discount_percent)
+                                    <span class="absolute top-0.5 left-0.5 rounded-full bg-rose-600 px-1.5 py-0.5 text-[9px] font-bold text-white">-{{ $related->discount_percent }}%</span>
+                                    @endif
+                                    @if ($related->image_url)
+                                        <img src="{{ $related->image_url }}" alt="{{ $related->name }}" class="h-full w-full object-cover">
+                                    @else
+                                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 3h18M3 3l1.5 18h15L21 3H3Z"/></svg>
                                     @endif
                                 </div>
-                                <span class="text-xs text-slate-400">{{ $review->created_at->format('d M, Y') }}</span>
-                            </div>
-                            <div class="mt-1.5"><x-star-rating :value="$review->rating" /></div>
-                            @if ($review->comment)
-                            <p class="mt-2 whitespace-pre-line text-sm text-slate-600">{{ $review->comment }}</p>
-                            @endif
-                        </div>
-                        @empty
-                        <p class="text-sm text-slate-400">{{ __('Be the first to review this product.') }}</p>
-                        @endforelse
-                    </div>
-
-                    <div class="order-1 lg:order-2 h-fit rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200"
-                         x-data="{ rating: {{ (int) old('rating', 0) }}, hoverRating: 0 }">
-                        <p class="mb-4 font-semibold text-brand-950">{{ __('Write a Review') }}</p>
-                        <form method="POST" action="{{ route('reviews.store', $product) }}" class="space-y-4">
-                            @csrf
-
-                            <div>
-                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Your Rating') }}</label>
-                                <div class="flex items-center gap-1">
-                                    <template x-for="i in 5" :key="i">
-                                        <button type="button" @click="rating = i" @mouseenter="hoverRating = i" @mouseleave="hoverRating = 0" class="p-0.5">
-                                            <svg class="h-7 w-7" :class="(hoverRating || rating) >= i ? 'text-amber-400' : 'text-slate-200'" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 0 0 .95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.446a1 1 0 0 0-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.445a1 1 0 0 0-1.176 0l-3.367 2.445c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 0 0-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 0 0 .95-.69l1.286-3.958Z" />
-                                            </svg>
-                                        </button>
-                                    </template>
+                                <div class="min-w-0 py-0.5">
+                                    <p class="text-xs font-semibold text-brand-950 line-clamp-2 group-hover:text-accent-700">{{ $related->name }}</p>
+                                    <div class="mt-1 flex items-center gap-1.5">
+                                        <span class="text-xs font-bold text-accent-600">{{ number_format($related->selling_price, 2) }}</span>
+                                        @if ($related->discount_percent)
+                                        <span class="text-[10px] text-slate-400 line-through">{{ number_format($related->compare_at_price, 2) }}</span>
+                                        @endif
+                                    </div>
                                 </div>
-                                <input type="hidden" name="rating" :value="rating" required>
-                                @error('rating') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div>
-                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Name') }}</label>
-                                <input type="text" name="name" value="{{ old('name') }}" required
-                                       class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
-                                @error('name') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div>
-                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Phone Number') }}</label>
-                                <input type="tel" inputmode="numeric" name="phone" value="{{ old('phone') }}" required placeholder="01XXXXXXXXX"
-                                       class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
-                                @error('phone') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-                                <p class="mt-1 text-xs text-slate-400">{{ __('Used to show a Verified Purchase badge if you bought this — never shown publicly.') }}</p>
-                            </div>
-
-                            <div>
-                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Comment (optional)') }}</label>
-                                <textarea name="comment" rows="3"
-                                          class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">{{ old('comment') }}</textarea>
-                                @error('comment') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
-                            </div>
-
-                            <button type="submit" :disabled="rating === 0"
-                                    class="w-full rounded-lg bg-accent-500 px-6 py-2.5 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                {{ __('Submit Review') }}
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            @if ($relatedProducts->isNotEmpty())
-            <div class="mt-16" x-data="{ scroll(dir) { this.$refs.track.scrollBy({ left: dir * 320, behavior: 'smooth' }); } }">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-extrabold text-brand-950">Related Products</h2>
-                    <div class="flex items-center gap-2">
-                        <button @click="scroll(-1)" type="button" class="grid h-9 w-9 place-items-center rounded-full ring-1 ring-slate-200 text-slate-500 hover:bg-slate-50">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
-                        </button>
-                        <button @click="scroll(1)" type="button" class="grid h-9 w-9 place-items-center rounded-full ring-1 ring-slate-200 text-slate-500 hover:bg-slate-50">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div x-ref="track" class="flex gap-5 overflow-x-auto scroll-smooth snap-x pb-2" style="scrollbar-width: none;">
-                    @foreach ($relatedProducts as $related)
-                    <a href="{{ route('shop.product', $related) }}" class="group w-48 shrink-0 snap-start rounded-2xl border border-slate-200 overflow-hidden bg-white hover:shadow-md transition-shadow">
-                        <div class="relative aspect-square bg-slate-100 grid place-items-center text-slate-300">
-                            @if ($related->discount_percent)
-                            <span class="absolute top-2 left-2 rounded-full bg-rose-600 px-2 py-0.5 text-[11px] font-bold text-white">-{{ $related->discount_percent }}%</span>
-                            @endif
-                            @if ($related->image_url)
-                                <img src="{{ $related->image_url }}" alt="{{ $related->name }}" class="h-full w-full object-cover">
-                            @else
-                                <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 3h18M3 3l1.5 18h15L21 3H3Z"/></svg>
-                            @endif
+                            </a>
+                            @endforeach
                         </div>
-                        <div class="p-3">
-                            <p class="text-sm font-semibold text-brand-950 truncate group-hover:text-accent-700">{{ $related->name }}</p>
-                            <div class="mt-1 flex items-center gap-1.5">
-                                <span class="text-sm font-bold text-accent-600">{{ number_format($related->selling_price, 2) }}</span>
-                                @if ($related->discount_percent)
-                                <span class="text-xs text-slate-400 line-through">{{ number_format($related->compare_at_price, 2) }}</span>
+                    </div>
+                    @endif
+                </div>
+
+            <div id="reviews" class="order-3 lg:order-4 lg:col-span-3 scroll-mt-20"
+                 x-data="{ tab: '{{ $errors->any() || old('rating') ? 'reviews' : 'description' }}' }"
+                 x-init="
+                    const applyHash = () => { if (window.location.hash === '#reviews') tab = 'reviews'; };
+                    applyHash();
+                    window.addEventListener('hashchange', applyHash);
+                 ">
+
+                <div class="border-b border-slate-200">
+                    <nav class="-mb-px flex gap-6">
+                        <button type="button" @click="tab = 'description'"
+                                class="border-b-2 px-1 py-3 text-sm font-semibold transition-colors"
+                                :class="tab === 'description' ? 'border-accent-500 text-accent-600' : 'border-transparent text-slate-500 hover:text-slate-700'">
+                            {{ __('Description') }}
+                        </button>
+                        <button type="button" @click="tab = 'reviews'"
+                                class="border-b-2 px-1 py-3 text-sm font-semibold transition-colors"
+                                :class="tab === 'reviews' ? 'border-accent-500 text-accent-600' : 'border-transparent text-slate-500 hover:text-slate-700'">
+                            {{ __('Reviews') }} ({{ $product->review_count }})
+                        </button>
+                    </nav>
+                </div>
+
+                <div class="py-6" x-show="tab === 'description'" x-cloak>
+                    @if ($product->description)
+                    <div class="trix-content rounded-2xl border border-slate-200 p-6 text-sm leading-relaxed text-slate-600">
+                        {!! $product->description !!}
+                    </div>
+                    @else
+                    <p class="text-sm text-slate-400">{{ __('No description available.') }}</p>
+                    @endif
+                </div>
+
+                <div class="py-6" x-show="tab === 'reviews'" x-cloak>
+                    <div class="grid gap-10 lg:grid-cols-[1fr_360px]">
+                        <div class="order-2 lg:order-1 space-y-5">
+                            @forelse ($product->approvedReviews as $review)
+                            <div class="rounded-2xl border border-slate-200 p-5">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-brand-950">{{ $review->name }}</span>
+                                        @if ($review->is_verified_purchase)
+                                        <span class="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 ring-1 ring-emerald-200">{{ __('Verified Purchase') }}</span>
+                                        @endif
+                                    </div>
+                                    <span class="text-xs text-slate-400">{{ $review->created_at->format('d M, Y') }}</span>
+                                </div>
+                                <div class="mt-1.5"><x-star-rating :value="$review->rating" /></div>
+                                @if ($review->comment)
+                                <p class="mt-2 whitespace-pre-line text-sm text-slate-600">{{ $review->comment }}</p>
                                 @endif
                             </div>
+                            @empty
+                            <p class="text-sm text-slate-400">{{ __('Be the first to review this product.') }}</p>
+                            @endforelse
                         </div>
-                    </a>
-                    @endforeach
+
+                        <div class="order-1 lg:order-2 h-fit rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200"
+                             x-data="{ rating: {{ (int) old('rating', 0) }}, hoverRating: 0 }">
+                            <p class="mb-4 font-semibold text-brand-950">{{ __('Write a Review') }}</p>
+                            <form method="POST" action="{{ route('reviews.store', $product) }}" class="space-y-4">
+                                @csrf
+
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Your Rating') }}</label>
+                                    <div class="flex items-center gap-1">
+                                        <template x-for="i in 5" :key="i">
+                                            <button type="button" @click="rating = i" @mouseenter="hoverRating = i" @mouseleave="hoverRating = 0" class="p-0.5">
+                                                <svg class="h-7 w-7" :class="(hoverRating || rating) >= i ? 'text-amber-400' : 'text-slate-200'" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 0 0 .95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.446a1 1 0 0 0-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.445a1 1 0 0 0-1.176 0l-3.367 2.445c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 0 0-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 0 0 .95-.69l1.286-3.958Z" />
+                                                </svg>
+                                            </button>
+                                        </template>
+                                    </div>
+                                    <input type="hidden" name="rating" :value="rating" required>
+                                    @error('rating') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Name') }}</label>
+                                    <input type="text" name="name" value="{{ old('name') }}" required
+                                           class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
+                                    @error('name') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Phone Number') }}</label>
+                                    <input type="tel" inputmode="numeric" name="phone" value="{{ old('phone') }}" required placeholder="01XXXXXXXXX"
+                                           class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
+                                    @error('phone') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                                    <p class="mt-1 text-xs text-slate-400">{{ __('Used to show a Verified Purchase badge if you bought this — never shown publicly.') }}</p>
+                                </div>
+
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Comment (optional)') }}</label>
+                                    <textarea name="comment" rows="3"
+                                              class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">{{ old('comment') }}</textarea>
+                                    @error('comment') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                                </div>
+
+                                <button type="submit" :disabled="rating === 0"
+                                        class="w-full rounded-lg bg-accent-500 px-6 py-2.5 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                    {{ __('Submit Review') }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
                 </div>
             </div>
-            @endif
         </div>
     </section>
 
