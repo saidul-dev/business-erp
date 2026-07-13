@@ -46,5 +46,6 @@
 
     <div class="border-t border-white/10 py-6 text-center text-xs text-brand-300/70">
         &copy; {{ date('Y') }} {{ $company->name ?? 'Business ERP' }} &middot; Online Store
+        &middot; Powered by <a href="https://vexasoft.net" target="_blank" rel="noopener" class="font-semibold hover:text-white">Vexasoft</a>
     </div>
 </footer>

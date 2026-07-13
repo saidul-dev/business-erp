@@ -505,6 +505,18 @@
                 </div>
 
                 <div class="ml-auto flex items-center gap-1.5 sm:gap-3 shrink-0">
+                    <!-- Visit website -->
+                    <a href="{{ route('home') }}" target="_blank" rel="noopener"
+                        class="hidden sm:flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-brand-800 ring-1 ring-slate-200 hover:bg-slate-50">
+                        <svg class="h-4 w-4 shrink-0 text-accent-600" fill="none" viewBox="0 0 24 24"
+                            stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9 4.5 4.03 4.5 9-2.015 9-4.5 9Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9h18M3 15h18" />
+                        </svg>
+                        <span>{{ __('Visit Website') }}</span>
+                    </a>
+
                     <!-- Language selector -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open"

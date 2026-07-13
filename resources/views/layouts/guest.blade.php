@@ -34,7 +34,10 @@
                 {{ $slot }}
             </div>
 
-            <p class="relative z-10 mt-6 text-xs text-brand-300/70">&copy; {{ date('Y') }} Business ERP &middot; Enterprise Suite</p>
+            <p class="relative z-10 mt-6 text-xs text-brand-300/70">
+                &copy; {{ date('Y') }} Business ERP &middot; Enterprise Suite
+                &middot; Powered by <a href="https://vexasoft.net" target="_blank" rel="noopener" class="font-semibold hover:text-white">Vexasoft</a>
+            </p>
         </div>
     </body>
 </html>
