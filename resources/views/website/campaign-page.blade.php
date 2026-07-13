@@ -6,6 +6,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $campaignPage->headline }}</title>
 
+    {{-- Open Graph tags — this is what Facebook reads to build the link
+    preview card when the URL is pasted into a post or used as an ad
+    destination. Without these it falls back to a blank/generic preview. --}}
+    <meta property="og:type" content="product">
+    <meta property="og:title" content="{{ $campaignPage->headline }}">
+    <meta property="og:description" content="{{ $campaignPage->subheadline ?: $product->short_description }}">
+    <meta property="og:url" content="{{ route('campaign.show', $campaignPage) }}">
+    @if ($campaignPage->banner_image_url)
+    <meta property="og:image" content="{{ $campaignPage->banner_image_url }}">
+    @endif
+    <meta name="twitter:card" content="summary_large_image">
+
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
