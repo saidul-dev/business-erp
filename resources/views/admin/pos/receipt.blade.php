@@ -61,6 +61,9 @@
 
         @if ($collection)
         <div class="flex justify-between"><span>{{ __('Paid via') }} {{ $collection->account->name }}</span><span>{{ number_format($collection->amount, 2) }}</span></div>
+        @if ($collection->reference_no)
+        <div>{{ __('Ref') }}: {{ $collection->reference_no }}</div>
+        @endif
         @endif
 
         <p class="mt-2 text-[11px]">{{ \App\Support\AmountInWords::convert((float) $sale->total_amount, $company->currency_label) }}</p>

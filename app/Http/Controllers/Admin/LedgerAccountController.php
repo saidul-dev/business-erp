@@ -77,6 +77,7 @@ class LedgerAccountController extends Controller implements HasMiddleware
     public function store(Request $request)
     {
         $validated = $this->validated($request);
+        $validated['is_cash'] = $request->boolean('is_cash');
 
         $bankAccount = LedgerAccount::create($validated + ['group' => 'cash_bank', 'nature' => 'debit']);
 
@@ -94,6 +95,7 @@ class LedgerAccountController extends Controller implements HasMiddleware
     public function update(Request $request, LedgerAccount $bankAccount)
     {
         $validated = $this->validated($request);
+        $validated['is_cash'] = $request->boolean('is_cash');
 
         $bankAccount->update($validated);
 

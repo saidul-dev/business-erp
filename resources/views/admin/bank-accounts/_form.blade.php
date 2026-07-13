@@ -17,6 +17,19 @@
         <x-input-error class="mt-2" :messages="$errors->get('site_id')" />
     </div>
 
+    <label class="flex items-start gap-4 rounded-xl bg-slate-50 px-5 py-4 cursor-pointer">
+        <input type="checkbox" name="is_cash" value="1" class="peer sr-only"
+               @checked(old('is_cash', $bankAccount->is_cash ?? false))>
+        <span class="relative mt-0.5 h-6 w-11 shrink-0 rounded-full bg-slate-300 transition-colors peer-checked:bg-accent-500 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"></span>
+        <span>
+            <span class="block text-sm font-semibold text-slate-800">{{ __('This is a physical cash drawer') }}</span>
+            <span class="block text-xs text-slate-500 mt-0.5">
+                {{ __('On: the POS terminal will ask for Cash Tendered and calculate Change Due when this account is picked. Off: the POS terminal will ask for a Reference / Transaction ID instead (bKash, Nagad, card, or bank).') }}
+            </span>
+        </span>
+    </label>
+    <x-input-error class="mt-2" :messages="$errors->get('is_cash')" />
+
     @if ($editing && $bankAccount->is_system)
     <p class="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 ring-1 ring-amber-200">
         {{ __('This is a system account used by the accounting ledger — it can be renamed but not deleted.') }}

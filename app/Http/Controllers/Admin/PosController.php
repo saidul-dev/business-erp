@@ -43,7 +43,7 @@ class PosController extends Controller implements HasMiddleware
     public function index()
     {
         $siteId = $this->currentSiteId();
-        $accounts = LedgerAccount::where('group', 'cash_bank')->where('status', true)->orderBy('name')->get(['id', 'name', 'code']);
+        $accounts = LedgerAccount::where('group', 'cash_bank')->where('status', true)->orderBy('name')->get(['id', 'name', 'is_cash']);
 
         return view('admin.pos.index', compact('siteId', 'accounts'));
     }
@@ -154,6 +154,7 @@ class PosController extends Controller implements HasMiddleware
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'ledger_account_id' => ['required', 'integer', 'exists:ledger_accounts,id'],
             'cash_tendered' => ['nullable', 'numeric', 'min:0'],
+            'reference_no' => ['nullable', 'string', 'max:100'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.item' => ['required', 'string'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.0001'],
@@ -201,7 +202,9 @@ class PosController extends Controller implements HasMiddleware
         $total = round($subtotal - $discount, 2);
         $today = now()->toDateString();
 
-        $sale = DB::transaction(function () use ($rows, $subtotal, $discount, $total, $party, $account, $siteId, $today) {
+        $referenceNo = $validated['reference_no'] ?? null;
+
+        $sale = DB::transaction(function () use ($rows, $subtotal, $discount, $total, $party, $account, $siteId, $today, $referenceNo) {
             $sale = Sale::create([
                 'sale_no' => 'PENDING',
                 'party_id' => $party->id,
@@ -297,6 +300,7 @@ class PosController extends Controller implements HasMiddleware
                 'ledger_account_id' => $account->id,
                 'amount' => $netReceivable,
                 'collection_date' => $today,
+                'reference_no' => $referenceNo,
                 'note' => "POS payment for {$sale->sale_no}",
                 'created_by' => Auth::id(),
             ]);

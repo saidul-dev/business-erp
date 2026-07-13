@@ -119,6 +119,14 @@
                            class="mt-1 block w-full rounded-lg border-slate-300 text-sm text-right focus:border-accent-500 focus:ring-accent-500" placeholder="0.00">
                     <p class="mt-1 text-right text-sm text-slate-500">{{ __('Change Due') }}: <span class="font-semibold text-slate-800" x-text="change.toFixed(2)"></span></p>
                 </div>
+
+                <div x-show="!isCash" x-cloak class="mt-3">
+                    <x-input-label for="reference_no" :value="__('Reference / Transaction ID')" />
+                    <input id="reference_no" type="text" x-model="referenceNo"
+                           class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500"
+                           placeholder="{{ __('e.g. bKash TrxID, card slip no.') }}">
+                    <p class="mt-1 text-xs text-slate-400">{{ __('Optional, but recommended for reconciling against the payment gateway/bank statement later.') }}</p>
+                </div>
             </div>
 
             <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">

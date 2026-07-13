@@ -50,12 +50,14 @@ class LedgerAccount extends Model
         'group',
         'nature',
         'is_system',
+        'is_cash',
         'site_id',
         'status',
     ];
 
     protected $casts = [
         'is_system' => 'boolean',
+        'is_cash' => 'boolean',
         'status' => 'boolean',
     ];
 

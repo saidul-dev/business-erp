@@ -13,7 +13,7 @@ class LedgerAccountSeeder extends Seeder
     public function run(): void
     {
         $accounts = [
-            ['code' => 'cash_in_hand', 'name' => 'Cash in Hand', 'group' => 'cash_bank', 'nature' => 'debit'],
+            ['code' => 'cash_in_hand', 'name' => 'Cash in Hand', 'group' => 'cash_bank', 'nature' => 'debit', 'is_cash' => true],
             ['code' => 'accounts_receivable', 'name' => 'Accounts Receivable', 'group' => 'party', 'nature' => 'debit'],
             ['code' => 'accounts_payable', 'name' => 'Accounts Payable', 'group' => 'party', 'nature' => 'credit'],
             ['code' => 'inventory', 'name' => 'Inventory', 'group' => 'inventory', 'nature' => 'debit'],

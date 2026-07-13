@@ -323,6 +323,7 @@ Alpine.data('posTerminal', (initial) => ({
     discount: '',
     selectedAccountId: initial.accounts?.[0]?.id ?? null,
     cashTendered: '',
+    referenceNo: '',
 
     newCustomerName: '',
     newCustomerPhone: '',
@@ -337,7 +338,7 @@ Alpine.data('posTerminal', (initial) => ({
     },
 
     get isCash() {
-        return this.selectedAccount?.code === 'cash_in_hand';
+        return !!this.selectedAccount?.is_cash;
     },
 
     get subtotal() {
@@ -440,7 +441,8 @@ Alpine.data('posTerminal', (initial) => ({
             party_id: this.customer?.id ?? null,
             discount_amount: this.discount || 0,
             ledger_account_id: this.selectedAccountId,
-            cash_tendered: this.cashTendered || null,
+            cash_tendered: this.isCash ? (this.cashTendered || null) : null,
+            reference_no: this.isCash ? null : (this.referenceNo || null),
             items: this.cart.map((i) => ({ item: i.id, quantity: i.quantity })),
         })
             .then((res) => {
@@ -449,6 +451,7 @@ Alpine.data('posTerminal', (initial) => ({
                 this.customer = null;
                 this.discount = '';
                 this.cashTendered = '';
+                this.referenceNo = '';
                 this.$refs.scanInput?.focus();
             })
             .catch((err) => {
