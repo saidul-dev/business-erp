@@ -22,6 +22,7 @@
                     zoneId: '{{ old('delivery_zone_id') }}',
                     get zone() { return this.zones.find(z => z.id == this.zoneId) ?? null; },
                     submitting: false,
+                    paymentMethod: '{{ old('payment_method', 'cod') }}',
                  }">
                 <form method="POST" action="{{ route('checkout.store') }}" @submit="submitting = true"
                       class="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
@@ -74,15 +75,22 @@
 
                     <div>
                         <p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">Payment Method</p>
-                        <label class="flex items-center gap-2 rounded-lg bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
-                            <input type="radio" checked disabled class="text-accent-600">
-                            Cash on Delivery
-                        </label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 rounded-lg bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-transparent has-[:checked]:ring-accent-500">
+                                <input type="radio" name="payment_method" value="cod" x-model="paymentMethod" class="text-accent-600 focus:ring-accent-500">
+                                Cash on Delivery
+                            </label>
+                            <label class="flex items-center gap-2 rounded-lg bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 ring-1 ring-transparent has-[:checked]:ring-accent-500">
+                                <input type="radio" name="payment_method" value="sslcommerz" x-model="paymentMethod" class="text-accent-600 focus:ring-accent-500">
+                                Online Payment (bKash, Nagad, Card, Rocket)
+                            </label>
+                        </div>
+                        @error('payment_method') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                     </div>
 
                     <button type="submit" :disabled="submitting || {{ $company->online_site_id ? 'false' : 'true' }}"
                             class="w-full rounded-lg bg-accent-500 px-6 py-3 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        <span x-show="!submitting">Place Order</span>
+                        <span x-show="!submitting" x-text="paymentMethod === 'sslcommerz' ? 'Continue to Payment' : 'Place Order'"></span>
                         <span x-show="submitting" x-cloak>Placing Order…</span>
                     </button>
                 </form>
@@ -98,7 +106,7 @@
                         @endforeach
                     </div>
                     <div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
-                        <span class="font-semibold text-slate-700">Total (Cash on Delivery)</span>
+                        <span class="font-semibold text-slate-700" x-text="paymentMethod === 'sslcommerz' ? 'Total (Pay Online)' : 'Total (Cash on Delivery)'"></span>
                         <span class="text-xl font-bold text-brand-950">{{ number_format($subtotal, 2) }}</span>
                     </div>
 

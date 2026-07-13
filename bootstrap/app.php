@@ -22,6 +22,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
         ]);
+
+        // SSLCommerz posts these callbacks server-to-server with no Laravel
+        // session/CSRF token — the val_id round-trip through the Validation
+        // API (see SslCommerzService) is what actually proves authenticity.
+        $middleware->validateCsrfTokens(except: [
+            'payment/sslcommerz/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

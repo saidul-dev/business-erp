@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Sale;
 use App\Models\StockMovement;
+use App\Services\SslCommerzService;
 use App\Support\Cart;
 use App\Support\Phone;
 use Illuminate\Http\Request;
@@ -236,6 +237,7 @@ class ShopController extends Controller
             'address' => ['required', 'string', 'max:1000'],
             'delivery_zone_id' => ['nullable', 'integer', Rule::exists('delivery_zones', 'id')->where('status', true)],
             'note' => ['nullable', 'string', 'max:1000'],
+            'payment_method' => ['required', Rule::in(Sale::PAYMENT_METHODS)],
         ]);
 
         $phone = Phone::normalize($validated['phone']);
@@ -286,6 +288,8 @@ class ShopController extends Controller
                 'site_id' => $company->online_site_id,
                 'status' => 'pending',
                 'channel' => 'online',
+                'payment_method' => $validated['payment_method'],
+                'payment_status' => 'pending',
                 'shipping_name' => $validated['name'],
                 'shipping_phone' => $phone,
                 'shipping_address' => $validated['address'],
@@ -319,7 +323,86 @@ class ShopController extends Controller
         $cart->clear();
         session(['last_order_id' => $sale->id]);
 
+        if ($sale->payment_method === 'sslcommerz') {
+            try {
+                $gatewayUrl = app(SslCommerzService::class)->initiateSession($sale);
+            } catch (\Throwable $e) {
+                report($e);
+                $sale->update(['payment_status' => 'failed']);
+
+                return redirect()->route('order.confirmation', $sale)
+                    ->with('error', 'Could not reach the payment gateway — please contact us to complete payment for this order.');
+            }
+
+            return redirect()->away($gatewayUrl);
+        }
+
         return redirect()->route('order.confirmation', $sale)->with('success', "Order {$sale->sale_no} placed!");
+    }
+
+    /**
+     * The browser lands here after SSLCommerz's hosted page — val_id is the
+     * only field trusted, since everything else in the redirect is
+     * attacker-controlled form data. See SslCommerzService::validateTransaction().
+     */
+    public function paymentSuccess(Request $request, Sale $sale)
+    {
+        // Not session-gated like confirmation() below — SSLCommerz posts
+        // this back as a cross-site top-level form submission, and a
+        // SameSite=Lax session cookie isn't sent on cross-site POSTs, so
+        // session('last_order_id') would never match here. Trust instead
+        // comes from validateTransaction()'s server-to-server check.
+        abort_unless($sale->channel === 'online' && $sale->payment_method === 'sslcommerz', 404);
+
+        $valId = $request->input('val_id');
+        $validation = $valId ? app(SslCommerzService::class)->validateTransaction($valId) : null;
+
+        // The cross-site POST arrived with no session cookie, so Laravel
+        // just started a fresh, empty session for this request — and that
+        // fresh session (via its Set-Cookie) is what the browser will carry
+        // into the redirect below. Stamp it here or confirmation()'s own
+        // session gate will 404 on the very next request.
+        session(['last_order_id' => $sale->id]);
+
+        if (! $validation || (float) $validation['amount'] !== (float) $sale->total_amount) {
+            $sale->update(['payment_status' => 'failed']);
+
+            return redirect()->route('order.confirmation', $sale)
+                ->with('error', 'Payment could not be verified — please contact us if you were charged.');
+        }
+
+        $sale->update([
+            'payment_status' => 'paid',
+            'payment_transaction_id' => $validation['tran_id'] ?? $valId,
+        ]);
+
+        return redirect()->route('order.confirmation', $sale)->with('success', "Order {$sale->sale_no} placed and paid!");
+    }
+
+    public function paymentFail(Sale $sale)
+    {
+        // Same cross-site-POST cookie limitation as paymentSuccess() above —
+        // no session check here. Only a still-pending online payment can be
+        // knocked over to failed, so a guessed sale id can't touch an order
+        // that's already been paid or was placed as COD.
+        abort_unless($sale->channel === 'online' && $sale->payment_method === 'sslcommerz' && $sale->payment_status === 'pending', 404);
+
+        session(['last_order_id' => $sale->id]);
+        $sale->update(['payment_status' => 'failed']);
+
+        return redirect()->route('order.confirmation', $sale)
+            ->with('error', 'Payment failed — please contact us to arrange payment for this order.');
+    }
+
+    public function paymentCancel(Sale $sale)
+    {
+        abort_unless($sale->channel === 'online' && $sale->payment_method === 'sslcommerz' && $sale->payment_status === 'pending', 404);
+
+        session(['last_order_id' => $sale->id]);
+        $sale->update(['payment_status' => 'failed']);
+
+        return redirect()->route('order.confirmation', $sale)
+            ->with('error', 'Payment was cancelled — please contact us to arrange payment for this order.');
     }
 
     /**

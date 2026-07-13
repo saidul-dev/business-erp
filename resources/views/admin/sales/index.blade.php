@@ -80,6 +80,7 @@
                     @endif
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Total') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Status') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Payment') }}</th>
                     <th class="px-5 py-3 font-semibold"></th>
                 </tr>
             </thead>
@@ -101,13 +102,17 @@
                     <td class="px-5 py-3">
                         <x-sale-status-badge :status="$sale->status" />
                     </td>
+                    <td class="px-5 py-3">
+                        <x-payment-status-badge :status="$sale->payment_status" />
+                        <span class="ml-1 text-xs text-slate-400">{{ $sale->payment_method === 'sslcommerz' ? __('Online') : __('COD') }}</span>
+                    </td>
                     <td class="px-5 py-3 text-right">
                         <a href="{{ route('sales.show', $sale) }}" class="font-semibold text-accent-600 hover:text-accent-800">{{ __('View') }}</a>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="{{ $ecommerceEnabled ? 8 : 7 }}" class="px-5 py-10 text-center text-slate-400">{{ __('No sales yet.') }}</td>
+                    <td colspan="{{ $ecommerceEnabled ? 9 : 8 }}" class="px-5 py-10 text-center text-slate-400">{{ __('No sales yet.') }}</td>
                 </tr>
                 @endforelse
             </tbody>

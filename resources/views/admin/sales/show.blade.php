@@ -24,6 +24,7 @@
                 <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
                 <span class="font-semibold text-slate-800">{{ $sale->site->name }}</span>
                 <x-sale-status-badge :status="$sale->status" />
+                <x-payment-status-badge :status="$sale->payment_status" />
             </div>
             <a href="{{ route('sales.print', $sale) }}" target="_blank"
                class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50">
@@ -81,6 +82,12 @@
             </div>
             <p class="mt-2 text-sm font-semibold text-slate-700">{{ $sale->shipping_name }} &middot; {{ $sale->shipping_phone }}</p>
             <p class="text-sm text-slate-600">{{ $sale->shipping_address }}</p>
+            <p class="mt-2 text-sm text-slate-600">
+                {{ __('Payment') }}: {{ $sale->payment_method === 'sslcommerz' ? __('Online (SSLCommerz)') : __('Cash on Delivery') }}
+                @if ($sale->payment_transaction_id)
+                    <span class="text-xs text-slate-400">({{ __('txn') }}: {{ $sale->payment_transaction_id }})</span>
+                @endif
+            </p>
             @if ($sale->delivery_zone_name)
             <p class="mt-2 text-sm font-semibold text-amber-700">
                 {{ __('Delivery') }}: {{ $sale->delivery_zone_name }} — {{ number_format($sale->delivery_charge, 2) }}

@@ -23,6 +23,21 @@ class Sale extends Model
      */
     public const CHANNELS = ['pos', 'online'];
 
+    /**
+     * How the customer pays — 'cod' collects cash on delivery (recorded via
+     * the existing Collection flow, same as any other sale). 'sslcommerz'
+     * goes through the online gateway; see payment_status for its outcome.
+     */
+    public const PAYMENT_METHODS = ['cod', 'sslcommerz'];
+
+    /**
+     * Independent of `status` (which tracks fulfillment). 'pending' covers
+     * both an unpaid COD order and an online payment not yet confirmed by
+     * the gateway; 'paid' is set once SSLCommerz validates the transaction;
+     * 'failed' means the customer's gateway attempt didn't go through.
+     */
+    public const PAYMENT_STATUSES = ['pending', 'paid', 'failed'];
+
     protected $fillable = [
         'sale_no',
         'party_id',
@@ -30,6 +45,9 @@ class Sale extends Model
         'site_id',
         'status',
         'channel',
+        'payment_method',
+        'payment_status',
+        'payment_transaction_id',
         'shipping_name',
         'shipping_phone',
         'shipping_address',

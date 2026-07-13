@@ -71,6 +71,10 @@ Route::middleware('ecommerce')->group(function () {
     Route::post('/checkout', [ShopController::class, 'placeOrder'])->name('checkout.store');
     Route::get('/order-confirmation/{sale}', [ShopController::class, 'confirmation'])->name('order.confirmation');
 
+    Route::post('/payment/sslcommerz/success/{sale}', [ShopController::class, 'paymentSuccess'])->name('payment.sslcommerz.success');
+    Route::post('/payment/sslcommerz/fail/{sale}', [ShopController::class, 'paymentFail'])->name('payment.sslcommerz.fail');
+    Route::post('/payment/sslcommerz/cancel/{sale}', [ShopController::class, 'paymentCancel'])->name('payment.sslcommerz.cancel');
+
     Route::get('/track-order', [ShopController::class, 'trackForm'])->name('track-order');
     Route::post('/track-order', [ShopController::class, 'track'])->name('track-order.result');
 });

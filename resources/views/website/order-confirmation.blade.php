@@ -2,6 +2,12 @@
 
     <section class="bg-white py-16">
         <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 text-center">
+            @if (session('error'))
+            <div class="mb-6 flex items-center gap-3 rounded-xl bg-rose-50 px-4 py-3 text-left text-sm font-medium text-rose-700 ring-1 ring-rose-200">
+                <span>{{ session('error') }}</span>
+            </div>
+            @endif
+
             <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-600">
                 <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
             </div>
@@ -41,7 +47,20 @@
                 </div>
 
                 <div class="mt-2 flex items-center justify-between border-t border-slate-100 pt-4">
-                    <span class="font-semibold text-slate-700">Total (Cash on Delivery)</span>
+                    <span class="font-semibold text-slate-700">
+                        @if ($sale->payment_method === 'sslcommerz')
+                            Total —
+                            @if ($sale->payment_status === 'paid')
+                                <span class="text-emerald-600">Paid Online</span>
+                            @elseif ($sale->payment_status === 'failed')
+                                <span class="text-rose-600">Payment Failed</span>
+                            @else
+                                <span class="text-amber-600">Awaiting Payment</span>
+                            @endif
+                        @else
+                            Total (Cash on Delivery)
+                        @endif
+                    </span>
                     <span class="text-xl font-bold text-brand-950">{{ number_format($sale->total_amount, 2) }}</span>
                 </div>
 
