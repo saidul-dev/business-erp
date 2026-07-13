@@ -7,9 +7,18 @@
         </div>
     </x-slot>
 
-    <div x-data="purchaseCart(@js(['itemOptions' => $itemOptions]))">
+    @if ($prefillRequisition)
+        <div class="rounded-xl bg-accent-50 ring-1 ring-accent-200 px-4 py-3 mb-4 text-sm text-accent-800">
+            {{ __('Converting requisition') }} <strong>{{ $prefillRequisition->requisition_no }}</strong> — {{ __('review the items and costs below before creating the Purchase Order.') }}
+        </div>
+    @endif
+
+    <div x-data="purchaseCart(@js(['itemOptions' => $itemOptions, 'items' => $items]))">
         <form method="POST" action="{{ route('purchases.store') }}" x-ref="form">
             @csrf
+            @if ($prefillRequisition)
+                <input type="hidden" name="purchase_requisition_id" value="{{ $prefillRequisition->id }}">
+            @endif
 
             <!-- Supplier / Site / Date -->
             <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-4">
@@ -17,7 +26,7 @@
                     <div>
                         <x-input-label for="party_id" :value="__('Supplier')" />
                         <div class="mt-1">
-                            <x-searchable-select name="party_id" :options="$suppliers" :selected="old('party_id')"
+                            <x-searchable-select name="party_id" :options="$suppliers" :selected="old('party_id', $prefillRequisition?->party_id)"
                                                   placeholder="{{ __('Select a supplier…') }}" />
                         </div>
                         <x-input-error class="mt-2" :messages="$errors->get('party_id')" />
@@ -25,7 +34,7 @@
                     <div>
                         <x-input-label for="site_id" :value="__('Site')" />
                         <div class="mt-1">
-                            <x-searchable-select name="site_id" :options="$sites" :selected="old('site_id')"
+                            <x-searchable-select name="site_id" :options="$sites" :selected="old('site_id', $prefillRequisition?->site_id)"
                                                   placeholder="{{ __('Receiving site…') }}" />
                         </div>
                         <x-input-error class="mt-2" :messages="$errors->get('site_id')" />

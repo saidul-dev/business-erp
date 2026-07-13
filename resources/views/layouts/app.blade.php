@@ -71,7 +71,7 @@
                         :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Operations') }}</p>
 
                     @can('sourcing.view')
-                    <x-sidebar-dropdown :title="__('Purchase')" :active="request()->routeIs('purchases.*')">
+                    <x-sidebar-dropdown :title="__('Purchase')" :active="request()->routeIs('purchases.*', 'purchase-requisitions.*')">
                         <x-slot name="icon">
                             <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
                                 stroke="currentColor">
@@ -80,6 +80,16 @@
                             </svg>
                         </x-slot>
 
+                        @can('purchase-requisitions.view')
+                        <x-sidebar-sublink :href="route('purchase-requisitions.create')"
+                            :active="request()->routeIs('purchase-requisitions.create', 'purchase-requisitions.store')">
+                            {{ __('New Requisition') }}
+                        </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('purchase-requisitions.index')"
+                            :active="request()->routeIs('purchase-requisitions.index', 'purchase-requisitions.show', 'purchase-requisitions.edit', 'purchase-requisitions.print')">
+                            {{ __('Requisition List') }}
+                        </x-sidebar-sublink>
+                        @endcan
                         <x-sidebar-sublink :href="route('purchases.create')"
                             :active="request()->routeIs('purchases.create', 'purchases.store')">
                             {{ __('New Purchase') }}
@@ -96,7 +106,7 @@
                     @endcan
 
                     @can('sales.view')
-                    <x-sidebar-dropdown :title="__('Sales')" :active="request()->routeIs('sales.*')">
+                    <x-sidebar-dropdown :title="__('Sales')" :active="request()->routeIs('sales.*', 'sale-quotations.*')">
                         <x-slot name="icon">
                             <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
                                 stroke="currentColor">
@@ -105,6 +115,16 @@
                             </svg>
                         </x-slot>
 
+                        @can('sale-quotations.view')
+                        <x-sidebar-sublink :href="route('sale-quotations.create')"
+                            :active="request()->routeIs('sale-quotations.create', 'sale-quotations.store')">
+                            {{ __('New Quotation') }}
+                        </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('sale-quotations.index')"
+                            :active="request()->routeIs('sale-quotations.index', 'sale-quotations.show', 'sale-quotations.edit', 'sale-quotations.print')">
+                            {{ __('Quotation List') }}
+                        </x-sidebar-sublink>
+                        @endcan
                         <x-sidebar-sublink :href="route('sales.create')"
                             :active="request()->routeIs('sales.create', 'sales.store')">
                             {{ __('New Sale') }}
@@ -389,6 +409,10 @@
                         <x-sidebar-sublink :href="route('settings.website.edit')"
                             :active="request()->routeIs('settings.website.*')">
                             {{ __('Website Settings') }}
+                        </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('settings.approvals.edit')"
+                            :active="request()->routeIs('settings.approvals.*')">
+                            {{ __('Approval Settings') }}
                         </x-sidebar-sublink>
                         @if (auth()->user()->hasRole('Super Admin'))
                         <x-sidebar-sublink :href="route('settings.ecommerce.edit')"

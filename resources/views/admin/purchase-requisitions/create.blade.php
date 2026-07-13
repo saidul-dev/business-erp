@@ -1,49 +1,46 @@
 <x-app-layout>
-    <x-slot name="title">{{ __('New Sale') }}</x-slot>
+    <x-slot name="title">{{ __('New Requisition') }}</x-slot>
     <x-slot name="header">
         <div>
-            <h2 class="text-2xl font-bold text-brand-900">{{ __('New Sale') }}</h2>
-            <p class="text-sm text-slate-500 mt-0.5">{{ __('Order stock for a customer — nothing leaves inventory until it\'s delivered.') }}</p>
+            <h2 class="text-2xl font-bold text-brand-900">{{ __('New Requisition') }}</h2>
+            <p class="text-sm text-slate-500 mt-0.5">{{ __('Request stock to be purchased — no price is committed here, only quantity and (optionally) a suggested supplier.') }}</p>
         </div>
     </x-slot>
 
-    @if ($prefillQuotation)
-        <div class="rounded-xl bg-accent-50 ring-1 ring-accent-200 px-4 py-3 mb-4 text-sm text-accent-800">
-            {{ __('Converting quotation') }} <strong>{{ $prefillQuotation->quotation_no }}</strong> — {{ __('review the items and prices below before creating the Sale.') }}
-        </div>
-    @endif
-
-    <div x-data="saleCart(@js(['itemOptions' => $itemOptions, 'items' => $items]))">
-        <form method="POST" action="{{ route('sales.store') }}" x-ref="form">
+    <div x-data="requisitionCart(@js(['itemOptions' => $itemOptions]))">
+        <form method="POST" action="{{ route('purchase-requisitions.store') }}" x-ref="form">
             @csrf
-            @if ($prefillQuotation)
-                <input type="hidden" name="sale_quotation_id" value="{{ $prefillQuotation->id }}">
-            @endif
 
-            <!-- Customer / Site / Date -->
+            <!-- Site / Supplier / Dates -->
             <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-4">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div>
-                        <x-input-label for="party_id" :value="__('Customer')" />
+                        <x-input-label for="site_id" :value="__('Requesting Site')" />
                         <div class="mt-1">
-                            <x-searchable-select name="party_id" :options="$customers" :selected="old('party_id', $prefillQuotation?->party_id)"
-                                                  placeholder="{{ __('Select a customer…') }}" />
-                        </div>
-                        <x-input-error class="mt-2" :messages="$errors->get('party_id')" />
-                    </div>
-                    <div>
-                        <x-input-label for="site_id" :value="__('Site')" />
-                        <div class="mt-1">
-                            <x-searchable-select name="site_id" :options="$sites" :selected="old('site_id', $prefillQuotation?->site_id)"
-                                                  placeholder="{{ __('Shipping site…') }}" />
+                            <x-searchable-select name="site_id" :options="$sites" :selected="old('site_id')"
+                                                  placeholder="{{ __('Select a site…') }}" />
                         </div>
                         <x-input-error class="mt-2" :messages="$errors->get('site_id')" />
                     </div>
                     <div>
-                        <x-input-label for="order_date" :value="__('Order Date')" />
-                        <x-text-input id="order_date" name="order_date" type="date" class="mt-1 block w-full"
-                                      :value="old('order_date', now()->toDateString())" required />
-                        <x-input-error class="mt-2" :messages="$errors->get('order_date')" />
+                        <x-input-label for="party_id" :value="__('Suggested Supplier (optional)')" />
+                        <div class="mt-1">
+                            <x-searchable-select name="party_id" :options="$suppliers" :selected="old('party_id')"
+                                                  placeholder="{{ __('Not decided yet…') }}" />
+                        </div>
+                        <x-input-error class="mt-2" :messages="$errors->get('party_id')" />
+                    </div>
+                    <div>
+                        <x-input-label for="request_date" :value="__('Request Date')" />
+                        <x-text-input id="request_date" name="request_date" type="date" class="mt-1 block w-full"
+                                      :value="old('request_date', now()->toDateString())" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('request_date')" />
+                    </div>
+                    <div>
+                        <x-input-label for="required_by_date" :value="__('Required By (optional)')" />
+                        <x-text-input id="required_by_date" name="required_by_date" type="date" class="mt-1 block w-full"
+                                      :value="old('required_by_date')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('required_by_date')" />
                     </div>
                 </div>
             </div>
@@ -72,13 +69,11 @@
             <!-- Cart -->
             <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden mb-4" x-show="items.length" x-cloak>
                 <div class="overflow-x-auto">
-                <table class="w-full min-w-[720px] text-sm">
+                <table class="w-full min-w-[600px] text-sm">
                     <thead>
                         <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                             <th class="px-5 py-3 font-semibold">{{ __('Item') }}</th>
                             <th class="px-5 py-3 font-semibold w-32">{{ __('Quantity') }}</th>
-                            <th class="px-5 py-3 font-semibold w-32">{{ __('Unit Price') }}</th>
-                            <th class="px-5 py-3 font-semibold text-right w-32">{{ __('Subtotal') }}</th>
                             <th class="px-5 py-3 font-semibold w-16"></th>
                         </tr>
                     </thead>
@@ -95,12 +90,6 @@
                                            :name="'items[' + i + '][quantity]'" x-model.number="item.quantity"
                                            class="w-24 rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500" placeholder="0" required>
                                 </td>
-                                <td class="px-5 py-3">
-                                    <input type="number" step="0.01" min="0"
-                                           :name="'items[' + i + '][unit_price]'" x-model.number="item.unit_price"
-                                           class="w-28 rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500" placeholder="0.00" required>
-                                </td>
-                                <td class="px-5 py-3 text-right font-semibold text-slate-800" x-text="((item.quantity || 0) * (item.unit_price || 0)).toFixed(2)"></td>
                                 <td class="px-5 py-3 text-right">
                                     <button type="button" @click="removeItem(item.id)" class="text-slate-400 hover:text-rose-600" title="{{ __('Remove') }}">
                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
@@ -109,31 +98,10 @@
                             </tr>
                         </template>
                     </tbody>
-                    <tfoot>
-                        <tr class="border-t border-slate-100">
-                            <td colspan="3" class="px-5 py-2 text-right text-slate-500">{{ __('Subtotal') }}</td>
-                            <td class="px-5 py-2 text-right font-semibold text-slate-700" x-text="subtotal.toFixed(2)"></td>
-                            <td></td>
-                        </tr>
-                        <tr class="border-t border-slate-100">
-                            <td colspan="3" class="px-5 py-2 text-right text-slate-500">{{ __('Discount') }}</td>
-                            <td class="px-5 py-2 text-right">
-                                <input type="number" step="0.01" min="0" name="discount_amount" x-model.number="discount"
-                                       class="w-28 rounded-lg border-slate-300 text-sm text-right focus:border-accent-500 focus:ring-accent-500" placeholder="0.00">
-                            </td>
-                            <td></td>
-                        </tr>
-                        <tr class="border-t border-slate-100 bg-slate-50">
-                            <td colspan="3" class="px-5 py-3 text-right font-semibold text-slate-600">{{ __('Total') }}</td>
-                            <td class="px-5 py-3 text-right font-bold text-brand-900" x-text="total.toFixed(2)"></td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
                 </table>
                 </div>
             </div>
             <x-input-error class="mb-4" :messages="$errors->get('items')" />
-            <x-input-error class="mb-4" :messages="$errors->get('discount_amount')" />
 
             <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200" x-show="items.length" x-cloak>
                 <div class="mb-5 max-w-xl">
@@ -146,7 +114,7 @@
                 <button type="submit" :disabled="items.length === 0"
                         class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                    {{ __('Create Sale') }}
+                    {{ __('Submit Requisition') }}
                 </button>
             </div>
         </form>

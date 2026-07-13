@@ -29,10 +29,14 @@ class CompanySetting extends Model
         'online_site_id',
         'side_banner_1_path',
         'side_banner_2_path',
+        'purchase_requisition_approval_required',
+        'sale_quotation_approval_required',
     ];
 
     protected $casts = [
         'ecommerce_enabled' => 'boolean',
+        'purchase_requisition_approval_required' => 'boolean',
+        'sale_quotation_approval_required' => 'boolean',
     ];
 
     public function onlineSite(): BelongsTo

@@ -1,32 +1,23 @@
 <x-app-layout>
-    <x-slot name="title">{{ __('New Sale') }}</x-slot>
+    <x-slot name="title">{{ __('New Quotation') }}</x-slot>
     <x-slot name="header">
         <div>
-            <h2 class="text-2xl font-bold text-brand-900">{{ __('New Sale') }}</h2>
-            <p class="text-sm text-slate-500 mt-0.5">{{ __('Order stock for a customer — nothing leaves inventory until it\'s delivered.') }}</p>
+            <h2 class="text-2xl font-bold text-brand-900">{{ __('New Quotation') }}</h2>
+            <p class="text-sm text-slate-500 mt-0.5">{{ __('Quote prices to a customer — nothing is committed until it\'s converted into a Sale.') }}</p>
         </div>
     </x-slot>
 
-    @if ($prefillQuotation)
-        <div class="rounded-xl bg-accent-50 ring-1 ring-accent-200 px-4 py-3 mb-4 text-sm text-accent-800">
-            {{ __('Converting quotation') }} <strong>{{ $prefillQuotation->quotation_no }}</strong> — {{ __('review the items and prices below before creating the Sale.') }}
-        </div>
-    @endif
-
-    <div x-data="saleCart(@js(['itemOptions' => $itemOptions, 'items' => $items]))">
-        <form method="POST" action="{{ route('sales.store') }}" x-ref="form">
+    <div x-data="quotationCart(@js(['itemOptions' => $itemOptions]))">
+        <form method="POST" action="{{ route('sale-quotations.store') }}" x-ref="form">
             @csrf
-            @if ($prefillQuotation)
-                <input type="hidden" name="sale_quotation_id" value="{{ $prefillQuotation->id }}">
-            @endif
 
-            <!-- Customer / Site / Date -->
+            <!-- Customer / Site / Dates -->
             <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-4">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div>
                         <x-input-label for="party_id" :value="__('Customer')" />
                         <div class="mt-1">
-                            <x-searchable-select name="party_id" :options="$customers" :selected="old('party_id', $prefillQuotation?->party_id)"
+                            <x-searchable-select name="party_id" :options="$customers" :selected="old('party_id')"
                                                   placeholder="{{ __('Select a customer…') }}" />
                         </div>
                         <x-input-error class="mt-2" :messages="$errors->get('party_id')" />
@@ -34,16 +25,22 @@
                     <div>
                         <x-input-label for="site_id" :value="__('Site')" />
                         <div class="mt-1">
-                            <x-searchable-select name="site_id" :options="$sites" :selected="old('site_id', $prefillQuotation?->site_id)"
+                            <x-searchable-select name="site_id" :options="$sites" :selected="old('site_id')"
                                                   placeholder="{{ __('Shipping site…') }}" />
                         </div>
                         <x-input-error class="mt-2" :messages="$errors->get('site_id')" />
                     </div>
                     <div>
-                        <x-input-label for="order_date" :value="__('Order Date')" />
-                        <x-text-input id="order_date" name="order_date" type="date" class="mt-1 block w-full"
-                                      :value="old('order_date', now()->toDateString())" required />
-                        <x-input-error class="mt-2" :messages="$errors->get('order_date')" />
+                        <x-input-label for="quote_date" :value="__('Quote Date')" />
+                        <x-text-input id="quote_date" name="quote_date" type="date" class="mt-1 block w-full"
+                                      :value="old('quote_date', now()->toDateString())" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('quote_date')" />
+                    </div>
+                    <div>
+                        <x-input-label for="valid_until" :value="__('Valid Until (optional)')" />
+                        <x-text-input id="valid_until" name="valid_until" type="date" class="mt-1 block w-full"
+                                      :value="old('valid_until')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('valid_until')" />
                     </div>
                 </div>
             </div>
@@ -146,7 +143,7 @@
                 <button type="submit" :disabled="items.length === 0"
                         class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
-                    {{ __('Create Sale') }}
+                    {{ __('Create Quotation') }}
                 </button>
             </div>
         </form>

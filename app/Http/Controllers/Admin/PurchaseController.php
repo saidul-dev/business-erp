@@ -11,6 +11,7 @@ use App\Models\ProductVariant;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\PurchaseReceipt;
+use App\Models\PurchaseRequisition;
 use App\Models\PurchaseReturn;
 use App\Models\Site;
 use App\Models\StockMovement;
@@ -72,13 +73,38 @@ class PurchaseController extends Controller implements HasMiddleware
      * Transfer, there's no stock-balance filter, since ordering doesn't
      * require existing stock.
      */
-    public function create()
+    public function create(Request $request)
     {
         $sites = Site::where('status', true)->orderBy('name')->get();
         $suppliers = Party::where('is_supplier', true)->where('status', true)->orderBy('name')->get(['id', 'name']);
         $itemOptions = $this->itemOptions();
 
-        return view('admin.purchases.create', compact('sites', 'suppliers', 'itemOptions'));
+        // Coming from an approved Purchase Requisition ("Convert to Purchase
+        // Order") — prefill the cart from its lines rather than duplicating
+        // order-creation logic in PurchaseRequisitionController.
+        $prefillRequisition = null;
+        $items = collect();
+
+        if ($request->filled('from_requisition')) {
+            $prefillRequisition = PurchaseRequisition::where('status', 'approved')
+                ->whereDoesntHave('purchase')
+                ->with(['items.product.stockUnit', 'items.productVariant.attributeValues'])
+                ->find($request->integer('from_requisition'));
+
+            if ($prefillRequisition) {
+                $items = $prefillRequisition->items->map(fn ($item) => [
+                    'id' => $item->product_variant_id ? "variant-{$item->product_variant_id}" : "product-{$item->product_id}",
+                    'name' => $item->productVariant
+                        ? "{$item->product->name} — {$item->productVariant->label} ({$item->productVariant->sku})"
+                        : "{$item->product->name} ({$item->product->sku})",
+                    'unit' => $item->product->stockUnit?->short_name,
+                    'quantity' => (float) $item->quantity,
+                    'unit_cost' => (float) $item->estimated_unit_cost,
+                ])->values();
+            }
+        }
+
+        return view('admin.purchases.create', compact('sites', 'suppliers', 'itemOptions', 'prefillRequisition', 'items'));
     }
 
     /**
@@ -91,9 +117,24 @@ class PurchaseController extends Controller implements HasMiddleware
         [$validated, $rows, $subtotal, $discount] = $this->validateOrderRequest($request);
 
         $purchase = DB::transaction(function () use ($validated, $rows, $subtotal, $discount) {
+            $requisition = null;
+
+            if (! empty($validated['purchase_requisition_id'])) {
+                $requisition = PurchaseRequisition::where('id', $validated['purchase_requisition_id'])
+                    ->where('status', 'approved')
+                    ->whereDoesntHave('purchase')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $requisition) {
+                    throw ValidationException::withMessages(['purchase_requisition_id' => 'This requisition is no longer available to convert.']);
+                }
+            }
+
             $purchase = Purchase::create([
                 'purchase_no' => 'PENDING',
                 'party_id' => $validated['party_id'],
+                'purchase_requisition_id' => $requisition?->id,
                 'site_id' => $validated['site_id'],
                 'status' => 'pending',
                 'order_date' => $validated['order_date'],
@@ -114,6 +155,8 @@ class PurchaseController extends Controller implements HasMiddleware
                     'subtotal' => $row['subtotal'],
                 ]);
             }
+
+            $requisition?->update(['status' => 'converted']);
 
             return $purchase;
         });
@@ -683,6 +726,7 @@ class PurchaseController extends Controller implements HasMiddleware
             'order_date' => ['required', 'date'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'note' => ['nullable', 'string', 'max:1000'],
+            'purchase_requisition_id' => ['nullable', 'integer', 'exists:purchase_requisitions,id'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.item' => ['required', 'string'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.0001'],

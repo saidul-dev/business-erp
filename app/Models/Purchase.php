@@ -17,6 +17,7 @@ class Purchase extends Model
     protected $fillable = [
         'purchase_no',
         'party_id',
+        'purchase_requisition_id',
         'site_id',
         'status',
         'order_date',
@@ -37,6 +38,11 @@ class Purchase extends Model
     public function party(): BelongsTo
     {
         return $this->belongsTo(Party::class);
+    }
+
+    public function requisition(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseRequisition::class, 'purchase_requisition_id');
     }
 
     public function site(): BelongsTo

@@ -26,6 +26,7 @@ class Sale extends Model
     protected $fillable = [
         'sale_no',
         'party_id',
+        'sale_quotation_id',
         'site_id',
         'status',
         'channel',
@@ -53,6 +54,11 @@ class Sale extends Model
     public function party(): BelongsTo
     {
         return $this->belongsTo(Party::class);
+    }
+
+    public function quotation(): BelongsTo
+    {
+        return $this->belongsTo(SaleQuotation::class, 'sale_quotation_id');
     }
 
     public function site(): BelongsTo

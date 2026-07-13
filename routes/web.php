@@ -23,8 +23,10 @@ use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProfitLossController;
 use App\Http\Controllers\Admin\PurchaseController;
+use App\Http\Controllers\Admin\PurchaseRequisitionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SaleController;
+use App\Http\Controllers\Admin\SaleQuotationController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\StockAdjustmentController;
@@ -129,6 +131,13 @@ Route::prefix('admin')->group(function () {
         Route::post('/purchases/{purchase}/return', [PurchaseController::class, 'storeReturn'])->name('purchases.return.store');
         Route::get('/purchase-returns/{purchaseReturn}/print', [PurchaseController::class, 'printReturn'])->name('purchases.returns.print');
 
+        Route::resource('purchase-requisitions', PurchaseRequisitionController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update'])
+            ->parameters(['purchase-requisitions' => 'purchaseRequisition']);
+        Route::get('/purchase-requisitions/{purchaseRequisition}/print', [PurchaseRequisitionController::class, 'print'])->name('purchase-requisitions.print');
+        Route::post('/purchase-requisitions/{purchaseRequisition}/approve', [PurchaseRequisitionController::class, 'approve'])->name('purchase-requisitions.approve');
+        Route::post('/purchase-requisitions/{purchaseRequisition}/reject', [PurchaseRequisitionController::class, 'reject'])->name('purchase-requisitions.reject');
+        Route::post('/purchase-requisitions/{purchaseRequisition}/cancel', [PurchaseRequisitionController::class, 'cancel'])->name('purchase-requisitions.cancel');
+
         Route::get('/sales/manual', [SaleController::class, 'manual'])->name('sales.manual');
         Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
         Route::get('/sales/{sale}/print', [SaleController::class, 'printOrder'])->name('sales.print');
@@ -139,6 +148,13 @@ Route::prefix('admin')->group(function () {
         Route::get('/sales/{sale}/return', [SaleController::class, 'returnForm'])->name('sales.return.create');
         Route::post('/sales/{sale}/return', [SaleController::class, 'storeReturn'])->name('sales.return.store');
         Route::get('/sale-returns/{saleReturn}/print', [SaleController::class, 'printReturn'])->name('sales.returns.print');
+
+        Route::resource('sale-quotations', SaleQuotationController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update'])
+            ->parameters(['sale-quotations' => 'saleQuotation']);
+        Route::get('/sale-quotations/{saleQuotation}/print', [SaleQuotationController::class, 'print'])->name('sale-quotations.print');
+        Route::post('/sale-quotations/{saleQuotation}/approve', [SaleQuotationController::class, 'approve'])->name('sale-quotations.approve');
+        Route::post('/sale-quotations/{saleQuotation}/reject', [SaleQuotationController::class, 'reject'])->name('sale-quotations.reject');
+        Route::post('/sale-quotations/{saleQuotation}/cancel', [SaleQuotationController::class, 'cancel'])->name('sale-quotations.cancel');
 
         Route::resource('delivery-partners', DeliveryPartnerController::class)->except('show')
             ->parameters(['delivery-partners' => 'deliveryPartner']);
@@ -189,6 +205,8 @@ Route::prefix('admin')->group(function () {
         Route::put('/settings/website', [SettingController::class, 'updateWebsite'])->name('settings.website.update');
         Route::get('/settings/ecommerce', [SettingController::class, 'editEcommerce'])->name('settings.ecommerce.edit');
         Route::put('/settings/ecommerce', [SettingController::class, 'updateEcommerce'])->name('settings.ecommerce.update');
+        Route::get('/settings/approvals', [SettingController::class, 'editApprovals'])->name('settings.approvals.edit');
+        Route::put('/settings/approvals', [SettingController::class, 'updateApprovals'])->name('settings.approvals.update');
 
         Route::resource('hero-slides', HeroSlideController::class)->except('show')
             ->parameters(['hero-slides' => 'heroSlide']);

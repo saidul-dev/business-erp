@@ -23,8 +23,8 @@ class SettingController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:settings.view', only: ['edit', 'editWebsite', 'editEcommerce']),
-            new Middleware('permission:settings.edit', only: ['update', 'updateWebsite', 'updateEcommerce']),
+            new Middleware('permission:settings.view', only: ['edit', 'editWebsite', 'editEcommerce', 'editApprovals']),
+            new Middleware('permission:settings.edit', only: ['update', 'updateWebsite', 'updateEcommerce', 'updateApprovals']),
             new Middleware('role:Super Admin', only: ['editEcommerce', 'updateEcommerce']),
         ];
     }
@@ -150,5 +150,23 @@ class SettingController extends Controller implements HasMiddleware
         $company->update($data);
 
         return redirect()->route('settings.ecommerce.edit')->with('success', 'E-commerce setting updated.');
+    }
+
+    public function editApprovals()
+    {
+        return view('admin.settings.approvals', ['company' => CompanySetting::current()]);
+    }
+
+    public function updateApprovals(Request $request)
+    {
+        $company = CompanySetting::current();
+
+        $company->update([
+            // Checkboxes omit the field entirely when unchecked, so read them directly.
+            'purchase_requisition_approval_required' => $request->boolean('purchase_requisition_approval_required'),
+            'sale_quotation_approval_required' => $request->boolean('sale_quotation_approval_required'),
+        ]);
+
+        return redirect()->route('settings.approvals.edit')->with('success', 'Approval settings updated.');
     }
 }

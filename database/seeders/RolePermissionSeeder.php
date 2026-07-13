@@ -21,7 +21,9 @@ class RolePermissionSeeder extends Seeder
      */
     protected array $modules = [
         'sourcing'  => ['view', 'create', 'edit', 'delete', 'approve'],
+        'purchase-requisitions' => ['view', 'create', 'edit', 'delete', 'approve'],
         'sales'     => ['view', 'create', 'edit', 'delete', 'approve'],
+        'sale-quotations' => ['view', 'create', 'edit', 'delete', 'approve'],
         'inventory' => ['view', 'create', 'edit', 'delete', 'approve'],
         'parties'   => ['view', 'create', 'edit', 'delete'],
         'accounts'  => ['view', 'create', 'edit', 'delete', 'approve'],
@@ -58,7 +60,9 @@ class RolePermissionSeeder extends Seeder
 
         Role::findOrCreate('Manager')->syncPermissions([
             'sourcing.view', 'sourcing.create', 'sourcing.edit', 'sourcing.approve',
+            'purchase-requisitions.view', 'purchase-requisitions.create', 'purchase-requisitions.edit', 'purchase-requisitions.approve',
             'sales.view', 'sales.create', 'sales.edit', 'sales.approve',
+            'sale-quotations.view', 'sale-quotations.create', 'sale-quotations.edit', 'sale-quotations.approve',
             'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.approve',
             'parties.view', 'parties.create', 'parties.edit',
             'delivery.view', 'delivery.create', 'delivery.edit',
@@ -76,7 +80,9 @@ class RolePermissionSeeder extends Seeder
         Role::findOrCreate('Accountant')->syncPermissions([
             'accounts.view', 'accounts.create', 'accounts.edit', 'accounts.approve',
             'sourcing.view',
+            'purchase-requisitions.view',
             'sales.view',
+            'sale-quotations.view',
             'parties.view',
             'reports.view',
         ]);
@@ -84,11 +90,13 @@ class RolePermissionSeeder extends Seeder
         Role::findOrCreate('Store-keeper')->syncPermissions([
             'inventory.view', 'inventory.create', 'inventory.edit',
             'sourcing.view',
+            'purchase-requisitions.view', 'purchase-requisitions.create',
             'delivery.view', 'delivery.create', 'delivery.edit',
         ]);
 
         Role::findOrCreate('Sales')->syncPermissions([
             'sales.view', 'sales.create', 'sales.edit',
+            'sale-quotations.view', 'sale-quotations.create', 'sale-quotations.edit',
             'parties.view', 'parties.create', 'parties.edit',
             'inventory.view',
             'delivery.view',

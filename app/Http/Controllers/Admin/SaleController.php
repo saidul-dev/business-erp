@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Sale;
 use App\Models\SaleDelivery;
+use App\Models\SaleQuotation;
 use App\Models\SaleReturn;
 use App\Models\Site;
 use App\Models\StockMovement;
@@ -75,13 +76,38 @@ class SaleController extends Controller implements HasMiddleware
      * from Product/Variant `selling_price` — no stock-balance filter, since
      * ordering doesn't require checking stock (checked at deliver() time).
      */
-    public function create()
+    public function create(Request $request)
     {
         $sites = Site::where('status', true)->orderBy('name')->get();
         $customers = Party::where('is_customer', true)->where('status', true)->orderBy('name')->get(['id', 'name']);
         $itemOptions = $this->itemOptions();
 
-        return view('admin.sales.create', compact('sites', 'customers', 'itemOptions'));
+        // Coming from an approved Sale Quotation ("Convert to Sale") —
+        // prefill the cart from its lines rather than duplicating
+        // order-creation logic in SaleQuotationController.
+        $prefillQuotation = null;
+        $items = collect();
+
+        if ($request->filled('from_quotation')) {
+            $prefillQuotation = SaleQuotation::where('status', 'approved')
+                ->whereDoesntHave('sale')
+                ->with(['items.product.stockUnit', 'items.productVariant.attributeValues'])
+                ->find($request->integer('from_quotation'));
+
+            if ($prefillQuotation) {
+                $items = $prefillQuotation->items->map(fn ($item) => [
+                    'id' => $item->product_variant_id ? "variant-{$item->product_variant_id}" : "product-{$item->product_id}",
+                    'name' => $item->productVariant
+                        ? "{$item->product->name} — {$item->productVariant->label} ({$item->productVariant->sku})"
+                        : "{$item->product->name} ({$item->product->sku})",
+                    'unit' => $item->product->stockUnit?->short_name,
+                    'quantity' => (float) $item->quantity,
+                    'unit_price' => (float) $item->unit_price,
+                ])->values();
+            }
+        }
+
+        return view('admin.sales.create', compact('sites', 'customers', 'itemOptions', 'prefillQuotation', 'items'));
     }
 
     /**
@@ -94,9 +120,24 @@ class SaleController extends Controller implements HasMiddleware
         [$validated, $rows, $subtotal, $discount] = $this->validateOrderRequest($request);
 
         $sale = DB::transaction(function () use ($validated, $rows, $subtotal, $discount) {
+            $quotation = null;
+
+            if (! empty($validated['sale_quotation_id'])) {
+                $quotation = SaleQuotation::where('id', $validated['sale_quotation_id'])
+                    ->where('status', 'approved')
+                    ->whereDoesntHave('sale')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $quotation) {
+                    throw ValidationException::withMessages(['sale_quotation_id' => 'This quotation is no longer available to convert.']);
+                }
+            }
+
             $sale = Sale::create([
                 'sale_no' => 'PENDING',
                 'party_id' => $validated['party_id'],
+                'sale_quotation_id' => $quotation?->id,
                 'site_id' => $validated['site_id'],
                 'status' => 'pending',
                 'order_date' => $validated['order_date'],
@@ -117,6 +158,8 @@ class SaleController extends Controller implements HasMiddleware
                     'subtotal' => $row['subtotal'],
                 ]);
             }
+
+            $quotation?->update(['status' => 'converted']);
 
             return $sale;
         });
@@ -651,6 +694,7 @@ class SaleController extends Controller implements HasMiddleware
             'order_date' => ['required', 'date'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'note' => ['nullable', 'string', 'max:1000'],
+            'sale_quotation_id' => ['nullable', 'integer', 'exists:sale_quotations,id'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.item' => ['required', 'string'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.0001'],
