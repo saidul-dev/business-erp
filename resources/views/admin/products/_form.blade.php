@@ -84,6 +84,49 @@
         </div>
     </div>
 
+    @if ($ecommerceEnabled ?? false)
+    <!-- Product Gallery -->
+    <div class="lg:col-span-3 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"
+         x-data="productGallery({
+            existing: @js(($product->images ?? collect())->map(fn ($img) => ['id' => $img->id, 'url' => $img->url])),
+         })">
+        <div class="mb-4">
+            <h3 class="font-bold text-brand-900">{{ __('Product Gallery') }}</h3>
+            <p class="text-xs text-slate-400">{{ __('Extra photos shown on the online store\'s product page, in addition to the main Product Image above. PNG or JPG, up to 2MB each.') }}</p>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+            <template x-for="img in existing" :key="'existing-'+img.id">
+                <div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl ring-1 ring-slate-200">
+                    <img :src="img.url" alt="" class="h-full w-full object-cover">
+                    <button type="button" @click="removeExisting(img.id)"
+                            class="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-white/90 text-rose-600 shadow hover:bg-white">
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                    </button>
+                    <input type="hidden" name="remove_gallery_ids[]" :value="img.id">
+                </div>
+            </template>
+
+            <template x-for="(item, i) in newFiles" :key="'new-'+i">
+                <div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl ring-1 ring-slate-200">
+                    <img :src="item.url" alt="" class="h-full w-full object-cover">
+                    <button type="button" @click="removeNew(i)"
+                            class="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-white/90 text-rose-600 shadow hover:bg-white">
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </template>
+
+            <label class="grid h-24 w-24 shrink-0 cursor-pointer place-items-center rounded-xl border border-dashed border-slate-300 text-slate-400 hover:bg-slate-50">
+                <span class="text-center text-[11px] font-semibold leading-tight">{{ __('Add Photos') }}</span>
+                <input type="file" name="gallery_images[]" x-ref="galleryInput" accept="image/*" multiple class="hidden" @change="addFiles($event.target.files)">
+            </label>
+        </div>
+        <x-input-error class="mt-3" :messages="$errors->get('gallery_images')" />
+        <x-input-error class="mt-1" :messages="$errors->get('gallery_images.*')" />
+    </div>
+    @endif
+
     <!-- Classification -->
     <div class="lg:col-span-3 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div class="mb-4">

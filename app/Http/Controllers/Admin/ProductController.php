@@ -59,10 +59,11 @@ class ProductController extends Controller implements HasMiddleware
         }
 
         $product = DB::transaction(function () use ($validated, $variants) {
-            $product = Product::create(collect($validated)->except('image')->all());
+            $product = Product::create(collect($validated)->except(['image', 'gallery_images', 'remove_gallery_ids'])->all());
             if ($product->has_variants) {
                 $this->syncVariants($product, $variants);
             }
+            $this->syncGalleryImages($product, $validated);
 
             return $product;
         });
@@ -72,7 +73,7 @@ class ProductController extends Controller implements HasMiddleware
 
     public function edit(Product $product)
     {
-        $product->load('variants.attributeValues');
+        $product->load('variants.attributeValues', 'images');
 
         return view('admin.products.edit', array_merge([
             'product' => $product,
@@ -106,7 +107,7 @@ class ProductController extends Controller implements HasMiddleware
         }
 
         DB::transaction(function () use ($request, $product, $validated, $variants) {
-            $product->update(collect($validated)->except(['image', 'remove_image'])->all());
+            $product->update(collect($validated)->except(['image', 'remove_image', 'gallery_images', 'remove_gallery_ids'])->all());
 
             if ($product->has_variants) {
                 $this->syncVariants($product, $variants);
@@ -117,6 +118,8 @@ class ProductController extends Controller implements HasMiddleware
                     $variant->delete();
                 });
             }
+
+            $this->syncGalleryImages($product, $validated);
         });
 
         return redirect()->route('products.index')->with('success', "Product \"{$product->name}\" updated.");
@@ -148,6 +151,10 @@ class ProductController extends Controller implements HasMiddleware
     {
         if ($product->image_path) {
             Storage::disk('public')->delete($product->image_path);
+        }
+
+        foreach ($product->images as $image) {
+            Storage::disk('public')->delete($image->image_path);
         }
 
         $product->delete();
@@ -193,6 +200,10 @@ class ProductController extends Controller implements HasMiddleware
             'reorder_level' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'max:2048'],
             'remove_image' => ['nullable', 'boolean'],
+            'gallery_images' => ['nullable', 'array'],
+            'gallery_images.*' => ['image', 'max:2048'],
+            'remove_gallery_ids' => ['nullable', 'array'],
+            'remove_gallery_ids.*' => ['integer', 'exists:product_images,id'],
             'has_variants' => ['nullable', 'boolean'],
             'track_batch' => ['nullable', 'boolean'],
             'track_expiry' => ['nullable', 'boolean'],
@@ -311,5 +322,33 @@ class ProductController extends Controller implements HasMiddleware
             $variant->attributeValues()->detach();
             $variant->delete();
         });
+    }
+
+    /**
+     * Delete gallery photos the form marked for removal, then append any
+     * newly uploaded ones after the current highest sort_order. Only ever
+     * populated when the form's e-commerce section is shown.
+     */
+    protected function syncGalleryImages(Product $product, array $validated): void
+    {
+        foreach ($validated['remove_gallery_ids'] ?? [] as $imageId) {
+            $image = $product->images()->find($imageId);
+
+            if ($image) {
+                Storage::disk('public')->delete($image->image_path);
+                $image->delete();
+            }
+        }
+
+        if (! empty($validated['gallery_images'])) {
+            $nextOrder = (int) $product->images()->max('sort_order') + 1;
+
+            foreach ($validated['gallery_images'] as $file) {
+                $product->images()->create([
+                    'image_path' => $file->store('products', 'public'),
+                    'sort_order' => $nextOrder++,
+                ]);
+            }
+        }
     }
 }

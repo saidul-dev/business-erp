@@ -118,6 +118,36 @@ Alpine.data('productForm', (initial) => ({
     },
 }));
 
+Alpine.data('productGallery', (initial) => ({
+    existing: initial.existing || [],
+    newFiles: [],
+
+    // Mirrors the real file input exactly, since re-opening it replaces
+    // (not appends to) its selection — appending here would show previews
+    // for files that no longer submit with the form.
+    addFiles(fileList) {
+        this.newFiles = Array.from(fileList).map((file) => ({
+            file,
+            url: URL.createObjectURL(file),
+        }));
+    },
+
+    removeExisting(id) {
+        this.existing = this.existing.filter((img) => img.id !== id);
+    },
+
+    removeNew(index) {
+        this.newFiles.splice(index, 1);
+
+        // A file input can't drop a single entry from its FileList directly —
+        // rebuild it via DataTransfer so what's previewed still matches what
+        // will actually submit.
+        const transfer = new DataTransfer();
+        this.newFiles.forEach((item) => transfer.items.add(item.file));
+        this.$refs.galleryInput.files = transfer.files;
+    },
+}));
+
 Alpine.data('transferCart', (initial) => ({
     itemOptions: initial.itemOptions || [],
     items: [],

@@ -87,7 +87,7 @@ class ShopController extends Controller
     {
         abort_unless($product->status, 404);
 
-        $product->load(['category', 'brand', 'stockUnit', 'variants' => fn ($q) => $q
+        $product->load(['category', 'brand', 'stockUnit', 'images', 'variants' => fn ($q) => $q
             ->where('status', true)->with('attributeValues.attribute')]);
 
         $stockBalances = $this->stockBalances(collect([$product]));

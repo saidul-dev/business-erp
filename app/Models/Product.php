@@ -103,6 +103,16 @@ class Product extends Model
         return $this->image_path ? Storage::disk('public')->url($this->image_path) : null;
     }
 
+    /**
+     * Extra gallery photos shown on the storefront product detail page —
+     * Product::image_path/image_url stays the cover image used everywhere
+     * else (admin list, storefront cards, related products).
+     */
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('sort_order');
+    }
+
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
