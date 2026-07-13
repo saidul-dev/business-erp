@@ -28,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // API (see SslCommerzService) is what actually proves authenticity.
         $middleware->validateCsrfTokens(except: [
             'payment/sslcommerz/*',
+            'webhooks/steadfast/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

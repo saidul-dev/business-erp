@@ -10,8 +10,10 @@
     <form method="POST" action="{{ route('sales.deliver.store', $sale) }}"
           x-data="{
               fulfillmentType: '{{ old('fulfillment_type', 'self') }}',
+              selectedPartner: null,
               fillRemaining() { this.$refs.form.querySelectorAll('[data-remaining]').forEach(el => { el.value = el.dataset.remaining; }); },
-          }" x-ref="form">
+          }" x-ref="form"
+          @option-selected-delivery_partner_id.window="selectedPartner = $event.detail">
         @csrf
 
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-4">
@@ -48,7 +50,7 @@
                     <x-input-label for="delivery_partner_id" :value="__('Courier')" />
                     <div class="mt-1">
                         <x-searchable-select name="delivery_partner_id" :options="$deliveryPartners" :selected="old('delivery_partner_id')"
-                                              placeholder="{{ __('Select a courier…') }}" />
+                                              :extra="['provider']" placeholder="{{ __('Select a courier…') }}" />
                     </div>
                     <x-input-error class="mt-2" :messages="$errors->get('delivery_partner_id')" />
                 </div>
@@ -61,11 +63,16 @@
                     </p>
                     <x-input-error class="mt-2" :messages="$errors->get('cod_amount')" />
                 </div>
-                <div>
+                <div x-show="!selectedPartner || selectedPartner.provider === 'manual'">
                     <x-input-label for="tracking_no" :value="__('Tracking No. (optional)')" />
                     <x-text-input id="tracking_no" name="tracking_no" type="text" class="mt-1 block w-full"
                                   :value="old('tracking_no')" />
                     <x-input-error class="mt-2" :messages="$errors->get('tracking_no')" />
+                </div>
+                <div x-show="selectedPartner && selectedPartner.provider !== 'manual'" x-cloak
+                     class="flex items-center gap-2 rounded-lg bg-accent-50 px-3 py-2 text-xs font-medium text-accent-700 ring-1 ring-accent-200">
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span x-text="'Will be booked automatically with ' + (selectedPartner?.name ?? '') + ' — no tracking number needed here.'"></span>
                 </div>
             </div>
         </div>

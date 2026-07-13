@@ -44,6 +44,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\SteadfastWebhookController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
 
@@ -83,6 +84,9 @@ Route::middleware('ecommerce')->group(function () {
     Route::get('/campaign/{campaignPage:slug}', [CampaignController::class, 'show'])->name('campaign.show');
     Route::post('/campaign/{campaignPage:slug}/buy', [CampaignController::class, 'buyNow'])->name('campaign.buy');
 });
+
+// Not gated behind 'ecommerce' — courier bookings happen for POS sales too.
+Route::post('/webhooks/steadfast/status', [SteadfastWebhookController::class, 'handle'])->name('webhooks.steadfast.status');
 
 // UI language switch — not an authenticated action, just a session preference.
 Route::post('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');

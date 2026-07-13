@@ -75,6 +75,9 @@ class DeliveryPartnerController extends Controller implements HasMiddleware
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50', Rule::unique('delivery_partners', 'code')->ignore($partner?->id)],
+            'provider' => ['required', Rule::in(DeliveryPartner::PROVIDERS)],
+            'api_key' => ['required_unless:provider,manual', 'nullable', 'string', 'max:500'],
+            'secret_key' => ['required_unless:provider,manual', 'nullable', 'string', 'max:500'],
             'phone' => ['nullable', 'string', 'max:30'],
             'contact_person' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:2000'],

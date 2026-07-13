@@ -21,6 +21,7 @@ class CourierConsignment extends Model
         'sale_delivery_id',
         'delivery_partner_id',
         'tracking_no',
+        'external_id',
         'cod_amount',
         'courier_fee',
         'status',

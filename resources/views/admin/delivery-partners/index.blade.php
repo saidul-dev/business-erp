@@ -22,6 +22,7 @@
                 <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                     <th class="px-5 py-3 font-semibold">{{ __('Name') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Code') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Booking') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Contact') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Consignments') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Status') }}</th>
@@ -33,6 +34,13 @@
                 <tr class="hover:bg-slate-50">
                     <td class="px-5 py-3 font-semibold text-slate-800">{{ $partner->name }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $partner->code }}</td>
+                    <td class="px-5 py-3">
+                        @if ($partner->bookedViaApi())
+                        <span class="inline-flex rounded-full bg-accent-50 px-2.5 py-0.5 text-xs font-semibold text-accent-700 ring-1 ring-accent-200">{{ ucfirst($partner->provider) }} API</span>
+                        @else
+                        <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-500 ring-1 ring-slate-200">{{ __('Manual') }}</span>
+                        @endif
+                    </td>
                     <td class="px-5 py-3 text-slate-600">
                         <span class="block">{{ $partner->phone ?: '—' }}</span>
                         @if ($partner->contact_person)
@@ -82,7 +90,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-5 py-10 text-center text-slate-400">{{ __('No delivery partners yet — add Pathao, RedX, Steadfast etc. to start booking courier deliveries.') }}</td>
+                    <td colspan="7" class="px-5 py-10 text-center text-slate-400">{{ __('No delivery partners yet — add Pathao, RedX, Steadfast etc. to start booking courier deliveries.') }}</td>
                 </tr>
                 @endforelse
             </tbody>

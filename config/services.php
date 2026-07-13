@@ -41,4 +41,11 @@ return [
         'sandbox' => env('SSLCOMMERZ_SANDBOX', true),
     ],
 
+    'steadfast' => [
+        // Per-courier-account api_key/secret_key live on DeliveryPartner
+        // instead — this is only the shared secret Steadfast echoes back
+        // in its webhook's Authorization header, set once in their panel.
+        'webhook_token' => env('STEADFAST_WEBHOOK_TOKEN'),
+    ],
+
 ];

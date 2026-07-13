@@ -16,6 +16,7 @@ use App\Models\SaleReturn;
 use App\Models\Site;
 use App\Models\StockMovement;
 use App\Services\LedgerService;
+use App\Services\SteadfastService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -322,7 +323,7 @@ class SaleController extends Controller implements HasMiddleware
             'items.*.serial_no' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $sale->load('items.product');
+        $sale->load('items.product', 'party');
 
         $lines = [];
         foreach ($validated['items'] as $saleItemId => $row) {
@@ -357,7 +358,38 @@ class SaleController extends Controller implements HasMiddleware
             throw ValidationException::withMessages(['items' => 'Enter a quantity for at least one item.']);
         }
 
-        DB::transaction(function () use ($sale, $validated, $lines) {
+        // Booked outside the DB transaction below — this is a network call
+        // to a third party, and a transaction shouldn't sit open across it.
+        // A failure here stops the delivery from being posted at all, so
+        // there's never a SaleDelivery/CourierConsignment left behind for a
+        // booking that never actually happened at the courier.
+        $courierBooking = null;
+
+        if ($validated['fulfillment_type'] === 'courier') {
+            $partner = DeliveryPartner::findOrFail($validated['delivery_partner_id']);
+
+            if ($partner->bookedViaApi()) {
+                try {
+                    $courierBooking = match ($partner->provider) {
+                        'steadfast' => app(SteadfastService::class)->createOrder($partner, [
+                            'invoice' => $sale->sale_no,
+                            'recipient_name' => $sale->shipping_name ?: $sale->party->name,
+                            'recipient_phone' => $sale->shipping_phone ?: $sale->party->phone,
+                            'recipient_address' => $sale->shipping_address ?: $sale->party->address,
+                            'cod_amount' => $validated['cod_amount'] ?? 0,
+                            'note' => $validated['note'] ?? null,
+                        ]),
+                        default => null,
+                    };
+                } catch (\Throwable $e) {
+                    report($e);
+
+                    return back()->withInput()->with('error', "Could not book with {$partner->name}: {$e->getMessage()}");
+                }
+            }
+        }
+
+        DB::transaction(function () use ($sale, $validated, $lines, $courierBooking) {
             $delivery = SaleDelivery::create([
                 'sale_id' => $sale->id,
                 'delivery_no' => 'PENDING',
@@ -372,7 +404,8 @@ class SaleController extends Controller implements HasMiddleware
                 CourierConsignment::create([
                     'sale_delivery_id' => $delivery->id,
                     'delivery_partner_id' => $validated['delivery_partner_id'],
-                    'tracking_no' => $validated['tracking_no'] ?? null,
+                    'tracking_no' => $courierBooking['tracking_no'] ?? $validated['tracking_no'] ?? null,
+                    'external_id' => $courierBooking['external_id'] ?? null,
                     'cod_amount' => $validated['cod_amount'] ?? 0,
                     'status' => 'booked',
                     'booked_by' => Auth::id(),
