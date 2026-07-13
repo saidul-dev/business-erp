@@ -15,10 +15,12 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -e
             cd /var/www/erp.vexasoft.net
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             php8.5 /usr/local/bin/composer install --no-dev --optimize-autoloader
-            npm install
+            npm ci
             npm run build
             php8.5 artisan migrate --force
             php8.5 artisan config:cache
