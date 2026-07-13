@@ -12,9 +12,11 @@ use App\Models\ProductVariant;
 use App\Models\Sale;
 use App\Models\StockMovement;
 use App\Support\Cart;
+use App\Support\Phone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -170,11 +172,19 @@ class ShopController extends Controller
             return redirect()->route('cart')->with('error', 'Your cart is empty.');
         }
 
+        // One-time token, consumed the moment placeOrder() accepts it — a
+        // resubmission (double-click, back-button, retried request) won't
+        // carry a matching token and gets redirected instead of creating a
+        // second order. See placeOrder().
+        $checkoutToken = Str::random(40);
+        session(['checkout_token' => $checkoutToken]);
+
         return view('website.checkout', [
             'lines' => $cart->lines(),
             'subtotal' => $cart->subtotal(),
             'company' => CompanySetting::current(),
             'deliveryZones' => DeliveryZone::where('status', true)->orderBy('sort_order')->orderBy('id')->get(),
+            'checkoutToken' => $checkoutToken,
         ]);
     }
 
@@ -187,6 +197,27 @@ class ShopController extends Controller
      */
     public function placeOrder(Request $request)
     {
+        // Checked before anything cart-related: a resubmission (double-
+        // click, back-button, retried request after a slow/dropped
+        // response) won't carry the token issued when the checkout page
+        // was last shown. By the time a resubmission lands, the first
+        // successful submission has already cleared the session cart, so
+        // this has to run first — otherwise it'd never be reached, since
+        // an empty-cart check below would catch it instead and show a
+        // confusing "cart is empty" error rather than the order that was
+        // actually placed.
+        $submittedToken = $request->input('checkout_token');
+
+        if (! $submittedToken || $submittedToken !== session('checkout_token')) {
+            if ($lastOrderId = session('last_order_id')) {
+                return redirect()->route('order.confirmation', $lastOrderId);
+            }
+
+            return redirect()->route('checkout')->with('error', 'Your checkout session expired — please try again.');
+        }
+
+        session()->forget('checkout_token');
+
         $cart = new Cart;
 
         if ($cart->isEmpty()) {
@@ -207,19 +238,37 @@ class ShopController extends Controller
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $phone = Phone::normalize($validated['phone']);
+
+        if (! Phone::isValidBangladeshiMobile($phone)) {
+            throw ValidationException::withMessages(['phone' => 'Enter a valid 11-digit mobile number (e.g. 01XXXXXXXXX).']);
+        }
+
         $lines = $cart->lines();
 
         if ($lines->isEmpty()) {
             return redirect()->route('cart')->with('error', 'Your cart is empty.');
         }
 
+        // Re-check stock at the moment of ordering — the catalog's "In
+        // Stock" badge (see stockBalances()) can already be stale by the
+        // time checkout is submitted, and nothing here blocked placing an
+        // order for more than is on hand until now.
+        foreach ($lines as $row) {
+            $available = StockMovement::balanceFor($row['product']->id, $row['variant']?->id, $company->online_site_id);
+
+            if ($row['quantity'] > $available) {
+                return redirect()->route('cart')->with('error', "Sorry, only {$available} of \"{$row['name']}\" left in stock — please update your cart.");
+            }
+        }
+
         $deliveryZone = isset($validated['delivery_zone_id'])
             ? DeliveryZone::find($validated['delivery_zone_id'])
             : null;
 
-        $sale = DB::transaction(function () use ($validated, $lines, $company, $deliveryZone) {
+        $sale = DB::transaction(function () use ($validated, $phone, $lines, $company, $deliveryZone) {
             $party = Party::firstOrCreate(
-                ['phone' => $validated['phone']],
+                ['phone' => $phone],
                 ['name' => $validated['name'], 'address' => $validated['address'], 'is_customer' => true]
             );
 
@@ -238,7 +287,7 @@ class ShopController extends Controller
                 'status' => 'pending',
                 'channel' => 'online',
                 'shipping_name' => $validated['name'],
-                'shipping_phone' => $validated['phone'],
+                'shipping_phone' => $phone,
                 'shipping_address' => $validated['address'],
                 // Snapshotted for the admin/courier's reference only — see
                 // the delivery_zone_name/delivery_charge migration for why
@@ -300,9 +349,14 @@ class ShopController extends Controller
             'phone' => ['required', 'string'],
         ]);
 
+        // Match on the normalized form (how every order is stored going
+        // forward) but fall back to the raw input as typed, so orders
+        // placed before phone normalization existed can still be found.
+        $normalizedPhone = Phone::normalize($validated['phone']);
+
         $sale = Sale::where('sale_no', $validated['sale_no'])
-            ->where('shipping_phone', $validated['phone'])
             ->where('channel', 'online')
+            ->where(fn ($q) => $q->where('shipping_phone', $normalizedPhone)->orWhere('shipping_phone', $validated['phone']))
             ->with(['items.product', 'items.productVariant.attributeValues', 'deliveries.consignment.deliveryPartner', 'site'])
             ->first();
 

@@ -20,10 +20,13 @@
                  x-data="{
                     zones: @js($deliveryZones->map(fn ($z) => ['id' => $z->id, 'name' => $z->name, 'charge' => (float) $z->charge])),
                     zoneId: '{{ old('delivery_zone_id') }}',
-                    get zone() { return this.zones.find(z => z.id == this.zoneId) ?? null; }
+                    get zone() { return this.zones.find(z => z.id == this.zoneId) ?? null; },
+                    submitting: false,
                  }">
-                <form method="POST" action="{{ route('checkout.store') }}" class="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <form method="POST" action="{{ route('checkout.store') }}" @submit="submitting = true"
+                      class="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                     @csrf
+                    <input type="hidden" name="checkout_token" value="{{ $checkoutToken }}">
 
                     <div>
                         <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Full Name</label>
@@ -34,7 +37,8 @@
 
                     <div>
                         <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Phone Number</label>
-                        <input type="text" name="phone" value="{{ old('phone') }}" required
+                        <input type="tel" inputmode="numeric" name="phone" value="{{ old('phone') }}" required
+                               placeholder="01XXXXXXXXX"
                                class="w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
                         @error('phone') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                         <p class="mt-1 text-xs text-slate-400">Used to track your order later — no account needed.</p>
@@ -76,9 +80,10 @@
                         </label>
                     </div>
 
-                    <button type="submit" @if (! $company->online_site_id) disabled @endif
+                    <button type="submit" :disabled="submitting || {{ $company->online_site_id ? 'false' : 'true' }}"
                             class="w-full rounded-lg bg-accent-500 px-6 py-3 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        Place Order
+                        <span x-show="!submitting">Place Order</span>
+                        <span x-show="submitting" x-cloak>Placing Order…</span>
                     </button>
                 </form>
 
