@@ -105,6 +105,19 @@
                     </x-sidebar-dropdown>
                     @endcan
 
+                    @can('pos.view')
+                    <x-sidebar-link :href="route('pos.index')" :active="request()->routeIs('pos.*')"
+                        :title="__('POS Terminal')">
+                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-9-8.25h19.5v9.75a1.5 1.5 0 0 1-1.5 1.5h-16.5a1.5 1.5 0 0 1-1.5-1.5V6.75a1.5 1.5 0 0 1 1.5-1.5Z" />
+                        </svg>
+                        <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('POS Terminal')
+                            }}</span>
+                    </x-sidebar-link>
+                    @endcan
+
                     @can('sales.view')
                     <x-sidebar-dropdown :title="__('Sales')" :active="request()->routeIs('sales.*', 'sale-quotations.*')">
                         <x-slot name="icon">

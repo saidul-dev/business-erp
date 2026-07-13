@@ -307,6 +307,159 @@ Alpine.data('quotationCart', (initial) => ({
     },
 }));
 
+Alpine.data('posTerminal', (initial) => ({
+    accounts: initial.accounts || [],
+    productsUrl: initial.productsUrl,
+    checkoutUrl: initial.checkoutUrl,
+    customersUrl: initial.customersUrl,
+
+    query: '',
+    results: [],
+    searching: false,
+    searchTimer: null,
+
+    cart: [],
+    customer: null,
+    discount: '',
+    selectedAccountId: initial.accounts?.[0]?.id ?? null,
+    cashTendered: '',
+
+    newCustomerName: '',
+    newCustomerPhone: '',
+    customerError: '',
+    savingCustomer: false,
+
+    submitting: false,
+    checkoutError: '',
+
+    get selectedAccount() {
+        return this.accounts.find((a) => a.id === this.selectedAccountId) || null;
+    },
+
+    get isCash() {
+        return this.selectedAccount?.code === 'cash_in_hand';
+    },
+
+    get subtotal() {
+        return this.cart.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.price) || 0), 0);
+    },
+
+    get total() {
+        return Math.max(this.subtotal - (Number(this.discount) || 0), 0);
+    },
+
+    get change() {
+        return Math.max((Number(this.cashTendered) || 0) - this.total, 0);
+    },
+
+    search() {
+        clearTimeout(this.searchTimer);
+        const q = this.query.trim();
+        if (!q) {
+            this.results = [];
+            return;
+        }
+        this.searchTimer = setTimeout(() => {
+            this.searching = true;
+            axios.get(this.productsUrl, { params: { q } })
+                .then((res) => { this.results = res.data.results; })
+                .finally(() => { this.searching = false; });
+        }, 250);
+    },
+
+    handleEnter() {
+        if (this.results.length === 1) {
+            this.addResult(this.results[0]);
+        }
+    },
+
+    addResult(item) {
+        const existing = this.cart.find((i) => i.id === item.id);
+        if (existing) {
+            if (existing.quantity < item.available_qty) existing.quantity += 1;
+        } else if (item.available_qty > 0) {
+            this.cart.push({
+                id: item.id,
+                name: item.name,
+                unit: item.unit,
+                price: item.price,
+                quantity: 1,
+                available_qty: item.available_qty,
+            });
+        }
+        this.query = '';
+        this.results = [];
+        this.$refs.scanInput?.focus();
+    },
+
+    incQty(row) {
+        if (row.quantity < row.available_qty) row.quantity += 1;
+    },
+
+    decQty(row) {
+        if (row.quantity > 1) row.quantity -= 1;
+    },
+
+    removeItem(id) {
+        this.cart = this.cart.filter((i) => i.id !== id);
+    },
+
+    selectWalkIn() {
+        this.customer = null;
+    },
+
+    openNewCustomer() {
+        this.newCustomerName = '';
+        this.newCustomerPhone = '';
+        this.customerError = '';
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'pos-new-customer' }));
+    },
+
+    saveCustomer() {
+        this.savingCustomer = true;
+        this.customerError = '';
+        axios.post(this.customersUrl, { name: this.newCustomerName, phone: this.newCustomerPhone })
+            .then((res) => {
+                this.customer = res.data;
+                window.dispatchEvent(new CustomEvent('close-modal', { detail: 'pos-new-customer' }));
+            })
+            .catch((err) => {
+                this.customerError = err.response?.data?.errors
+                    ? Object.values(err.response.data.errors).flat().join(' ')
+                    : 'Could not save customer.';
+            })
+            .finally(() => { this.savingCustomer = false; });
+    },
+
+    checkout() {
+        if (this.cart.length === 0 || this.submitting) return;
+        this.submitting = true;
+        this.checkoutError = '';
+
+        axios.post(this.checkoutUrl, {
+            party_id: this.customer?.id ?? null,
+            discount_amount: this.discount || 0,
+            ledger_account_id: this.selectedAccountId,
+            cash_tendered: this.cashTendered || null,
+            items: this.cart.map((i) => ({ item: i.id, quantity: i.quantity })),
+        })
+            .then((res) => {
+                window.open(res.data.receipt_url, '_blank');
+                this.cart = [];
+                this.customer = null;
+                this.discount = '';
+                this.cashTendered = '';
+                this.$refs.scanInput?.focus();
+            })
+            .catch((err) => {
+                this.checkoutError = err.response?.data?.errors
+                    ? Object.values(err.response.data.errors).flat().join(' ')
+                    : 'Checkout failed.';
+            })
+            .finally(() => { this.submitting = false; });
+    },
+}));
+
 window.Alpine = Alpine;
 window.Chart = Chart;
 

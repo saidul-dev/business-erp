@@ -150,4 +150,26 @@ class StockMovement extends Model
     {
         return $this->morphTo();
     }
+
+    /**
+     * Current on-hand quantity of a product (or one of its variants) at a
+     * given site: SUM(qty) over "in" movements minus SUM(qty) over "out"
+     * movements. Used by the POS terminal to block selling more than is
+     * actually in stock.
+     */
+    public static function balanceFor(int $productId, ?int $productVariantId, int $siteId): float
+    {
+        $query = static::query()
+            ->where('site_id', $siteId)
+            ->where('product_id', $productId);
+
+        $productVariantId
+            ? $query->where('product_variant_id', $productVariantId)
+            : $query->whereNull('product_variant_id');
+
+        $balance = $query->selectRaw("SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
+            ->value('balance');
+
+        return (float) ($balance ?? 0);
+    }
 }

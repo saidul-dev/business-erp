@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\InitialStockController;
 use App\Http\Controllers\Admin\LedgerAccountController;
 use App\Http\Controllers\Admin\PartyController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProfitLossController;
 use App\Http\Controllers\Admin\PurchaseController;
@@ -155,6 +156,12 @@ Route::prefix('admin')->group(function () {
         Route::post('/sale-quotations/{saleQuotation}/approve', [SaleQuotationController::class, 'approve'])->name('sale-quotations.approve');
         Route::post('/sale-quotations/{saleQuotation}/reject', [SaleQuotationController::class, 'reject'])->name('sale-quotations.reject');
         Route::post('/sale-quotations/{saleQuotation}/cancel', [SaleQuotationController::class, 'cancel'])->name('sale-quotations.cancel');
+
+        Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
+        Route::get('/pos/products', [PosController::class, 'products'])->name('pos.products');
+        Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
+        Route::post('/pos/customers', [PosController::class, 'storeCustomer'])->name('pos.customers.store');
+        Route::get('/pos/{sale}/receipt', [PosController::class, 'receipt'])->name('pos.receipt');
 
         Route::resource('delivery-partners', DeliveryPartnerController::class)->except('show')
             ->parameters(['delivery-partners' => 'deliveryPartner']);

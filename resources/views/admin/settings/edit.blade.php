@@ -131,6 +131,16 @@
                                   :value="old('bin_no', $company->bin_no)" />
                     <x-input-error class="mt-2" :messages="$errors->get('bin_no')" />
                 </div>
+                <div>
+                    <x-input-label for="pos_receipt_paper_width" :value="__('POS Receipt Paper Width')" />
+                    <select id="pos_receipt_paper_width" name="pos_receipt_paper_width" required
+                            class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-accent-500 focus:ring-accent-500">
+                        @foreach (['58mm' => __('58mm'), '80mm' => __('80mm')] as $code => $label)
+                        <option value="{{ $code }}" @selected(old('pos_receipt_paper_width', $company->pos_receipt_paper_width) === $code)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error class="mt-2" :messages="$errors->get('pos_receipt_paper_width')" />
+                </div>
             </div>
         </div>
 

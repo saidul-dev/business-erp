@@ -24,6 +24,7 @@ class RolePermissionSeeder extends Seeder
         'purchase-requisitions' => ['view', 'create', 'edit', 'delete', 'approve'],
         'sales'     => ['view', 'create', 'edit', 'delete', 'approve'],
         'sale-quotations' => ['view', 'create', 'edit', 'delete', 'approve'],
+        'pos'       => ['view', 'sell'],
         'inventory' => ['view', 'create', 'edit', 'delete', 'approve'],
         'parties'   => ['view', 'create', 'edit', 'delete'],
         'accounts'  => ['view', 'create', 'edit', 'delete', 'approve'],
@@ -63,6 +64,7 @@ class RolePermissionSeeder extends Seeder
             'purchase-requisitions.view', 'purchase-requisitions.create', 'purchase-requisitions.edit', 'purchase-requisitions.approve',
             'sales.view', 'sales.create', 'sales.edit', 'sales.approve',
             'sale-quotations.view', 'sale-quotations.create', 'sale-quotations.edit', 'sale-quotations.approve',
+            'pos.view', 'pos.sell',
             'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.approve',
             'parties.view', 'parties.create', 'parties.edit',
             'delivery.view', 'delivery.create', 'delivery.edit',
@@ -97,6 +99,7 @@ class RolePermissionSeeder extends Seeder
         Role::findOrCreate('Sales')->syncPermissions([
             'sales.view', 'sales.create', 'sales.edit',
             'sale-quotations.view', 'sale-quotations.create', 'sale-quotations.edit',
+            'pos.view', 'pos.sell',
             'parties.view', 'parties.create', 'parties.edit',
             'inventory.view',
             'delivery.view',

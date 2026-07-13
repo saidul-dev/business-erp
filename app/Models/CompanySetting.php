@@ -31,6 +31,7 @@ class CompanySetting extends Model
         'side_banner_2_path',
         'purchase_requisition_approval_required',
         'sale_quotation_approval_required',
+        'pos_receipt_paper_width',
     ];
 
     protected $casts = [

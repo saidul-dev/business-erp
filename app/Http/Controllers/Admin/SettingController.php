@@ -46,6 +46,7 @@ class SettingController extends Controller implements HasMiddleware
             'vat_registration_no' => ['nullable', 'string', 'max:100'],
             'bin_no' => ['nullable', 'string', 'max:100'],
             'financial_year_start_month' => ['required', 'integer', 'between:1,12'],
+            'pos_receipt_paper_width' => ['required', 'in:58mm,80mm'],
             'logo' => ['nullable', 'image', 'max:2048'],
             'remove_logo' => ['nullable', 'boolean'],
         ]);

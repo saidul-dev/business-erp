@@ -11,6 +11,7 @@ class Collection extends Model
     protected $fillable = [
         'collection_no',
         'party_id',
+        'sale_id',
         'ledger_account_id',
         'amount',
         'collection_date',
@@ -27,6 +28,11 @@ class Collection extends Model
     public function party(): BelongsTo
     {
         return $this->belongsTo(Party::class);
+    }
+
+    public function sale(): BelongsTo
+    {
+        return $this->belongsTo(Sale::class);
     }
 
     public function account(): BelongsTo
