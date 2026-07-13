@@ -427,7 +427,7 @@
                     @endcanany
 
                     @can('settings.view')
-                    <x-sidebar-dropdown :title="__('Settings')" :active="request()->routeIs('settings.*', 'hero-slides.*', 'delivery-zones.*')">
+                    <x-sidebar-dropdown :title="__('Settings')" :active="request()->routeIs('settings.*', 'hero-slides.*', 'campaign-pages.*', 'delivery-zones.*')">
                         <x-slot name="icon">
                             <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
                                 stroke="currentColor">
@@ -459,6 +459,10 @@
                         <x-sidebar-sublink :href="route('hero-slides.index')"
                             :active="request()->routeIs('hero-slides.*')">
                             {{ __('Hero Slides') }}
+                        </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('campaign-pages.index')"
+                            :active="request()->routeIs('campaign-pages.*')">
+                            {{ __('Campaign Pages') }}
                         </x-sidebar-sublink>
                         <x-sidebar-sublink :href="route('delivery-zones.index')"
                             :active="request()->routeIs('delivery-zones.*')">

@@ -4,10 +4,19 @@
     'selected' => null,
     'placeholder' => 'Select…',
     'autoSubmit' => false,
+    'extra' => [],
 ])
 
 @php
-    $items = collect($options)->map(fn ($o) => ['id' => (string) $o->id, 'name' => $o->name])->values();
+    $items = collect($options)->map(function ($o) use ($extra) {
+        $item = ['id' => (string) $o->id, 'name' => $o->name];
+
+        foreach ($extra as $key) {
+            $item[$key] = data_get($o, $key);
+        }
+
+        return $item;
+    })->values();
     $selectedId = $selected !== null ? (string) $selected : '';
     $selectedItem = $items->firstWhere('id', $selectedId);
 @endphp
@@ -41,6 +50,7 @@
             this.selectedLabel = opt ? opt.name : @js($placeholder);
             this.open = false;
             this.query = '';
+            this.$dispatch('option-selected-{{ $name }}', opt);
             @if ($autoSubmit)
             this.$nextTick(() => this.$refs.hiddenInput.form.submit());
             @endif

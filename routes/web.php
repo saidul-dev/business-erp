@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BalanceSheetController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\CampaignPageController;
 use App\Http\Controllers\Admin\CapitalTransactionController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CollectionController;
@@ -37,6 +38,7 @@ use App\Http\Controllers\Admin\StockTransferController;
 use App\Http\Controllers\Admin\TrialBalanceController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\CurrentSiteController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
@@ -77,6 +79,9 @@ Route::middleware('ecommerce')->group(function () {
 
     Route::get('/track-order', [ShopController::class, 'trackForm'])->name('track-order');
     Route::post('/track-order', [ShopController::class, 'track'])->name('track-order.result');
+
+    Route::get('/campaign/{campaignPage:slug}', [CampaignController::class, 'show'])->name('campaign.show');
+    Route::post('/campaign/{campaignPage:slug}/buy', [CampaignController::class, 'buyNow'])->name('campaign.buy');
 });
 
 // UI language switch — not an authenticated action, just a session preference.
@@ -231,6 +236,10 @@ Route::prefix('admin')->group(function () {
         Route::resource('hero-slides', HeroSlideController::class)->except('show')
             ->parameters(['hero-slides' => 'heroSlide']);
         Route::patch('/hero-slides/{heroSlide}/toggle-status', [HeroSlideController::class, 'toggleStatus'])->name('hero-slides.toggle-status');
+
+        Route::resource('campaign-pages', CampaignPageController::class)->except('show')
+            ->parameters(['campaign-pages' => 'campaignPage']);
+        Route::patch('/campaign-pages/{campaignPage}/toggle-status', [CampaignPageController::class, 'toggleStatus'])->name('campaign-pages.toggle-status');
 
         Route::resource('delivery-zones', DeliveryZoneController::class)->except('show')
             ->parameters(['delivery-zones' => 'deliveryZone']);
