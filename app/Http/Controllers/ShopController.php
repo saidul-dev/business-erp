@@ -90,7 +90,7 @@ class ShopController extends Controller
         abort_unless($product->status, 404);
 
         $product->load(['category', 'brand', 'stockUnit', 'images', 'variants' => fn ($q) => $q
-            ->where('status', true)->with('attributeValues.attribute')]);
+            ->where('status', true)->with('attributeValues.attribute'), 'approvedReviews' => fn ($q) => $q->orderByDesc('id')]);
 
         $stockBalances = $this->stockBalances(collect([$product]));
         $inStock = ($stockBalances[$product->id] ?? 0) >= 1;

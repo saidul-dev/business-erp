@@ -33,6 +33,7 @@ class RolePermissionSeeder extends Seeder
         'hrm'       => ['view', 'create', 'edit', 'delete', 'approve'],
         'reports'   => ['view'],
         'website'   => ['view', 'delete'],
+        'product-reviews' => ['view', 'approve', 'delete'],
         'settings'  => ['view', 'edit'],
         'users'     => ['view', 'create', 'edit', 'delete'],
         'roles'     => ['view', 'create', 'edit', 'delete'],

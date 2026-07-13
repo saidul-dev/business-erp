@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\PartyController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductReviewController;
 use App\Http\Controllers\Admin\ProfitLossController;
 use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\PurchaseRequisitionController;
@@ -39,6 +40,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CurrentSiteController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
@@ -58,6 +60,7 @@ Route::post('/contact', [WebsiteController::class, 'submitContact'])->name('cont
 Route::middleware('ecommerce')->group(function () {
     Route::get('/shop', [ShopController::class, 'index'])->name('shop');
     Route::get('/shop/{product}', [ShopController::class, 'show'])->name('shop.product');
+    Route::post('/shop/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
     Route::get('/cart', [ShopController::class, 'cart'])->name('cart');
     Route::post('/cart', [ShopController::class, 'addToCart'])->name('cart.add');
@@ -205,6 +208,12 @@ Route::prefix('admin')->group(function () {
         Route::get('/contact-messages', [ContactMessageController::class, 'index'])->name('contact-messages.index');
         Route::get('/contact-messages/{contactMessage}', [ContactMessageController::class, 'show'])->name('contact-messages.show');
         Route::delete('/contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
+
+        Route::get('/product-reviews', [ProductReviewController::class, 'index'])->name('product-reviews.index');
+        Route::get('/product-reviews/{productReview}', [ProductReviewController::class, 'show'])->name('product-reviews.show');
+        Route::post('/product-reviews/{productReview}/approve', [ProductReviewController::class, 'approve'])->name('product-reviews.approve');
+        Route::post('/product-reviews/{productReview}/reject', [ProductReviewController::class, 'reject'])->name('product-reviews.reject');
+        Route::delete('/product-reviews/{productReview}', [ProductReviewController::class, 'destroy'])->name('product-reviews.destroy');
 
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');

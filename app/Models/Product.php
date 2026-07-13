@@ -123,6 +123,34 @@ class Product extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    /**
+     * All reviews regardless of status — admin moderation use.
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    /**
+     * Publicly visible reviews — storefront use.
+     */
+    public function approvedReviews(): HasMany
+    {
+        return $this->reviews()->where('status', 'approved');
+    }
+
+    public function getAverageRatingAttribute(): ?float
+    {
+        $avg = $this->approvedReviews()->avg('rating');
+
+        return $avg ? round((float) $avg, 1) : null;
+    }
+
+    public function getReviewCountAttribute(): int
+    {
+        return $this->approvedReviews()->count();
+    }
+
     public function isVariable(): bool
     {
         return (bool) $this->has_variants;

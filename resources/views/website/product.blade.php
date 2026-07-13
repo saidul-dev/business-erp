@@ -78,6 +78,15 @@
                     @endif
                     <h1 class="mt-1 text-3xl font-extrabold text-brand-950">{{ $product->name }}</h1>
 
+                    <div class="mt-1.5 flex items-center gap-2 text-sm">
+                        @if ($product->review_count > 0)
+                            <x-star-rating :value="$product->average_rating" />
+                            <a href="#reviews" class="text-slate-500 hover:text-accent-600">{{ $product->average_rating }} ({{ $product->review_count }} {{ Str::plural('review', $product->review_count) }})</a>
+                        @else
+                            <span class="text-slate-400">{{ __('No reviews yet') }}</span>
+                        @endif
+                    </div>
+
                     <div class="mt-4 flex items-center gap-3">
                         <p class="text-2xl font-bold text-accent-600" x-text="Number(price).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})"></p>
                         @if ($product->discount_percent)
@@ -136,6 +145,84 @@
                 </div>
             </div>
             @endif
+
+            <div id="reviews" class="mt-16 scroll-mt-20">
+                <h2 class="text-xl font-extrabold text-brand-950 mb-4">Customer Reviews</h2>
+
+                <div class="grid gap-10 lg:grid-cols-[1fr_360px]">
+                    <div class="order-2 lg:order-1 space-y-5">
+                        @forelse ($product->approvedReviews as $review)
+                        <div class="rounded-2xl border border-slate-200 p-5">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-brand-950">{{ $review->name }}</span>
+                                    @if ($review->is_verified_purchase)
+                                    <span class="inline-flex rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 ring-1 ring-emerald-200">{{ __('Verified Purchase') }}</span>
+                                    @endif
+                                </div>
+                                <span class="text-xs text-slate-400">{{ $review->created_at->format('d M, Y') }}</span>
+                            </div>
+                            <div class="mt-1.5"><x-star-rating :value="$review->rating" /></div>
+                            @if ($review->comment)
+                            <p class="mt-2 whitespace-pre-line text-sm text-slate-600">{{ $review->comment }}</p>
+                            @endif
+                        </div>
+                        @empty
+                        <p class="text-sm text-slate-400">{{ __('Be the first to review this product.') }}</p>
+                        @endforelse
+                    </div>
+
+                    <div class="order-1 lg:order-2 h-fit rounded-2xl bg-slate-50 p-6 ring-1 ring-slate-200"
+                         x-data="{ rating: {{ (int) old('rating', 0) }}, hoverRating: 0 }">
+                        <p class="mb-4 font-semibold text-brand-950">{{ __('Write a Review') }}</p>
+                        <form method="POST" action="{{ route('reviews.store', $product) }}" class="space-y-4">
+                            @csrf
+
+                            <div>
+                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Your Rating') }}</label>
+                                <div class="flex items-center gap-1">
+                                    <template x-for="i in 5" :key="i">
+                                        <button type="button" @click="rating = i" @mouseenter="hoverRating = i" @mouseleave="hoverRating = 0" class="p-0.5">
+                                            <svg class="h-7 w-7" :class="(hoverRating || rating) >= i ? 'text-amber-400' : 'text-slate-200'" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.958a1 1 0 0 0 .95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.446a1 1 0 0 0-.363 1.118l1.287 3.957c.3.922-.755 1.688-1.538 1.118l-3.367-2.445a1 1 0 0 0-1.176 0l-3.367 2.445c-.783.57-1.838-.196-1.538-1.118l1.287-3.957a1 1 0 0 0-.363-1.118L2.063 9.385c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 0 0 .95-.69l1.286-3.958Z" />
+                                            </svg>
+                                        </button>
+                                    </template>
+                                </div>
+                                <input type="hidden" name="rating" :value="rating" required>
+                                @error('rating') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Name') }}</label>
+                                <input type="text" name="name" value="{{ old('name') }}" required
+                                       class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
+                                @error('name') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Phone Number') }}</label>
+                                <input type="tel" inputmode="numeric" name="phone" value="{{ old('phone') }}" required placeholder="01XXXXXXXXX"
+                                       class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
+                                @error('phone') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                                <p class="mt-1 text-xs text-slate-400">{{ __('Used to show a Verified Purchase badge if you bought this — never shown publicly.') }}</p>
+                            </div>
+
+                            <div>
+                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Comment (optional)') }}</label>
+                                <textarea name="comment" rows="3"
+                                          class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">{{ old('comment') }}</textarea>
+                                @error('comment') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                            </div>
+
+                            <button type="submit" :disabled="rating === 0"
+                                    class="w-full rounded-lg bg-accent-500 px-6 py-2.5 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                {{ __('Submit Review') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             @if ($relatedProducts->isNotEmpty())
             <div class="mt-16" x-data="{ scroll(dir) { this.$refs.track.scrollBy({ left: dir * 320, behavior: 'smooth' }); } }">
