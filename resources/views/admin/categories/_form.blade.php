@@ -47,13 +47,11 @@
 
         <div>
             <x-input-label for="parent_id" :value="__('Parent Category (optional)')" />
-            <select id="parent_id" name="parent_id"
-                    class="mt-1 block w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
-                <option value="">{{ __('None — top-level category') }}</option>
-                @foreach ($parents as $parent)
-                    <option value="{{ $parent->id }}" @selected(old('parent_id', $category->parent_id ?? '') == $parent->id)>{{ $parent->name }}</option>
-                @endforeach
-            </select>
+            <div class="mt-1">
+                <x-searchable-select name="parent_id" :options="$parents"
+                    :selected="old('parent_id', $category->parent_id ?? null)"
+                    placeholder="{{ __('None — top-level category') }}" />
+            </div>
             <x-input-error class="mt-2" :messages="$errors->get('parent_id')" />
         </div>
     </div>

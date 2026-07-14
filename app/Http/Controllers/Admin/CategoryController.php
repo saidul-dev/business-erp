@@ -25,8 +25,9 @@ class CategoryController extends Controller implements HasMiddleware
     public function index()
     {
         $categories = Category::with('parent')->withCount(['children', 'products'])->orderBy('name')->paginate(15);
+        $parents = Category::orderBy('name')->get();
 
-        return view('admin.categories.index', compact('categories'));
+        return view('admin.categories.index', compact('categories', 'parents'));
     }
 
     public function create()

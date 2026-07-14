@@ -7,10 +7,11 @@
                 <p class="text-sm text-slate-500 mt-0.5">{{ __('Product categories, optionally nested under a parent') }}</p>
             </div>
             @can('inventory.create')
-            <a href="{{ route('categories.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2">
+            <button type="button" @click="$dispatch('open-modal', 'category-create')"
+                    class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 {{ __('Add Category') }}
-            </a>
+            </button>
             @endcan
         </div>
     </x-slot>
@@ -90,4 +91,56 @@
         </div>
         @endif
     </div>
+
+    @can('inventory.create')
+    <x-modal name="category-create" max-width="md" :show="$errors->any()" focusable>
+        <div class="p-6" x-data="{ preview: null }">
+            <h2 class="text-lg font-bold text-brand-900">{{ __('Add Category') }}</h2>
+            <p class="text-xs text-slate-400 mt-0.5">{{ __('Added categories appear in the list behind this — check it first to avoid duplicates.') }}</p>
+
+            <form method="POST" action="{{ route('categories.store') }}" enctype="multipart/form-data" class="mt-4 space-y-4">
+                @csrf
+
+                <div class="flex items-center gap-4">
+                    <div class="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-slate-100 ring-1 ring-slate-200">
+                        <template x-if="preview">
+                            <img :src="preview" alt="" class="h-full w-full object-cover">
+                        </template>
+                        <template x-if="!preview">
+                            <svg class="h-7 w-7 text-slate-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 3h18M3 3l1.5 18h15L21 3H3Z"/></svg>
+                        </template>
+                    </div>
+                    <label class="cursor-pointer rounded-lg bg-brand-800/5 px-4 py-2 text-xs font-semibold text-brand-800 hover:bg-brand-800/10">
+                        {{ __('Choose Image') }}
+                        <input type="file" name="icon" accept="image/*" class="hidden"
+                               @change="const f = $event.target.files[0]; if (f) preview = URL.createObjectURL(f)">
+                    </label>
+                </div>
+                <x-input-error class="mt-1" :messages="$errors->get('icon')" />
+
+                <div>
+                    <x-input-label for="modal_category_name" :value="__('Category Name')" />
+                    <x-text-input id="modal_category_name" name="name" type="text" class="mt-1 block w-full"
+                                  :value="old('name')" required autofocus placeholder="{{ __('e.g. Electronics') }}" />
+                    <x-input-error class="mt-2" :messages="$errors->get('name')" />
+                </div>
+
+                <div>
+                    <x-input-label for="modal_category_parent" :value="__('Parent Category (optional)')" />
+                    <div class="mt-1">
+                        <x-searchable-select name="parent_id" :options="$parents"
+                            :selected="old('parent_id')"
+                            placeholder="{{ __('None — top-level category') }}" />
+                    </div>
+                    <x-input-error class="mt-2" :messages="$errors->get('parent_id')" />
+                </div>
+
+                <div class="flex items-center gap-3 pt-2">
+                    <x-primary-button>{{ __('Create Category') }}</x-primary-button>
+                    <button type="button" x-on:click="$dispatch('close')" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Cancel') }}</button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
+    @endcan
 </x-app-layout>
