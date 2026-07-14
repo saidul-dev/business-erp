@@ -7,10 +7,11 @@
                 <p class="text-sm text-slate-500 mt-0.5">{{ __('Casual, Sick, Earned — and their default yearly allocation') }}</p>
             </div>
             @can('hrm.create')
-            <a href="{{ route('leave-types.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2">
+            <button type="button" @click="$dispatch('open-modal', 'leave-type-create')"
+                    class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 {{ __('Add Leave Type') }}
-            </a>
+            </button>
             @endcan
         </div>
     </x-slot>
@@ -86,4 +87,36 @@
         </div>
         @endif
     </div>
+
+    @can('hrm.create')
+    <x-modal name="leave-type-create" max-width="md" :show="$errors->any()" focusable>
+        <div class="p-6">
+            <h2 class="text-lg font-bold text-brand-900">{{ __('Add Leave Type') }}</h2>
+            <p class="text-xs text-slate-400 mt-0.5">{{ __('Added leave types appear in the list behind this — check it first to avoid duplicates.') }}</p>
+
+            <form method="POST" action="{{ route('leave-types.store') }}" class="mt-4 space-y-4">
+                @csrf
+
+                <div>
+                    <x-input-label for="modal_leave_type_name" :value="__('Leave Type Name')" />
+                    <x-text-input id="modal_leave_type_name" name="name" type="text" class="mt-1 block w-full"
+                                  :value="old('name')" required autofocus placeholder="{{ __('e.g. Casual Leave') }}" />
+                    <x-input-error class="mt-2" :messages="$errors->get('name')" />
+                </div>
+
+                <div>
+                    <x-input-label for="modal_leave_type_days" :value="__('Default Days / Year')" />
+                    <x-text-input id="modal_leave_type_days" name="default_days_per_year" type="number" min="0" class="mt-1 block w-full"
+                                  :value="old('default_days_per_year', '0')" required />
+                    <x-input-error class="mt-2" :messages="$errors->get('default_days_per_year')" />
+                </div>
+
+                <div class="flex items-center gap-3 pt-2">
+                    <x-primary-button>{{ __('Create Leave Type') }}</x-primary-button>
+                    <button type="button" x-on:click="$dispatch('close')" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Cancel') }}</button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
+    @endcan
 </x-app-layout>

@@ -7,10 +7,11 @@
                 <p class="text-sm text-slate-500 mt-0.5">{{ __('Job titles employees can be assigned to') }}</p>
             </div>
             @can('hrm.create')
-            <a href="{{ route('designations.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2">
+            <button type="button" @click="$dispatch('open-modal', 'designation-create')"
+                    class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                 {{ __('Add Designation') }}
-            </a>
+            </button>
             @endcan
         </div>
     </x-slot>
@@ -86,4 +87,29 @@
         </div>
         @endif
     </div>
+
+    @can('hrm.create')
+    <x-modal name="designation-create" max-width="md" :show="$errors->any()" focusable>
+        <div class="p-6">
+            <h2 class="text-lg font-bold text-brand-900">{{ __('Add Designation') }}</h2>
+            <p class="text-xs text-slate-400 mt-0.5">{{ __('Added designations appear in the list behind this — check it first to avoid duplicates.') }}</p>
+
+            <form method="POST" action="{{ route('designations.store') }}" class="mt-4 space-y-4">
+                @csrf
+
+                <div>
+                    <x-input-label for="modal_designation_name" :value="__('Designation Name')" />
+                    <x-text-input id="modal_designation_name" name="name" type="text" class="mt-1 block w-full"
+                                  :value="old('name')" required autofocus placeholder="{{ __('e.g. Senior Executive') }}" />
+                    <x-input-error class="mt-2" :messages="$errors->get('name')" />
+                </div>
+
+                <div class="flex items-center gap-3 pt-2">
+                    <x-primary-button>{{ __('Create Designation') }}</x-primary-button>
+                    <button type="button" x-on:click="$dispatch('close')" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Cancel') }}</button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
+    @endcan
 </x-app-layout>
