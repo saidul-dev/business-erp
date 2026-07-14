@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\RestrictsPermissionGrants;
 use App\Http\Controllers\Controller;
 use App\Models\Attachment;
 use App\Models\Department;
@@ -17,6 +18,8 @@ use RuntimeException;
 
 class EmployeeController extends Controller implements HasMiddleware
 {
+    use RestrictsPermissionGrants;
+
     public static function middleware(): array
     {
         return [
@@ -73,7 +76,10 @@ class EmployeeController extends Controller implements HasMiddleware
 
     public function edit(Employee $employee)
     {
-        return view('admin.employees.edit', $this->formData($employee) + ['employee' => $employee]);
+        return view('admin.employees.edit', $this->formData($employee) + [
+            'employee' => $employee,
+            'assignableRoles' => $this->grantableRoles()->sortBy('name')->values(),
+        ]);
     }
 
     public function update(Request $request, Employee $employee)
@@ -99,7 +105,7 @@ class EmployeeController extends Controller implements HasMiddleware
         return redirect()->route('employees.index')->with('success', "Employee \"{$employee->name}\" updated.");
     }
 
-    public function toggleLogin(Employee $employee)
+    public function toggleLogin(Request $request, Employee $employee)
     {
         if ($employee->hasActiveLogin()) {
             $employee->disableLogin();
@@ -107,8 +113,19 @@ class EmployeeController extends Controller implements HasMiddleware
             return back()->with('success', "Login disabled for \"{$employee->name}\".");
         }
 
+        // A brand-new login needs a role chosen up front; re-activating a
+        // previously-disabled one just keeps whatever role it already had.
+        $roleName = null;
+
+        if (! $employee->user_id) {
+            $validated = $request->validate([
+                'role' => ['required', Rule::in($this->grantableRoles()->pluck('name'))],
+            ]);
+            $roleName = $validated['role'];
+        }
+
         try {
-            $password = $employee->enableLogin();
+            $password = $employee->enableLogin($roleName);
         } catch (RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -183,7 +200,7 @@ class EmployeeController extends Controller implements HasMiddleware
             ],
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:30', Rule::unique('employees', 'phone')->ignore($employee?->id)],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('employees', 'email')->ignore($employee?->id)],
             'nid_no' => ['nullable', 'string', 'max:50'],
             'photo' => ['nullable', 'image', 'max:2048'],
             'remove_photo' => ['nullable', 'boolean'],

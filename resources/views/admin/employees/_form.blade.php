@@ -59,9 +59,10 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <x-input-label for="email" :value="__('Email (optional)')" />
+                <x-input-label for="email" :value="__('Email')" />
                 <x-text-input id="email" name="email" type="email" class="mt-1 block w-full"
-                              :value="old('email', $employee->email ?? '')" />
+                              :value="old('email', $employee->email ?? '')" required />
+                <p class="mt-1 text-xs text-slate-400">{{ __('Used to create this employee\'s login when access is enabled below.') }}</p>
                 <x-input-error class="mt-2" :messages="$errors->get('email')" />
             </div>
             <div>

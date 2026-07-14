@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->unique()->constrained()->nullOnDelete();
             $table->string('name');
             $table->string('phone')->unique();
-            $table->string('email')->nullable();
+            $table->string('email')->unique();
             $table->string('nid_no')->nullable();
             $table->string('photo_path')->nullable();
             $table->date('joining_date');
