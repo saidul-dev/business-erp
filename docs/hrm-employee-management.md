@@ -14,6 +14,47 @@ workflow (maker–checker) are cross-cutting, not re-specified per level; every
 salary/incentive/loan posting goes through `LedgerService::post()`, never a
 manual balance field — same pattern as `accounting-foundation.md`.
 
+## Decision: Employee vs. Party
+
+`Party` (Module 4) is the model behind **Customer** and **Supplier** — its
+whole design is built around one thing: *is this entity on the other side of
+an Accounts Receivable/Payable ledger line?* (`is_customer`/`is_supplier`,
+`opening_balance` → `postOpeningBalanceToLedger()`, `receivableBalance()`/
+`payableBalance()` reading `ledger_transaction_lines.party_id`). It has **no
+relationship to `User`/login/RBAC at all** — it's a pure business-contact
+record, not an identity.
+
+An **Employee is a different kind of thing**: it's internal staff, and it
+*optionally* needs a login identity (`User`, which already carries Spatie
+roles + site assignment). Reusing `Party` for Employee would mean either:
+
+- bolting attendance/payroll/roster fields onto a model whose job is AR/AP
+  bookkeeping (scope creep on a model other code already depends on being
+  "just" Customer/Supplier), **and**
+- still having to invent the User-link and login-toggle from scratch anyway,
+  since Party doesn't have it today — so reusing Party buys nothing on the
+  one piece (login) that actually matters here.
+
+**Recommendation: a dedicated `Employee` model**, separate from `Party`,
+with a **nullable `user_id`** and an explicit **"Enable Login" toggle** (see
+§1.1). This is the same pattern most mature HR modules use (e.g. Odoo's
+`hr.employee` ↔ `res.users`, ERPNext's Employee ↔ User) — Employee and User
+are related but not identical, because plenty of employees (factory floor,
+contract/temporary workers logged via Module 7's lightweight "worker" party)
+never need to log in at all, while others (HR, Manager, Accountant, Sales)
+clearly need both a business profile *and* a login.
+
+**Follow-on consequence for Level 2 (Loan/Advance):** since Employee isn't a
+Party, `ledger_transaction_lines.party_id` (which only makes sense for
+Customer/Supplier control accounts) doesn't cover Employee Advance/Salary
+Payable postings. The clean fix is the same trick applied to a different
+foreign key: add a nullable `employee_id` column to `ledger_transaction_lines`
+(mirroring `party_id`), and add an `employee` account group alongside the 5
+existing groups in `accounting-foundation.md` for "Employee Advance
+Receivable" / "Salary Payable" control accounts. No change needed to
+`LedgerService::post()`'s core contract — just one more optional stamped ID,
+exactly like `party_id` already is.
+
 ---
 
 ## Level 1 — Foundation (every client that runs payroll needs this)
@@ -23,11 +64,30 @@ the bundle that ships in the existing roadmap's **Phase 2** alongside
 Attendance + Payroll.
 
 ### 1.1 Employee Master
-- Employee profile linked to the existing `Party` model (reuse Module 4, add
-  `PartyRole::employee`) — no duplicate person record
-- Fields: name, phone, NID, photo, joining date, designation, department,
-  employment type (`permanent`/`probation`/`contractual`/`part_time`), reporting
-  manager, employment status (`active`/`resigned`/`terminated`/`on_leave`)
+
+**Dedicated `Employee` model — not the `Party` model.** (See "Decision: Employee
+vs. Party" below for the reasoning; this revises the earlier draft of this
+doc, which had suggested reusing Party.)
+
+- New `employees` table/model, independent of `Party`. Fields: name, phone,
+  NID, photo, joining date, designation_id, department_id, employment type
+  (`permanent`/`probation`/`contractual`/`part_time`), reporting_manager_id
+  (self-FK), employment status (`active`/`resigned`/`terminated`/`on_leave`)
+- `user_id` — **nullable**, one-to-one to the existing `User` model. Most
+  factory-floor/contract staff never get a login; sales/managers/HR/accountants
+  usually do.
+- `enable_login` (boolean toggle on the Employee form):
+  - **Turned on:** auto-provision a `User` row (username = phone or email,
+    random temp password + forced reset on first login), assign a default
+    `Employee` Spatie role (extending the existing RBAC roles: Owner, Manager,
+    Accountant, Store-keeper, Sales, HR), link `employees.user_id`.
+  - **Turned off:** never delete the linked `User` row (it may be
+    `created_by`/`approved_by` on years of ledger/attendance/audit-log rows) —
+    instead deactivate login only (a `users.is_active` flag gated in the auth
+    guard), same "flag, don't delete" convention already used for
+    `Party.status`, `Category.status`, etc.
+  - Re-enabling later re-activates the same `User` row rather than creating a
+    second one.
 - Document store: NID copy, appointment letter, certificates (reuse the
   Attachment support already listed as a cross-cutting requirement)
 - Department & Designation master (simple lookup tables, editable per tenant)
@@ -64,9 +124,9 @@ Attendance + Payroll.
 - Audit log on every Employee/Attendance/Leave/Payroll create-update-delete
 - Bangla + English labels for all of the above
 
-**Key entities (Level 1):** `EmployeeProfile` (extends Party), `Department`,
-`Designation`, `AttendanceLog`, `LeaveType`, `LeaveBalance`, `LeaveRequest`,
-`SalaryStructure`, `PayrollRun`, `PayrollRunItem`
+**Key entities (Level 1):** `Employee` (own model, `user_id` nullable →
+`User`), `Department`, `Designation`, `AttendanceLog`, `LeaveType`,
+`LeaveBalance`, `LeaveRequest`, `SalaryStructure`, `PayrollRun`, `PayrollRunItem`
 
 ---
 
