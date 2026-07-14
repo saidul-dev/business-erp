@@ -1181,5 +1181,15 @@
     "on": "তারিখে",
     "pending": "অপেক্ষমাণ",
     "unread": "অপঠিত",
-    "— Not selected —": "— নির্বাচিত নয় —"
+    "— Not selected —": "— নির্বাচিত নয় —",
+
+    "N/A": "প্রযোজ্য নয়",
+    "Site Health": "সাইট হেলথ",
+    "Data Consistency": "ডেটা কনসিস্টেন্সি",
+    "Inventory Accuracy": "ইনভেন্টরি সঠিকতা",
+    "Financial Integrity": "আর্থিক নির্ভুলতা",
+    "Pending Backlog": "অমীমাংসিত কাজ",
+    "Not checked yet — recalculate to see a score.": "এখনো চেক করা হয়নি — স্কোর দেখতে পুনরায় হিসাব করুন।",
+    "Recalculate now": "এখনই পুনরায় হিসাব করুন",
+    "Site health recalculated.": "সাইট হেলথ পুনরায় হিসাব করা হয়েছে।"
 }

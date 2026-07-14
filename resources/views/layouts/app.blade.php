@@ -631,6 +631,73 @@
                     </div>
                     @endif
 
+                    @can('settings.view')
+                    @php
+                        $siteHealth = \App\Models\SiteHealthSnapshot::current();
+                        $siteHealthColor = match (true) {
+                            $siteHealth === null => 'text-slate-400 ring-slate-200 bg-slate-50',
+                            $siteHealth->overall_score >= 90 => 'text-emerald-600 ring-emerald-200 bg-emerald-50',
+                            $siteHealth->overall_score >= 70 => 'text-amber-600 ring-amber-200 bg-amber-50',
+                            default => 'text-rose-600 ring-rose-200 bg-rose-50',
+                        };
+                    @endphp
+                    <!-- Site health -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open"
+                            class="hidden sm:flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold ring-1 hover:opacity-80 {{ $siteHealthColor }}">
+                            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                            </svg>
+                            <span>{{ $siteHealth ? $siteHealth->overall_score.'%' : __('N/A') }}</span>
+                        </button>
+
+                        <div x-show="open" @click.outside="open = false" x-transition
+                            class="absolute right-0 mt-2 w-72 rounded-xl bg-white py-3 shadow-lg ring-1 ring-slate-200"
+                            style="display: none;">
+                            <div class="flex items-center justify-between px-4 pb-2">
+                                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Site Health') }}</p>
+                                @if ($siteHealth)
+                                <span class="text-[11px] text-slate-400">{{ $siteHealth->computed_at->diffForHumans() }}</span>
+                                @endif
+                            </div>
+
+                            @if ($siteHealth)
+                            <div class="px-4 pb-3 space-y-2.5">
+                                @foreach ([
+                                    'data_consistency' => __('Data Consistency'),
+                                    'inventory_accuracy' => __('Inventory Accuracy'),
+                                    'financial_integrity' => __('Financial Integrity'),
+                                    'pending_backlog' => __('Pending Backlog'),
+                                ] as $key => $label)
+                                @php $catScore = (int) round($siteHealth->details[$key]['score'] ?? 0); @endphp
+                                <div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="font-medium text-slate-600">{{ $label }}</span>
+                                        <span class="font-semibold {{ $catScore >= 90 ? 'text-emerald-600' : ($catScore >= 70 ? 'text-amber-600' : 'text-rose-600') }}">{{ $catScore }}%</span>
+                                    </div>
+                                    <div class="mt-1 h-1.5 rounded-full bg-slate-100">
+                                        <div class="h-1.5 rounded-full {{ $catScore >= 90 ? 'bg-emerald-500' : ($catScore >= 70 ? 'bg-amber-500' : 'bg-rose-500') }}"
+                                             style="width: {{ $catScore }}%"></div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                            @else
+                            <p class="px-4 pb-3 text-xs text-slate-400">{{ __('Not checked yet — recalculate to see a score.') }}</p>
+                            @endif
+
+                            <div class="border-t border-slate-100 px-4 pt-2.5">
+                                <form method="POST" action="{{ route('site-health.refresh') }}">
+                                    @csrf
+                                    <button type="submit" class="text-xs font-semibold text-accent-700 hover:text-accent-800">{{ __('Recalculate now') }}</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    @endcan
+
                     <button class="relative rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-brand-800">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"

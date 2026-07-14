@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SaleQuotationController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SiteHealthController;
 use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\StockAdjustmentController;
 use App\Http\Controllers\Admin\StockReportController;
@@ -236,6 +237,8 @@ Route::prefix('admin')->group(function () {
         Route::put('/settings/ecommerce', [SettingController::class, 'updateEcommerce'])->name('settings.ecommerce.update');
         Route::get('/settings/approvals', [SettingController::class, 'editApprovals'])->name('settings.approvals.edit');
         Route::put('/settings/approvals', [SettingController::class, 'updateApprovals'])->name('settings.approvals.update');
+
+        Route::post('/site-health/refresh', [SiteHealthController::class, 'refresh'])->name('site-health.refresh');
 
         Route::resource('hero-slides', HeroSlideController::class)->except('show')
             ->parameters(['hero-slides' => 'heroSlide']);
