@@ -786,5 +786,9 @@
     "Data Entry Error": "ডেটা এন্ট্রি ত্রুটি",
     "Found Stock": "প্রাপ্ত স্টক",
     "Missing / Shortage": "নিখোঁজ / ঘাটতি",
-    "Other": "অন্যান্য"
+    "Other": "অন্যান্য",
+    "Added attributes appear in the list behind this — check it first to avoid duplicates.": "যোগ করা অ্যাট্রিবিউট এর পেছনের তালিকায় দেখা যাবে — ডুপ্লিকেট এড়াতে আগে তালিকাটি দেখে নিন।",
+    "Added brands appear in the list behind this — check it first to avoid duplicates.": "যোগ করা ব্র্যান্ড এর পেছনের তালিকায় দেখা যাবে — ডুপ্লিকেট এড়াতে আগে তালিকাটি দেখে নিন।",
+    "Added units appear in the list behind this — check it first to avoid duplicates.": "যোগ করা ইউনিট এর পেছনের তালিকায় দেখা যাবে — ডুপ্লিকেট এড়াতে আগে তালিকাটি দেখে নিন।",
+    "e.g. Samsung": "যেমন: Samsung"
 }
