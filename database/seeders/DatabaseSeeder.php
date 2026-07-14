@@ -25,6 +25,8 @@ class DatabaseSeeder extends Seeder
         $this->call(PartySeeder::class);
         $this->call(DeliveryPartnerSeeder::class);
         $this->call(HeroImageSeeder::class);
+        $this->call(EcommerceBannerSeeder::class);
+        $this->call(CompanyProfileSeeder::class);
 
         User::firstOrCreate(
             ['email' => 'admin@businesserp.test'],

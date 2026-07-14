@@ -64,13 +64,13 @@ class WebsiteController extends Controller
             ->get();
 
         $flashSaleProducts = Product::where('status', true)->where('is_flash_sale', true)
-            ->orderByDesc('id')->limit(8)->get();
+            ->orderByDesc('id')->limit(12)->get();
 
         $featuredProducts = Product::where('status', true)->where('is_featured', true)
-            ->orderByDesc('id')->limit(4)->get();
+            ->orderByDesc('id')->limit(6)->get();
 
         $latestProducts = Product::where('status', true)
-            ->orderByDesc('id')->limit(4)->get();
+            ->orderByDesc('id')->limit(6)->get();
 
         // Ranked by total quantity ever sold (any non-cancelled sale,
         // POS or online) — not a curated flag, so it reflects real demand.
@@ -80,12 +80,20 @@ class WebsiteController extends Controller
             ->selectRaw('sale_items.product_id, SUM(sale_items.quantity) as total_qty')
             ->groupBy('sale_items.product_id')
             ->orderByDesc('total_qty')
-            ->limit(4)
+            ->limit(6)
             ->pluck('product_id');
 
         $bestSellers = Product::where('status', true)->whereIn('id', $bestSellerIds)->get()
             ->sortBy(fn (Product $p) => array_search($p->id, $bestSellerIds->all()))
             ->values();
+
+        // No sales yet (fresh install, or just no online/POS orders today)
+        // means the "Best Sellers" ranking has nothing to show — the
+        // cheapest products fill that column instead so it's never empty.
+        $thirdColumnIsBestSellers = $bestSellers->isNotEmpty();
+        $thirdColumn = $thirdColumnIsBestSellers
+            ? $bestSellers
+            : Product::where('status', true)->orderBy('selling_price')->limit(6)->get();
 
         return view('website.home-shop', [
             'company' => $company,
@@ -94,7 +102,8 @@ class WebsiteController extends Controller
             'flashSaleProducts' => $flashSaleProducts,
             'featuredProducts' => $featuredProducts,
             'latestProducts' => $latestProducts,
-            'bestSellers' => $bestSellers,
+            'thirdColumn' => $thirdColumn,
+            'thirdColumnIsBestSellers' => $thirdColumnIsBestSellers,
         ]);
     }
 

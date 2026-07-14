@@ -118,17 +118,19 @@
     @endif
 
     <!-- Featured / Latest / Best Sellers -->
-    @if ($featuredProducts->isNotEmpty() || $latestProducts->isNotEmpty() || $bestSellers->isNotEmpty())
+    @if ($featuredProducts->isNotEmpty() || $latestProducts->isNotEmpty() || $thirdColumn->isNotEmpty())
     <section class="bg-white py-10">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="grid gap-6 lg:grid-cols-3">
                 @foreach ([
-                    ['title' => __('Featured Products'), 'icon' => 'star', 'items' => $featuredProducts],
-                    ['title' => __('Latest Products'), 'icon' => 'trending', 'items' => $latestProducts],
-                    ['title' => __('Best Sellers'), 'icon' => 'badge', 'items' => $bestSellers],
+                    ['title' => __('Featured Products'), 'items' => $featuredProducts, 'url' => route('shop', ['featured' => 1])],
+                    ['title' => __('Latest Products'), 'items' => $latestProducts, 'url' => route('shop', ['sort' => 'newest'])],
+                    $thirdColumnIsBestSellers
+                        ? ['title' => __('Best Sellers'), 'items' => $thirdColumn, 'url' => route('shop', ['sort' => 'best_selling'])]
+                        : ['title' => __('Lowest Price'), 'items' => $thirdColumn, 'url' => route('shop', ['sort' => 'price_asc'])],
                 ] as $column)
                     @if ($column['items']->isNotEmpty())
-                    <div class="rounded-2xl border border-slate-200 p-5">
+                    <div class="flex flex-col rounded-2xl border border-slate-200 p-5">
                         <div class="flex items-center gap-2 mb-4">
                             <svg class="h-4 w-4 text-accent-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"/></svg>
                             <h3 class="font-bold text-brand-950">{{ $column['title'] }}</h3>
@@ -156,6 +158,10 @@
                             </a>
                             @endforeach
                         </div>
+
+                        <a href="{{ $column['url'] }}" class="mt-4 block w-full rounded-lg border border-slate-200 py-2 text-center text-xs font-semibold text-brand-900 hover:bg-slate-50">
+                            {{ __('Show More') }}
+                        </a>
                     </div>
                     @endif
                 @endforeach

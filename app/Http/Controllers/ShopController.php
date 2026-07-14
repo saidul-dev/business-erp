@@ -10,6 +10,7 @@ use App\Models\Party;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Sale;
+use App\Models\SaleItem;
 use App\Models\StockMovement;
 use App\Services\SslCommerzService;
 use App\Support\Cart;
@@ -46,12 +47,15 @@ class ShopController extends Controller
         $q = $request->get('q');
         $minPrice = $request->filled('min_price') ? (float) $request->get('min_price') : null;
         $maxPrice = $request->filled('max_price') ? (float) $request->get('max_price') : null;
-        $sort = in_array($request->get('sort'), ['price_asc', 'price_desc', 'newest'], true) ? $request->get('sort') : 'newest';
+        $featured = $request->boolean('featured');
+        $sort = in_array($request->get('sort'), ['price_asc', 'price_desc', 'newest', 'best_selling'], true)
+            ? $request->get('sort') : 'newest';
 
         $products = Product::with(['category', 'brand', 'variants' => fn ($q) => $q->where('status', true)])
             ->where('status', true)
             ->when($categoryId, fn ($qr) => $qr->where('category_id', $categoryId))
             ->when($brandId, fn ($qr) => $qr->where('brand_id', $brandId))
+            ->when($featured, fn ($qr) => $qr->where('is_featured', true))
             ->when($q, fn ($qr) => $qr->where(fn ($qr2) => $qr2
                 ->where('name', 'like', "%{$q}%")
                 ->orWhere('sku', 'like', "%{$q}%")
@@ -70,6 +74,16 @@ class ShopController extends Controller
             ->when($sort === 'price_asc', fn ($qr) => $qr->orderBy('selling_price'))
             ->when($sort === 'price_desc', fn ($qr) => $qr->orderByDesc('selling_price'))
             ->when($sort === 'newest', fn ($qr) => $qr->orderByDesc('id'))
+            // Same ranking as the homepage's Best Sellers column (total
+            // quantity sold across any non-cancelled sale) via a correlated
+            // subquery, so paginating this sort doesn't need a GROUP BY over
+            // every selected product column.
+            ->when($sort === 'best_selling', fn ($qr) => $qr->orderByDesc(
+                SaleItem::selectRaw('COALESCE(SUM(sale_items.quantity), 0)')
+                    ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
+                    ->whereColumn('sale_items.product_id', 'products.id')
+                    ->where('sales.status', '!=', 'cancelled')
+            ))
             ->paginate(12)
             ->withQueryString();
 

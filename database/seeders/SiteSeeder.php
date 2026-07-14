@@ -36,12 +36,25 @@ class SiteSeeder extends Seeder
             ]
         );
 
+        // Third Site — a retail outlet, so multi-site stock/sales demo data
+        // has a storefront-style location alongside the office/warehouse.
+        $shop = Site::firstOrCreate(
+            ['code' => 'DS-01'],
+            [
+                'name' => 'Dhaka Shop',
+                'type' => 'Outlet',
+                'address' => 'Dhaka, Bangladesh',
+                'status' => true,
+            ]
+        );
+
         $manager = User::where('email', 'manager@businesserp.test')->first();
 
         if ($manager) {
             $manager->sites()->syncWithoutDetaching([
                 $site->id => ['is_default' => true],
                 $warehouse->id => ['is_default' => false],
+                $shop->id => ['is_default' => false],
             ]);
 
             $manager->update(['current_site_id' => $site->id]);
