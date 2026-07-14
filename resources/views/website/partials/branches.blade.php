@@ -3,9 +3,9 @@
 <section class="bg-white py-20 sm:py-28">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto">
-            <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">Find Us</p>
+            <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">{{ __('Find Us') }}</p>
             <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold text-brand-950 tracking-tight">
-                Our Branches
+                {{ __('Our Branches') }}
             </h2>
         </div>
 

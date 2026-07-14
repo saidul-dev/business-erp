@@ -75,7 +75,7 @@
         @if (!empty($product->review_count))
         <div class="mt-2 flex items-center gap-2 text-sm">
             <x-star-rating :value="$product->average_rating" />
-            <span class="text-slate-500">{{ $product->average_rating }} ({{ $product->review_count }} {{ Str::plural('review', $product->review_count) }})</span>
+            <span class="text-slate-500">{{ $product->average_rating }} ({{ trans_choice(':count review|:count reviews', $product->review_count, ['count' => $product->review_count]) }})</span>
         </div>
         @endif
 

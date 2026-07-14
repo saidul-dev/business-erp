@@ -10,26 +10,27 @@
                 @endif
                 <div class="leading-tight">
                     <span class="block text-lg font-bold text-white tracking-wide">{{ $company->name ?? 'Business ERP' }}</span>
-                    <span class="block text-[11px] font-medium text-accent-400">Enterprise Suite</span>
+                    <span class="block text-[11px] font-medium text-accent-400">{{ __('Enterprise Suite') }}</span>
                 </div>
             </a>
 
             <div class="hidden lg:flex items-center gap-8">
-                <a href="{{ route('home') }}" class="text-sm font-medium {{ request()->routeIs('home') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Home</a>
-                <a href="{{ route('about') }}" class="text-sm font-medium {{ request()->routeIs('about') ? 'text-white' : 'text-brand-100 hover:text-white' }}">About</a>
-                <a href="{{ route('media') }}" class="text-sm font-medium {{ request()->routeIs('media') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Media</a>
-                <a href="{{ route('career') }}" class="text-sm font-medium {{ request()->routeIs('career') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Career</a>
-                <a href="{{ route('contact') }}" class="text-sm font-medium {{ request()->routeIs('contact') ? 'text-white' : 'text-brand-100 hover:text-white' }}">Contact</a>
+                <a href="{{ route('home') }}" class="text-sm font-medium {{ request()->routeIs('home') ? 'text-white' : 'text-brand-100 hover:text-white' }}">{{ __('Home') }}</a>
+                <a href="{{ route('about') }}" class="text-sm font-medium {{ request()->routeIs('about') ? 'text-white' : 'text-brand-100 hover:text-white' }}">{{ __('About') }}</a>
+                <a href="{{ route('media') }}" class="text-sm font-medium {{ request()->routeIs('media') ? 'text-white' : 'text-brand-100 hover:text-white' }}">{{ __('Media') }}</a>
+                <a href="{{ route('career') }}" class="text-sm font-medium {{ request()->routeIs('career') ? 'text-white' : 'text-brand-100 hover:text-white' }}">{{ __('Career') }}</a>
+                <a href="{{ route('contact') }}" class="text-sm font-medium {{ request()->routeIs('contact') ? 'text-white' : 'text-brand-100 hover:text-white' }}">{{ __('Contact') }}</a>
             </div>
 
             <div class="hidden lg:flex items-center gap-3">
+                @include('website.partials.language-switcher')
                 @auth
                     <a href="{{ route('dashboard') }}" class="rounded-lg bg-accent-500 px-4 py-2 text-sm font-semibold text-brand-950 hover:bg-accent-400">
-                        Go to Dashboard
+                        {{ __('Go to Dashboard') }}
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10">
-                        Login
+                        {{ __('Login') }}
                     </a>
                 @endauth
             </div>
@@ -42,16 +43,24 @@
 
         <!-- Mobile nav -->
         <div x-show="mobileNavOpen" x-transition class="lg:hidden pb-4 space-y-1" style="display:none">
-            <a href="{{ route('home') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Home</a>
-            <a href="{{ route('about') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">About</a>
-            <a href="{{ route('media') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Media</a>
-            <a href="{{ route('career') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Career</a>
-            <a href="{{ route('contact') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">Contact</a>
+            <a href="{{ route('home') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Home') }}</a>
+            <a href="{{ route('about') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('About') }}</a>
+            <a href="{{ route('media') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Media') }}</a>
+            <a href="{{ route('career') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Career') }}</a>
+            <a href="{{ route('contact') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Contact') }}</a>
+            <div class="flex items-center gap-2 pt-2">
+                @foreach (config('app.available_locales', ['en' => 'English']) as $code => $label)
+                <form method="POST" action="{{ route('language.switch', $code) }}">
+                    @csrf
+                    <button type="submit" class="rounded-lg px-3 py-1.5 text-xs font-semibold {{ app()->getLocale() === $code ? 'bg-accent-500 text-brand-950' : 'bg-white/10 text-white' }}">{{ $label }}</button>
+                </form>
+                @endforeach
+            </div>
             <div class="pt-2">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="block rounded-lg bg-accent-500 px-3 py-2 text-center text-sm font-semibold text-brand-950">Go to Dashboard</a>
+                    <a href="{{ route('dashboard') }}" class="block rounded-lg bg-accent-500 px-3 py-2 text-center text-sm font-semibold text-brand-950">{{ __('Go to Dashboard') }}</a>
                 @else
-                    <a href="{{ route('login') }}" class="block rounded-lg border border-white/20 px-3 py-2 text-center text-sm font-semibold text-white">Login</a>
+                    <a href="{{ route('login') }}" class="block rounded-lg border border-white/20 px-3 py-2 text-center text-sm font-semibold text-white">{{ __('Login') }}</a>
                 @endauth
             </div>
         </div>

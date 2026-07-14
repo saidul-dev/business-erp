@@ -1,12 +1,12 @@
-<x-website-layout :title="'Shop'">
+<x-website-layout :title="__('Shop')">
 
     <section class="bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800 py-16 text-center">
         <div class="mx-auto max-w-3xl px-4">
             <span class="inline-block rounded-full bg-white/10 px-4 py-1 text-xs font-semibold tracking-wide text-accent-300 ring-1 ring-white/20">
-                Online Store
+                {{ __('Online Store') }}
             </span>
-            <h1 class="mt-6 text-4xl font-extrabold text-white">Shop {{ $company->name ?? 'our products' }}</h1>
-            <p class="mt-4 text-brand-200/90">Browse the full catalog and order online.</p>
+            <h1 class="mt-6 text-4xl font-extrabold text-white">{{ __('Shop :company', ['company' => $company->name ?? __('our products')]) }}</h1>
+            <p class="mt-4 text-brand-200/90">{{ __('Browse the full catalog and order online.') }}</p>
         </div>
     </section>
 
@@ -25,18 +25,18 @@
                 <aside class="lg:sticky lg:top-24 lg:self-start">
                     <form method="GET" action="{{ route('shop') }}" class="space-y-6">
                         <div>
-                            <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Search</label>
-                            <input type="search" name="q" value="{{ $q }}" placeholder="Product name or SKU…"
+                            <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Search') }}</label>
+                            <input type="search" name="q" value="{{ $q }}" placeholder="{{ __('Product name or SKU…') }}"
                                    class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                         </div>
 
                         @if ($categories->isNotEmpty())
                         <div>
-                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Category</p>
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Category') }}</p>
                             <div class="space-y-1.5">
                                 <label class="flex items-center gap-2 text-sm text-slate-600">
                                     <input type="radio" name="category_id" value="" class="text-accent-600 focus:ring-accent-500" @checked(! $categoryId)>
-                                    All Categories
+                                    {{ __('All Categories') }}
                                 </label>
                                 @foreach ($categories as $category)
                                 <label class="flex items-center justify-between gap-2 text-sm text-slate-600">
@@ -53,11 +53,11 @@
 
                         @if ($brands->isNotEmpty())
                         <div>
-                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Brand</p>
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Brand') }}</p>
                             <div class="space-y-1.5">
                                 <label class="flex items-center gap-2 text-sm text-slate-600">
                                     <input type="radio" name="brand_id" value="" class="text-accent-600 focus:ring-accent-500" @checked(! $brandId)>
-                                    All Brands
+                                    {{ __('All Brands') }}
                                 </label>
                                 @foreach ($brands as $brand)
                                 <label class="flex items-center gap-2 text-sm text-slate-600">
@@ -70,31 +70,31 @@
                         @endif
 
                         <div>
-                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Price Range</p>
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Price Range') }}</p>
                             <div class="flex items-center gap-2">
-                                <input type="number" name="min_price" value="{{ $minPrice }}" placeholder="Min" min="0"
+                                <input type="number" name="min_price" value="{{ $minPrice }}" placeholder="{{ __('Min') }}" min="0"
                                        class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                                 <span class="text-slate-400">–</span>
-                                <input type="number" name="max_price" value="{{ $maxPrice }}" placeholder="Max" min="0"
+                                <input type="number" name="max_price" value="{{ $maxPrice }}" placeholder="{{ __('Max') }}" min="0"
                                        class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                             </div>
                         </div>
 
                         <div>
-                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Sort By</p>
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Sort By') }}</p>
                             <select name="sort" class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
-                                <option value="newest" @selected($sort === 'newest')>Newest</option>
-                                <option value="price_asc" @selected($sort === 'price_asc')>Price: Low to High</option>
-                                <option value="price_desc" @selected($sort === 'price_desc')>Price: High to Low</option>
+                                <option value="newest" @selected($sort === 'newest')>{{ __('Newest') }}</option>
+                                <option value="price_asc" @selected($sort === 'price_asc')>{{ __('Price: Low to High') }}</option>
+                                <option value="price_desc" @selected($sort === 'price_desc')>{{ __('Price: High to Low') }}</option>
                             </select>
                         </div>
 
                         <div class="flex items-center gap-3">
                             <button type="submit" class="rounded-lg bg-brand-900 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800">
-                                Apply
+                                {{ __('Apply') }}
                             </button>
                             @if ($categoryId || $brandId || $q || $minPrice !== null || $maxPrice !== null || $sort !== 'newest')
-                            <a href="{{ route('shop') }}" class="text-sm font-semibold text-slate-500 hover:text-slate-700">Clear</a>
+                            <a href="{{ route('shop') }}" class="text-sm font-semibold text-slate-500 hover:text-slate-700">{{ __('Clear') }}</a>
                             @endif
                         </div>
                     </form>
@@ -102,12 +102,12 @@
 
                 <!-- Product grid -->
                 <div>
-                    <p class="mb-4 text-sm text-slate-500">{{ $products->total() }} {{ Str::plural('product', $products->total()) }} found</p>
+                    <p class="mb-4 text-sm text-slate-500">{{ trans_choice(':count product found|:count products found', $products->total(), ['count' => $products->total()]) }}</p>
 
                     @if ($products->isEmpty())
                     <div class="rounded-2xl border border-dashed border-slate-200 py-20 text-center">
-                        <p class="font-semibold text-slate-500">No products match your filters.</p>
-                        <a href="{{ route('shop') }}" class="mt-2 inline-block text-sm font-semibold text-accent-600 hover:text-accent-800">Clear filters</a>
+                        <p class="font-semibold text-slate-500">{{ __('No products match your filters.') }}</p>
+                        <a href="{{ route('shop') }}" class="mt-2 inline-block text-sm font-semibold text-accent-600 hover:text-accent-800">{{ __('Clear filters') }}</a>
                     </div>
                     @else
                     <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
@@ -120,7 +120,7 @@
                                     <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3 3h18M3 3l1.5 18h15L21 3H3Z"/></svg>
                                 @endif
                                 <span class="absolute top-3 left-3 rounded-full px-2.5 py-0.5 text-[11px] font-semibold {{ $product->in_stock ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500' }}">
-                                    {{ $product->in_stock ? 'In Stock' : 'Out of Stock' }}
+                                    {{ $product->in_stock ? __('In Stock') : __('Out of Stock') }}
                                 </span>
                                 @if ($product->discount_percent)
                                 <span class="absolute top-3 right-3 rounded-full bg-rose-600 px-2 py-0.5 text-[11px] font-bold text-white">-{{ $product->discount_percent }}%</span>

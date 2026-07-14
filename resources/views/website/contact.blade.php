@@ -1,11 +1,11 @@
-<x-website-layout :title="'Contact'">
+<x-website-layout :title="__('Contact')">
 
     <section class="bg-gradient-to-br from-brand-950 via-brand-900 to-brand-800 py-20 text-center">
         <div class="mx-auto max-w-3xl px-4">
             <span class="inline-block rounded-full bg-white/10 px-4 py-1 text-xs font-semibold tracking-wide text-accent-300 ring-1 ring-white/20">
-                Get in Touch
+                {{ __('Get in Touch') }}
             </span>
-            <h1 class="mt-6 text-4xl font-extrabold text-white">Let's talk about your business</h1>
+            <h1 class="mt-6 text-4xl font-extrabold text-white">{{ __("Let's talk about your business") }}</h1>
         </div>
     </section>
 
@@ -38,7 +38,7 @@
                         </div>
                     @endif
                     @if (!$company->email && !$company->phone && !$company->address)
-                        <p class="text-slate-500">Contact details will appear here once added in Admin &gt; Settings.</p>
+                        <p class="text-slate-500">{{ __('Contact details will appear here once added in Admin > Settings.') }}</p>
                     @endif
                 </div>
 
@@ -61,22 +61,22 @@
                         <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white/10 text-accent-400 ring-1 ring-white/20">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
                         </span>
-                        <h3 class="mt-4 text-base font-bold text-white">Quick Response</h3>
-                        <p class="mt-2 text-sm text-brand-200/90">We typically reply within 24 hours, every working day.</p>
+                        <h3 class="mt-4 text-base font-bold text-white">{{ __('Quick Response') }}</h3>
+                        <p class="mt-2 text-sm text-brand-200/90">{{ __('We typically reply within 24 hours, every working day.') }}</p>
                     </div>
                     <div>
                         <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white/10 text-accent-400 ring-1 ring-white/20">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/></svg>
                         </span>
-                        <h3 class="mt-4 text-base font-bold text-white">Real Support</h3>
-                        <p class="mt-2 text-sm text-brand-200/90">Talk to a real person who knows your account, not a bot.</p>
+                        <h3 class="mt-4 text-base font-bold text-white">{{ __('Real Support') }}</h3>
+                        <p class="mt-2 text-sm text-brand-200/90">{{ __('Talk to a real person who knows your account, not a bot.') }}</p>
                     </div>
                     <div>
                         <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-white/10 text-accent-400 ring-1 ring-white/20">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
                         </span>
-                        <h3 class="mt-4 text-base font-bold text-white">Multiple Locations</h3>
-                        <p class="mt-2 text-sm text-brand-200/90">Prefer to visit? Drop by any of our branches below.</p>
+                        <h3 class="mt-4 text-base font-bold text-white">{{ __('Multiple Locations') }}</h3>
+                        <p class="mt-2 text-sm text-brand-200/90">{{ __('Prefer to visit? Drop by any of our branches below.') }}</p>
                     </div>
                 </div>
             </div>

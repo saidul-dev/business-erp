@@ -18,11 +18,11 @@
                         @endif
                         <div class="mt-5 flex flex-wrap items-center gap-3">
                             <a href="{{ route('contact') }}" class="rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors">
-                                Get in Touch
+                                {{ __('Get in Touch') }}
                             </a>
                             @if ($company->ecommerce_enabled)
                             <a href="{{ route('shop') }}" class="rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
-                                Visit Our Shop
+                                {{ __('Visit Our Shop') }}
                             </a>
                             @endif
                         </div>
@@ -37,7 +37,7 @@
                 @if ($heroStats['products'] > 0)
                 <div class="pl-0 pr-6 first:pl-0">
                     <span class="text-2xl font-extrabold text-brand-900">{{ $heroStats['products'] }}+</span>
-                    <span class="ml-2 text-sm text-slate-500">Products</span>
+                    <span class="ml-2 text-sm text-slate-500">{{ __('Products') }}</span>
                 </div>
                 @endif
                 @if ($heroStats['categories'] > 0)
@@ -49,7 +49,7 @@
                 @if ($heroStats['branches'] > 1)
                 <div class="pl-6">
                     <span class="text-2xl font-extrabold text-brand-900">{{ $heroStats['branches'] }}</span>
-                    <span class="ml-2 text-sm text-slate-500">Branches</span>
+                    <span class="ml-2 text-sm text-slate-500">{{ __('Branches') }}</span>
                 </div>
                 @endif
             </div>
@@ -73,11 +73,11 @@
             @endif
             <div class="hero-in mt-10 flex flex-wrap items-center justify-center gap-4" style="animation-delay:.25s">
                 <a href="{{ route('contact') }}" class="rounded-lg bg-accent-500 px-6 py-3 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors">
-                    Get in Touch
+                    {{ __('Get in Touch') }}
                 </a>
                 @if ($company->ecommerce_enabled)
                 <a href="{{ route('shop') }}" class="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
-                    Visit Our Shop
+                    {{ __('Visit Our Shop') }}
                 </a>
                 @endif
             </div>
@@ -87,7 +87,7 @@
                 @if ($heroStats['products'] > 0)
                 <div>
                     <p class="text-3xl font-extrabold text-white">{{ $heroStats['products'] }}+</p>
-                    <p class="mt-1 text-sm text-brand-300/80">Products</p>
+                    <p class="mt-1 text-sm text-brand-300/80">{{ __('Products') }}</p>
                 </div>
                 @endif
                 @if ($heroStats['categories'] > 0)
@@ -99,7 +99,7 @@
                 @if ($heroStats['branches'] > 1)
                 <div>
                     <p class="text-3xl font-extrabold text-white">{{ $heroStats['branches'] }}</p>
-                    <p class="mt-1 text-sm text-brand-300/80">Branches</p>
+                    <p class="mt-1 text-sm text-brand-300/80">{{ __('Branches') }}</p>
                 </div>
                 @endif
             </div>
@@ -124,7 +124,7 @@
                         </div>
                         <div class="p-5">
                             <h3 class="font-bold text-brand-950">{{ $product->name }}</h3>
-                            <p class="mt-2 text-sm text-slate-500">{{ $product->description ? Str::limit($product->description, 90) : 'Available now — ask us for details.' }}</p>
+                            <p class="mt-2 text-sm text-slate-500">{{ $product->description ? Str::limit($product->description, 90) : __('Available now — ask us for details.') }}</p>
                             <p class="mt-3 font-semibold text-accent-600">{{ number_format($product->selling_price, 2) }}</p>
                         </div>
                     </div>
@@ -139,9 +139,9 @@
     <section id="categories" class="bg-slate-50 py-20 sm:py-28">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto">
-                <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">What We Offer</p>
+                <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">{{ __('What We Offer') }}</p>
                 <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold text-brand-950 tracking-tight">
-                    Our Product Categories
+                    {{ __('Our Product Categories') }}
                 </h2>
             </div>
 
@@ -171,9 +171,9 @@
     <!-- Product Slider -->
     <section class="bg-white py-20 sm:py-28">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">Fresh From The Catalog</p>
+            <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">{{ __('Fresh From The Catalog') }}</p>
             <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold text-brand-950 tracking-tight">
-                Our Products
+                {{ __('Our Products') }}
             </h2>
         </div>
 
@@ -214,12 +214,12 @@
 
                 <div class="relative flex flex-col lg:flex-row items-center justify-between gap-8">
                     <div class="text-center lg:text-left max-w-lg">
-                        <p class="text-sm font-semibold text-accent-400 tracking-wide uppercase">Ready When You Are</p>
+                        <p class="text-sm font-semibold text-accent-400 tracking-wide uppercase">{{ __('Ready When You Are') }}</p>
                         <h2 class="mt-2 text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                            Explore what {{ $company->name ?? 'we' }} can do for you
+                            {{ __('Explore what :company can do for you', ['company' => $company->name ?? __('we')]) }}
                         </h2>
                         <p class="mt-3 text-sm text-brand-200/90">
-                            Browse our catalog, reach out with a question, or see current openings — whatever brings you here, we're glad to help.
+                            {{ __("Browse our catalog, reach out with a question, or see current openings — whatever brings you here, we're glad to help.") }}
                         </p>
                     </div>
 
@@ -227,16 +227,16 @@
                         @if ($company->ecommerce_enabled)
                         <a href="{{ route('shop') }}" class="inline-flex items-center gap-2 rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
-                            Shop Now
+                            {{ __('Shop Now') }}
                         </a>
                         @endif
                         <a href="{{ route('contact') }}" class="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a1.5 1.5 0 0 0 1.5-1.5v-3.379a1.5 1.5 0 0 0-1.06-1.436l-4.318-1.318a1.5 1.5 0 0 0-1.567.44l-1.03 1.235a11.25 11.25 0 0 1-5.632-5.633l1.235-1.03a1.5 1.5 0 0 0 .44-1.566L7.755 3.31a1.5 1.5 0 0 0-1.436-1.06H3a1.5 1.5 0 0 0-1.5 1.5v3Z"/></svg>
-                            Contact Us
+                            {{ __('Contact Us') }}
                         </a>
                         <a href="{{ route('career') }}" class="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
-                            Careers
+                            {{ __('Careers') }}
                         </a>
                     </div>
                 </div>
@@ -248,9 +248,9 @@
     <section id="contact" class="bg-white py-20 sm:py-28">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto">
-                <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">Get in Touch</p>
+                <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">{{ __('Get in Touch') }}</p>
                 <h2 class="mt-2 text-3xl sm:text-4xl font-extrabold text-brand-950 tracking-tight">
-                    Let's Talk About Your Business
+                    {{ __("Let's Talk About Your Business") }}
                 </h2>
             </div>
 
@@ -281,7 +281,7 @@
                         </div>
                     @endif
                     @if (!$company->email && !$company->phone && !$company->address)
-                        <p class="text-slate-500">Contact details will appear here once added in Admin &gt; Settings.</p>
+                        <p class="text-slate-500">{{ __('Contact details will appear here once added in Admin > Settings.') }}</p>
                     @endif
                 </div>
 

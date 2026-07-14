@@ -9,27 +9,27 @@
     @csrf
     <div class="grid gap-4 sm:grid-cols-2">
         <div>
-            <input type="text" name="name" value="{{ old('name') }}" placeholder="Your name" required
+            <input type="text" name="name" value="{{ old('name') }}" placeholder="{{ __('Your name') }}" required
                    class="w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
             @error('name') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
         </div>
         <div>
-            <input type="email" name="email" value="{{ old('email') }}" placeholder="Your email" required
+            <input type="email" name="email" value="{{ old('email') }}" placeholder="{{ __('Your email') }}" required
                    class="w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
             @error('email') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
         </div>
     </div>
     <div>
-        <input type="text" name="phone" value="{{ old('phone') }}" placeholder="Phone (optional)"
+        <input type="text" name="phone" value="{{ old('phone') }}" placeholder="{{ __('Phone (optional)') }}"
                class="w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
         @error('phone') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
     </div>
     <div>
-        <textarea name="message" rows="4" placeholder="How can we help?" required
+        <textarea name="message" rows="4" placeholder="{{ __('How can we help?') }}" required
                   class="w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">{{ old('message') }}</textarea>
         @error('message') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
     </div>
     <button type="submit" class="w-full sm:w-auto rounded-lg bg-brand-900 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-800">
-        Send Message
+        {{ __('Send Message') }}
     </button>
 </form>

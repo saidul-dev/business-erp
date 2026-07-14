@@ -16,7 +16,7 @@
             @endif
 
             <nav class="mb-6 text-sm text-slate-500">
-                <a href="{{ route('shop') }}" class="hover:text-accent-600">Shop</a>
+                <a href="{{ route('shop') }}" class="hover:text-accent-600">{{ __('Shop') }}</a>
                 @if ($product->category)
                     <span class="mx-1.5">/</span>
                     <a href="{{ route('shop', ['category_id' => $product->category_id]) }}" class="hover:text-accent-600">{{ $product->category->name }}</a>
@@ -81,7 +81,7 @@
                     <div class="mt-1.5 flex items-center gap-2 text-sm">
                         @if ($product->review_count > 0)
                             <x-star-rating :value="$product->average_rating" />
-                            <a href="#reviews" class="text-slate-500 hover:text-accent-600">{{ $product->average_rating }} ({{ $product->review_count }} {{ Str::plural('review', $product->review_count) }})</a>
+                            <a href="#reviews" class="text-slate-500 hover:text-accent-600">{{ $product->average_rating }} ({{ trans_choice(':count review|:count reviews', $product->review_count, ['count' => $product->review_count]) }})</a>
                         @else
                             <span class="text-slate-400">{{ __('No reviews yet') }}</span>
                         @endif
@@ -98,7 +98,7 @@
                     <p class="mt-2">
                         <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"
                               :class="inStock ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'"
-                              x-text="inStock ? 'In Stock' : 'Out of Stock'"></span>
+                              x-text="inStock ? '{{ __('In Stock') }}' : '{{ __('Out of Stock') }}'"></span>
                     </p>
 
                     @if ($product->short_description)
@@ -110,11 +110,11 @@
 
                         @if ($product->has_variants)
                         <div>
-                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">Options</label>
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Options') }}</label>
                             <select name="item" x-model="selected" required
                                     class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                                 @foreach ($variantOptions as $variant)
-                                <option value="{{ $variant['id'] }}">{{ $variant['label'] }} — {{ number_format($variant['price'], 2) }}{{ $variant['in_stock'] ? '' : ' (Out of Stock)' }}</option>
+                                <option value="{{ $variant['id'] }}">{{ $variant['label'] }} — {{ number_format($variant['price'], 2) }}{{ $variant['in_stock'] ? '' : ' ('.__('Out of Stock').')' }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -123,7 +123,7 @@
                         @endif
 
                         <div class="flex items-center gap-3">
-                            <label class="text-xs font-semibold uppercase tracking-wide text-slate-400">Qty</label>
+                            <label class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Qty') }}</label>
                             <input type="number" name="quantity" value="1" min="1" step="1"
                                    class="w-24 rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                         </div>
@@ -131,7 +131,7 @@
                         <button type="submit"
                                 class="inline-flex items-center gap-2 rounded-lg bg-accent-500 px-6 py-3 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
-                            Add to Cart
+                            {{ __('Add to Cart') }}
                         </button>
                     </form>
                 </div>
