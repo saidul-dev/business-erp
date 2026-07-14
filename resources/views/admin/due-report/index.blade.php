@@ -63,7 +63,7 @@
                 <tr class="hover:bg-slate-50">
                     <td class="px-5 py-3">
                         <span class="block font-semibold text-slate-800">{{ $row->party->name }}</span>
-                        <span class="block text-xs text-slate-400">{{ $row->party->role_label }}</span>
+                        <span class="block text-xs text-slate-400">{{ __($row->party->role_label) }}</span>
                     </td>
                     <td class="px-5 py-3 text-slate-600">{{ $row->party->phone }}</td>
                     <td class="px-5 py-3 text-right">

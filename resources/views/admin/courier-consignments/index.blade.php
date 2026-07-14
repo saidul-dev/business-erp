@@ -21,7 +21,7 @@
                 <select name="status" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                     <option value="">{{ __('All statuses') }}</option>
                     @foreach (\App\Models\CourierConsignment::STATUSES as $s)
-                    <option value="{{ $s }}" {{ $status === $s ? 'selected' : '' }}>{{ ucwords(str_replace('_', ' ', $s)) }}</option>
+                    <option value="{{ $s }}" {{ $status === $s ? 'selected' : '' }}>{{ __(ucwords(str_replace('_', ' ', $s))) }}</option>
                     @endforeach
                 </select>
             </div>

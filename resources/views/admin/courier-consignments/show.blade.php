@@ -63,7 +63,7 @@
                     <x-input-label for="status" :value="__('Status')" />
                     <select id="status" name="status" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                         @foreach (\App\Models\CourierConsignment::STATUSES as $s)
-                        <option value="{{ $s }}" {{ $consignment->status === $s ? 'selected' : '' }}>{{ ucwords(str_replace('_', ' ', $s)) }}</option>
+                        <option value="{{ $s }}" {{ $consignment->status === $s ? 'selected' : '' }}>{{ __(ucwords(str_replace('_', ' ', $s))) }}</option>
                         @endforeach
                     </select>
                     <x-input-error class="mt-2" :messages="$errors->get('status')" />

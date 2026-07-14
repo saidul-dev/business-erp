@@ -22,7 +22,7 @@
                 <select name="type" class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                     <option value="">{{ __('All types') }}</option>
                     @foreach ($types as $key)
-                        <option value="{{ $key }}" @selected($type === $key)>{{ \App\Models\LedgerTransaction::TYPE_LABELS[$key] ?? $key }}</option>
+                        <option value="{{ $key }}" @selected($type === $key)>{{ __(\App\Models\LedgerTransaction::TYPE_LABELS[$key] ?? $key) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -80,7 +80,7 @@
                     <td class="px-5 py-3 font-semibold text-slate-800">{{ $txn->voucher_no }}</td>
                     <td class="px-5 py-3">
                         <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 {{ $typeStyles[$txn->type] ?? $typeStyles['journal'] }}">
-                            {{ \App\Models\LedgerTransaction::TYPE_LABELS[$txn->type] ?? $txn->type }}
+                            {{ __(\App\Models\LedgerTransaction::TYPE_LABELS[$txn->type] ?? $txn->type) }}
                         </span>
                     </td>
                     <td class="px-5 py-3 text-slate-600">{{ $txn->narration }}</td>

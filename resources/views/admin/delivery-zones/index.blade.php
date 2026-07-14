@@ -47,7 +47,7 @@
                         @else
                         <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1
                             {{ $zone->status ? 'bg-emerald-50 text-emerald-600 ring-emerald-200' : 'bg-slate-100 text-slate-500 ring-slate-200' }}">
-                            {{ $zone->status ? 'Active' : 'Inactive' }}
+                            {{ $zone->status ? __('Active') : __('Inactive') }}
                         </span>
                         @endcan
                     </td>
