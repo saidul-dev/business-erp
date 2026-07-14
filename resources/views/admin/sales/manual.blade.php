@@ -3,16 +3,66 @@
     <x-slot name="header">
         <div>
             <h2 class="text-2xl font-bold text-brand-900">{{ __('User Manual') }}</h2>
-            <p class="text-sm text-slate-500 mt-0.5">{{ __('Sale, Delivery and Sale Return — a step-by-step guide') }}</p>
+            <p class="text-sm text-slate-500 mt-0.5">{{ __('Sale Quotation, Sale, Delivery and Sale Return — a step-by-step guide') }}</p>
         </div>
     </x-slot>
 
     <div class="space-y-4">
 
+        {{-- Sale Quotation --}}
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div class="mb-4">
+                <h3 class="font-bold text-brand-900">{{ __('1. Quoting a price before you sell (Sale Quotation)') }}</h3>
+                <p class="text-xs text-slate-400">{{ __('An optional step to offer a customer a priced quote before it becomes a firm sale') }}</p>
+            </div>
+
+            <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 px-4 py-3 mb-4">
+                <p class="text-xs text-amber-800">{{ __('This step is optional — if you don\'t need to quote customers first, skip ahead to "How to make a Sale" below.') }}</p>
+            </div>
+
+            <ol class="space-y-4">
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">1</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Sales menu → New Quotation') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Pick the Customer and Site, add items with quantity and unit price, and an optional discount and validity date.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">2</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Save — the status becomes "Pending" (or "Approved" automatically)') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('If your business requires approval, it stays "Pending" until someone reviews it. Otherwise it is approved the moment it\'s created.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">3</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Approve or Reject') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('A user with approval permission opens the quotation from the Quotation List and clicks "Approve" or "Reject" (with an optional reason). Rejected quotations are final and cannot be converted.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">4</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Convert to Sale') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Once the customer accepts, click "Convert to Sale" on the quotation\'s page — this opens the New Sale form with the same items, quantities and prices already filled in. Confirm and save as usual.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">5</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Cancel (if needed)') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('A quotation can be cancelled while it is still Pending or Approved. Once converted to a Sale, it can no longer be changed or cancelled.') }}</p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
         {{-- Sale workflow --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="mb-4">
-                <h3 class="font-bold text-brand-900">{{ __('1. How to make a Sale') }}</h3>
+                <h3 class="font-bold text-brand-900">{{ __('2. How to make a Sale') }}</h3>
                 <p class="text-xs text-slate-400">{{ __('The full process, from placing an order to delivering goods') }}</p>
             </div>
 
@@ -72,7 +122,7 @@
         {{-- Courier Delivery --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="mb-4">
-                <h3 class="font-bold text-brand-900">{{ __('2. Delivering via Courier (with Cash on Delivery)') }}</h3>
+                <h3 class="font-bold text-brand-900">{{ __('3. Delivering via Courier (with Cash on Delivery)') }}</h3>
                 <p class="text-xs text-slate-400">{{ __('Use this when goods are shipped through a third-party courier instead of your own delivery') }}</p>
             </div>
 
@@ -85,7 +135,7 @@
                     <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">1</span>
                     <div>
                         <p class="text-sm font-semibold text-slate-800">{{ __('On the Deliver page, set Fulfillment Method to "Courier"') }}</p>
-                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Open the sale and click "Deliver" as usual, then choose "Courier" instead of "Self Delivery".') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Open the sale and click "Deliver" as usual, then choose "Courier" instead of "Self Delivery" — "Self Delivery" needs nothing extra, no partner, tracking number or COD amount, and is used when you deliver the goods yourself.') }}</p>
                     </div>
                 </li>
                 <li class="flex gap-3">
@@ -129,7 +179,7 @@
         {{-- Sale Return --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="mb-4">
-                <h3 class="font-bold text-brand-900">{{ __('3. How to process a Sale Return') }}</h3>
+                <h3 class="font-bold text-brand-900">{{ __('4. How to process a Sale Return') }}</h3>
                 <p class="text-xs text-slate-400">{{ __('Where to record it when a customer returns goods that were sold') }}</p>
             </div>
 
@@ -165,7 +215,7 @@
         {{-- Customer Payment --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="mb-4">
-                <h3 class="font-bold text-brand-900">{{ __('4. Customer Payment (collecting money from a customer)') }}</h3>
+                <h3 class="font-bold text-brand-900">{{ __('5. Customer Payment (collecting money from a customer)') }}</h3>
                 <p class="text-xs text-slate-400">{{ __("Steps to record a payment against a customer's outstanding balance") }}</p>
             </div>
 

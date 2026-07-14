@@ -3,16 +3,66 @@
     <x-slot name="header">
         <div>
             <h2 class="text-2xl font-bold text-brand-900">{{ __('User Manual') }}</h2>
-            <p class="text-sm text-slate-500 mt-0.5">{{ __('Purchase, Sale Return and Customer Payment — a step-by-step guide') }}</p>
+            <p class="text-sm text-slate-500 mt-0.5">{{ __('Purchase Requisition, Purchase, Sale Return and Customer Payment — a step-by-step guide') }}</p>
         </div>
     </x-slot>
 
     <div class="space-y-4">
 
+        {{-- Purchase Requisition --}}
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div class="mb-4">
+                <h3 class="font-bold text-brand-900">{{ __('1. Requesting items (Purchase Requisition)') }}</h3>
+                <p class="text-xs text-slate-400">{{ __('An optional approval step before a Purchase Order is raised') }}</p>
+            </div>
+
+            <div class="rounded-xl bg-amber-50 ring-1 ring-amber-200 px-4 py-3 mb-4">
+                <p class="text-xs text-amber-800">{{ __('This step is optional — if approval isn\'t required for your business, requisitions are approved automatically and you can go straight to "How to make a Purchase" below.') }}</p>
+            </div>
+
+            <ol class="space-y-4">
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">1</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Purchase menu → New Requisition') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Pick the Site, an optional Supplier, and add the items and quantities you need — no price is entered here, only what and how much.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">2</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Save — the status becomes "Pending" (or "Approved" automatically)') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('If your business requires approval, it stays "Pending" until someone reviews it. Otherwise it is approved the moment it\'s created.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">3</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Approve or Reject') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('A user with approval permission opens the requisition from the Requisition List and clicks "Approve" or "Reject" (with an optional reason). Rejected requisitions are final and cannot be converted.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">4</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Convert to Purchase Order') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('Once approved, click "Convert to Purchase Order" on the requisition\'s page — this opens the New Purchase form with the same items and quantities already filled in. Just confirm the Supplier, cost per unit and Site, then save as usual.') }}</p>
+                    </div>
+                </li>
+                <li class="flex gap-3">
+                    <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-800 text-xs font-bold text-white">5</span>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">{{ __('Cancel (if needed)') }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ __('A requisition can be cancelled while it is still Pending or Approved. Once converted to a Purchase Order, it can no longer be changed or cancelled.') }}</p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
         {{-- Purchase workflow --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="mb-4">
-                <h3 class="font-bold text-brand-900">{{ __('1. How to make a Purchase') }}</h3>
+                <h3 class="font-bold text-brand-900">{{ __('2. How to make a Purchase') }}</h3>
                 <p class="text-xs text-slate-400">{{ __('The full process, from placing an order to receiving goods') }}</p>
             </div>
 
@@ -72,7 +122,7 @@
         {{-- Sale Return --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="mb-4">
-                <h3 class="font-bold text-brand-900">{{ __('2. Where to process a Sale Return') }}</h3>
+                <h3 class="font-bold text-brand-900">{{ __('3. Where to process a Sale Return') }}</h3>
                 <p class="text-xs text-slate-400">{{ __('Where to record it when a customer returns goods that were sold') }}</p>
             </div>
 
@@ -108,7 +158,7 @@
         {{-- Customer Payment --}}
         <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <div class="mb-4">
-                <h3 class="font-bold text-brand-900">{{ __('3. Customer Payment (collecting money from a customer)') }}</h3>
+                <h3 class="font-bold text-brand-900">{{ __('4. Customer Payment (collecting money from a customer)') }}</h3>
                 <p class="text-xs text-slate-400">{{ __("Steps to record a payment against a customer's outstanding balance") }}</p>
             </div>
 
