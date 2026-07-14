@@ -12,7 +12,10 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DayBookController;
 use App\Http\Controllers\Admin\DeliveryPartnerController;
 use App\Http\Controllers\Admin\DeliveryZoneController;
+use App\Http\Controllers\Admin\DepartmentController;
+use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\DueReportController;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FundTransferController;
 use App\Http\Controllers\Admin\HeroSlideController;
@@ -191,6 +194,17 @@ Route::prefix('admin')->group(function () {
         Route::resource('parties', PartyController::class)->except('show');
         Route::patch('/parties/{party}/toggle-status', [PartyController::class, 'toggleStatus'])->name('parties.toggle-status');
         Route::get('/parties/{party}/ledger', [PartyController::class, 'ledger'])->name('parties.ledger');
+
+        // HRM — Level 1.1 Employee Master (see docs/hrm-employee-management.md).
+        Route::resource('departments', DepartmentController::class)->except('show');
+        Route::patch('/departments/{department}/toggle-status', [DepartmentController::class, 'toggleStatus'])->name('departments.toggle-status');
+
+        Route::resource('designations', DesignationController::class)->except('show');
+        Route::patch('/designations/{designation}/toggle-status', [DesignationController::class, 'toggleStatus'])->name('designations.toggle-status');
+
+        Route::resource('employees', EmployeeController::class)->except('show');
+        Route::patch('/employees/{employee}/toggle-login', [EmployeeController::class, 'toggleLogin'])->name('employees.toggle-login');
+        Route::delete('/employees/{employee}/attachments/{attachment}', [EmployeeController::class, 'destroyAttachment'])->name('employees.attachments.destroy');
 
         // Accounting foundation — see docs/accounting-foundation.md. Only
         // Bank Accounts has a CRUD screen in Phase 1; every other

@@ -13,7 +13,7 @@ class RolePermissionSeeder extends Seeder
      * Canonical display order for role lists (Roles & Permissions page,
      * the Users form role picker). Not creation order — just presentation.
      */
-    public const ROLE_ORDER = ['Super Admin', 'Admin', 'Manager', 'HR', 'Accountant', 'Store-keeper', 'Sales'];
+    public const ROLE_ORDER = ['Super Admin', 'Admin', 'Manager', 'HR', 'Accountant', 'Store-keeper', 'Sales', 'Employee'];
 
     /**
      * ERP modules (README §3) and the actions available on each.
@@ -105,6 +105,12 @@ class RolePermissionSeeder extends Seeder
             'inventory.view',
             'delivery.view',
             'reports.view',
+        ]);
+
+        // Auto-provisioned on Employee::enableLogin() — self-service, view-only
+        // for now; full ESS scoping (own payslip/leave/attendance) is Level 2.
+        Role::findOrCreate('Employee')->syncPermissions([
+            'hrm.view',
         ]);
     }
 }
