@@ -32,12 +32,15 @@ class CompanySetting extends Model
         'purchase_requisition_approval_required',
         'sale_quotation_approval_required',
         'pos_receipt_paper_width',
+        'default_shift_start_time',
+        'late_grace_minutes',
     ];
 
     protected $casts = [
         'ecommerce_enabled' => 'boolean',
         'purchase_requisition_approval_required' => 'boolean',
         'sale_quotation_approval_required' => 'boolean',
+        'late_grace_minutes' => 'integer',
     ];
 
     public function onlineSite(): BelongsTo

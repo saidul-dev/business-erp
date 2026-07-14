@@ -317,7 +317,7 @@
 
                     @can('hrm.view')
                     <x-sidebar-dropdown :title="__('HRM')"
-                        :active="request()->routeIs('employees.*', 'departments.*', 'designations.*')">
+                        :active="request()->routeIs('employees.*', 'departments.*', 'designations.*', 'attendance.*', 'leave-types.*', 'leave-requests.*', 'payroll-runs.*')">
                         <x-slot name="icon">
                             <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
                                 stroke="currentColor">
@@ -335,8 +335,35 @@
                         <x-sidebar-sublink :href="route('designations.index')" :active="request()->routeIs('designations.*')">
                             {{ __('Designations') }}
                         </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('attendance.register')" :active="request()->routeIs('attendance.register')">
+                            {{ __('Attendance Register') }}
+                        </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('attendance.summary')" :active="request()->routeIs('attendance.summary')">
+                            {{ __('Attendance Summary') }}
+                        </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('leave-types.index')" :active="request()->routeIs('leave-types.*')">
+                            {{ __('Leave Types') }}
+                        </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('leave-requests.index')" :active="request()->routeIs('leave-requests.*')">
+                            {{ __('Leave Requests') }}
+                        </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('payroll-runs.index')" :active="request()->routeIs('payroll-runs.*')">
+                            {{ __('Payroll Runs') }}
+                        </x-sidebar-sublink>
                     </x-sidebar-dropdown>
                     @endcan
+
+                    @if (auth()->user()->employee)
+                    <x-sidebar-link :href="route('attendance.my')" :title="__('My Attendance')"
+                        :active="request()->routeIs('attendance.my')">
+                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 6v6l4 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                        <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('My Attendance') }}</span>
+                    </x-sidebar-link>
+                    @endif
 
                     @can('reports.view')
                     <x-sidebar-link href="#" :title="__('Reports')">

@@ -70,6 +70,10 @@ class RolePermissionSeeder extends Seeder
             'parties.view', 'parties.create', 'parties.edit',
             'delivery.view', 'delivery.create', 'delivery.edit',
             'tasks.view', 'tasks.create', 'tasks.edit',
+            // "Manager (own team only)" — view/approve their direct reports'
+            // attendance & leave (Employee::visibleTo scopes this), but not
+            // full HR record management (no hrm.create/edit/delete).
+            'hrm.view', 'hrm.approve',
             'reports.view',
         ]);
 
@@ -87,6 +91,9 @@ class RolePermissionSeeder extends Seeder
             'sales.view',
             'sale-quotations.view',
             'parties.view',
+            // "Accountant (payroll approval)" — reviews and approves salary
+            // runs before they post to Accounts, but doesn't manage HR records.
+            'hrm.view', 'hrm.approve',
             'reports.view',
         ]);
 

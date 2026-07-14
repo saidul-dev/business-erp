@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\BalanceSheetController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CampaignPageController;
@@ -21,9 +22,12 @@ use App\Http\Controllers\Admin\FundTransferController;
 use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\IncomeController;
 use App\Http\Controllers\Admin\InitialStockController;
+use App\Http\Controllers\Admin\LeaveRequestController;
+use App\Http\Controllers\Admin\LeaveTypeController;
 use App\Http\Controllers\Admin\LedgerAccountController;
 use App\Http\Controllers\Admin\PartyController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PayrollRunController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductReviewController;
@@ -31,6 +35,7 @@ use App\Http\Controllers\Admin\ProfitLossController;
 use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\PurchaseRequisitionController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SalaryStructureController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SaleQuotationController;
 use App\Http\Controllers\Admin\SettingController;
@@ -205,6 +210,28 @@ Route::prefix('admin')->group(function () {
         Route::resource('employees', EmployeeController::class)->except('show');
         Route::patch('/employees/{employee}/toggle-login', [EmployeeController::class, 'toggleLogin'])->name('employees.toggle-login');
         Route::delete('/employees/{employee}/attachments/{attachment}', [EmployeeController::class, 'destroyAttachment'])->name('employees.attachments.destroy');
+        Route::get('/employees/{employee}/salary', [SalaryStructureController::class, 'edit'])->name('employees.salary.edit');
+        Route::put('/employees/{employee}/salary', [SalaryStructureController::class, 'update'])->name('employees.salary.update');
+
+        // HRM — Level 1.2/1.3/1.4 Attendance, Leave, Payroll (see docs/hrm-employee-management.md).
+        Route::get('/attendance/register', [AttendanceController::class, 'register'])->name('attendance.register');
+        Route::post('/attendance/register', [AttendanceController::class, 'saveRegister'])->name('attendance.save-register');
+        Route::get('/attendance/summary', [AttendanceController::class, 'summary'])->name('attendance.summary');
+        Route::get('/attendance/my', [AttendanceController::class, 'my'])->name('attendance.my');
+        Route::post('/attendance/check-in', [AttendanceController::class, 'checkIn'])->name('attendance.check-in');
+        Route::post('/attendance/check-out', [AttendanceController::class, 'checkOut'])->name('attendance.check-out');
+
+        Route::resource('leave-types', LeaveTypeController::class)->except('show');
+        Route::patch('/leave-types/{leaveType}/toggle-status', [LeaveTypeController::class, 'toggleStatus'])->name('leave-types.toggle-status');
+
+        Route::resource('leave-requests', LeaveRequestController::class)->only(['index', 'create', 'store', 'destroy']);
+        Route::patch('/leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])->name('leave-requests.approve');
+        Route::patch('/leave-requests/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])->name('leave-requests.reject');
+
+        Route::resource('payroll-runs', PayrollRunController::class)->only(['index', 'create', 'store', 'show', 'destroy']);
+        Route::patch('/payroll-runs/{payrollRun}/approve', [PayrollRunController::class, 'approve'])->name('payroll-runs.approve');
+        Route::patch('/payroll-runs/{payrollRun}/items/{item}', [PayrollRunController::class, 'updateItem'])->name('payroll-runs.items.update');
+        Route::get('/payroll-runs/items/{item}/payslip', [PayrollRunController::class, 'payslip'])->name('payroll-runs.items.payslip');
 
         // Accounting foundation — see docs/accounting-foundation.md. Only
         // Bank Accounts has a CRUD screen in Phase 1; every other

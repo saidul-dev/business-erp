@@ -62,4 +62,22 @@
             </button>
         </form>
     </div>
+
+    @can('hrm.edit')
+    <div class="mt-4 max-w-sm rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+        <h3 class="text-sm font-bold text-brand-900">{{ __('Salary Structure') }}</h3>
+        <p class="mt-0.5 text-xs text-slate-400">
+            @if ($employee->salaryStructure)
+                {{ $employee->salaryStructure->mode === 'flat' ? __('Flat amount') : __('Component-based') }} —
+                {{ number_format($employee->salaryStructure->grossAmount(), 2) }} / {{ __('month') }}
+            @else
+                {{ __('Not set yet — required before this employee can be added to a payroll run.') }}
+            @endif
+        </p>
+        <a href="{{ route('employees.salary.edit', $employee) }}"
+           class="mt-3 block w-full rounded-lg px-4 py-2 text-center text-sm font-semibold text-brand-700 ring-1 ring-brand-200 hover:bg-brand-50">
+            {{ $employee->salaryStructure ? __('Edit Salary Structure') : __('Set Salary Structure') }}
+        </a>
+    </div>
+    @endcan
 </x-app-layout>

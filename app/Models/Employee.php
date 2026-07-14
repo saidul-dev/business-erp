@@ -4,9 +4,11 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\HasAttachments;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -67,6 +69,51 @@ class Employee extends Model
     public function subordinates(): HasMany
     {
         return $this->hasMany(Employee::class, 'reporting_manager_id');
+    }
+
+    public function attendanceLogs(): HasMany
+    {
+        return $this->hasMany(AttendanceLog::class);
+    }
+
+    public function leaveRequests(): HasMany
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
+
+    public function leaveBalances(): HasMany
+    {
+        return $this->hasMany(LeaveBalance::class);
+    }
+
+    public function salaryStructure(): HasOne
+    {
+        return $this->hasOne(SalaryStructure::class);
+    }
+
+    public function payrollRunItems(): HasMany
+    {
+        return $this->hasMany(PayrollRunItem::class);
+    }
+
+    /**
+     * Three tiers, per docs/hrm-employee-management.md §1.5's RBAC list:
+     * HR/Admin (hrm.edit) see everyone; a Manager (hrm.approve without
+     * hrm.edit — "Manager (own team only)") sees their own direct
+     * reports; anyone else (a plain Employee-role login) sees only
+     * themselves. Used by Attendance/Leave list views.
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->can('hrm.edit')) {
+            return $query;
+        }
+
+        if ($user->can('hrm.approve')) {
+            return $query->where('reporting_manager_id', $user->employee?->id ?? 0);
+        }
+
+        return $query->where('id', $user->employee?->id ?? 0);
     }
 
     public function getPhotoUrlAttribute(): ?string

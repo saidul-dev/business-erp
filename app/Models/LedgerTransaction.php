@@ -28,6 +28,7 @@ class LedgerTransaction extends Model
         'drawing',
         'opening_balance',
         'journal',
+        'salary',
     ];
 
     /**
@@ -47,6 +48,7 @@ class LedgerTransaction extends Model
         'drawing' => 'DRW',
         'opening_balance' => 'OB',
         'journal' => 'JNL',
+        'salary' => 'SLR',
     ];
 
     /**
@@ -67,6 +69,7 @@ class LedgerTransaction extends Model
         'drawing' => 'Drawing',
         'opening_balance' => 'Opening Balance',
         'journal' => 'Journal',
+        'salary' => 'Salary Payment',
     ];
 
     protected $fillable = [
@@ -125,6 +128,7 @@ class LedgerTransaction extends Model
             \App\Models\Collection::class => route('collections.show', $this->reference_id),
             \App\Models\CourierConsignment::class => route('courier-consignments.show', $this->reference_id),
             \App\Models\Expense::class => route('expenses.show', $this->reference_id),
+            \App\Models\PayrollRunItem::class => route('payroll-runs.items.payslip', $this->reference_id),
             \App\Models\Income::class => route('incomes.show', $this->reference_id),
             \App\Models\FundTransfer::class => route('fund-transfers.show', $this->reference_id),
             \App\Models\CapitalTransaction::class => route('capital-transactions.show', $this->reference_id),

@@ -28,7 +28,7 @@ class ExpenseController extends Controller implements HasMiddleware
      * Expense category, even though they share the same group/nature as
      * the categories below.
      */
-    protected const EXCLUDED_CATEGORY_CODES = ['purchase_expense', 'cost_of_goods_sold', 'discount_allowed'];
+    protected const EXCLUDED_CATEGORY_CODES = ['purchase_expense', 'cost_of_goods_sold', 'discount_allowed', 'salary_expense'];
 
     public static function middleware(): array
     {
