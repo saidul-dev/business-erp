@@ -48,7 +48,7 @@
     <div class="mt-8 border-t border-slate-200 pt-6">
         <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400">{{ __('Account & System Access') }}</h3>
 
-        <div class="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                 <div class="flex items-center gap-2">
                     <svg class="h-5 w-5 text-brand-700" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg>
@@ -79,6 +79,24 @@
                             @endforeach
                         </select>
                         <x-input-error class="mt-2" :messages="$errors->get('role')" />
+                    </div>
+
+                    <div class="mb-3">
+                        <x-input-label for="login_email" :value="__('Login Email')" />
+                        <x-text-input id="login_email" name="email" type="email" class="mt-1 block w-full"
+                                      :value="old('email', $employee->email)" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('email')" />
+                    </div>
+
+                    <div class="mb-3">
+                        <x-input-label for="login_password" :value="__('Password')" />
+                        <x-text-input id="login_password" name="password" type="password" class="mt-1 block w-full" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('password')" />
+                    </div>
+
+                    <div class="mb-3">
+                        <x-input-label for="login_password_confirmation" :value="__('Confirm Password')" />
+                        <x-text-input id="login_password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" required />
                     </div>
                     @endif
 

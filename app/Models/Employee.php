@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use RuntimeException;
 
 class Employee extends Model
@@ -130,32 +129,29 @@ class Employee extends Model
      * Turns login on. If a User row already exists (previously disabled),
      * it's simply re-activated — a second row is never created, so the
      * original User stays intact as created_by/approved_by on years of
-     * historical rows, and keeps whatever role it already had ($roleName is
-     * only used the first time). Returns the one-time plain-text temp
-     * password when a brand-new User is provisioned, or null when an
-     * existing one was just re-activated.
+     * historical rows, and keeps whatever role it already had ($roleName,
+     * $email and $password are only used the first time, when provisioning
+     * a brand-new User).
      */
-    public function enableLogin(?string $roleName = null): ?string
+    public function enableLogin(?string $roleName = null, ?string $email = null, ?string $password = null): void
     {
         if ($this->user_id) {
             $this->user->update(['is_active' => true]);
 
-            return null;
+            return;
         }
 
-        if (! $roleName) {
-            throw new RuntimeException('Select a role to create this employee\'s login.');
+        if (! $roleName || ! $email || ! $password) {
+            throw new RuntimeException('A role, email, and password are required to create this employee\'s login.');
         }
 
-        if (User::where('email', $this->email)->exists()) {
-            throw new RuntimeException("A user account with email \"{$this->email}\" already exists — set a different email on this employee first.");
+        if (User::where('email', $email)->exists()) {
+            throw new RuntimeException("A user account with email \"{$email}\" already exists — choose a different login email.");
         }
-
-        $password = Str::password(12);
 
         $user = User::create([
             'name' => $this->name,
-            'email' => $this->email,
+            'email' => $email,
             'password' => $password,
             'is_active' => true,
             'current_site_id' => $this->site_id,
@@ -168,8 +164,6 @@ class Employee extends Model
         // Employee create/update form), so it's set directly here.
         $this->user_id = $user->id;
         $this->save();
-
-        return $password;
     }
 
     /**

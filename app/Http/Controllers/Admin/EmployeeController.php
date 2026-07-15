@@ -113,31 +113,34 @@ class EmployeeController extends Controller implements HasMiddleware
             return back()->with('success', "Login disabled for \"{$employee->name}\".");
         }
 
-        // A brand-new login needs a role chosen up front; re-activating a
-        // previously-disabled one just keeps whatever role it already had.
+        // A brand-new login needs a role, email, and password chosen up
+        // front; re-activating a previously-disabled one just keeps
+        // whatever role/email/password it already had.
         $roleName = null;
+        $email = null;
+        $password = null;
+        $isNewLogin = ! $employee->user_id;
 
-        if (! $employee->user_id) {
+        if ($isNewLogin) {
             $validated = $request->validate([
                 'role' => ['required', Rule::in($this->grantableRoles()->pluck('name'))],
+                'email' => ['required', 'email', 'max:255'],
+                'password' => ['required', 'confirmed', 'min:8'],
             ]);
             $roleName = $validated['role'];
+            $email = $validated['email'];
+            $password = $validated['password'];
         }
 
         try {
-            $password = $employee->enableLogin($roleName);
+            $employee->enableLogin($roleName, $email, $password);
         } catch (RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        if ($password === null) {
-            return back()->with('success', "Login re-enabled for \"{$employee->name}\".");
-        }
-
-        return back()->with(
-            'success',
-            "Login enabled for \"{$employee->name}\". Temporary password: {$password} — share this with the employee now, it won't be shown again."
-        );
+        return back()->with('success', $isNewLogin
+            ? "Login enabled for \"{$employee->name}\" with email \"{$email}\"."
+            : "Login re-enabled for \"{$employee->name}\".");
     }
 
     public function destroyAttachment(Employee $employee, Attachment $attachment)
