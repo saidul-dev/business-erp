@@ -185,7 +185,7 @@
             <h2 class="text-lg font-bold text-brand-900">{{ __('Edit Milestone') }}</h2>
             <form method="POST" action="{{ route('projects.milestones.update', [$project, $milestone]) }}" class="mt-4 space-y-4">
                 @csrf
-                @method('PUT')
+                @method('PATCH')
                 @include('admin.projects._milestone-fields', ['milestone' => $milestone])
                 <div class="flex items-center gap-3 pt-2">
                     <x-primary-button>{{ __('Save Changes') }}</x-primary-button>
