@@ -210,7 +210,6 @@ Route::prefix('admin')->group(function () {
         Route::resource('employees', EmployeeController::class)->except('show');
         Route::patch('/employees/{employee}/toggle-login', [EmployeeController::class, 'toggleLogin'])->name('employees.toggle-login');
         Route::delete('/employees/{employee}/attachments/{attachment}', [EmployeeController::class, 'destroyAttachment'])->name('employees.attachments.destroy');
-        Route::get('/employees/{employee}/salary', [SalaryStructureController::class, 'edit'])->name('employees.salary.edit');
         Route::put('/employees/{employee}/salary', [SalaryStructureController::class, 'update'])->name('employees.salary.update');
 
         // HRM — Level 1.2/1.3/1.4 Attendance, Leave, Payroll (see docs/hrm-employee-management.md).
@@ -224,7 +223,7 @@ Route::prefix('admin')->group(function () {
         Route::resource('leave-types', LeaveTypeController::class)->except('show');
         Route::patch('/leave-types/{leaveType}/toggle-status', [LeaveTypeController::class, 'toggleStatus'])->name('leave-types.toggle-status');
 
-        Route::resource('leave-requests', LeaveRequestController::class)->only(['index', 'create', 'store', 'destroy']);
+        Route::resource('leave-requests', LeaveRequestController::class)->only(['index', 'store', 'destroy']);
         Route::patch('/leave-requests/{leaveRequest}/approve', [LeaveRequestController::class, 'approve'])->name('leave-requests.approve');
         Route::patch('/leave-requests/{leaveRequest}/reject', [LeaveRequestController::class, 'reject'])->name('leave-requests.reject');
 

@@ -16,7 +16,7 @@ class LeaveRequestController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:hrm.view', only: ['index', 'create', 'store', 'destroy']),
+            new Middleware('permission:hrm.view', only: ['index', 'store', 'destroy']),
             new Middleware('permission:hrm.approve', only: ['approve', 'reject']),
         ];
     }
@@ -26,26 +26,19 @@ class LeaveRequestController extends Controller implements HasMiddleware
         $user = Auth::user();
         $visibleEmployeeIds = Employee::visibleTo($user)->pluck('id');
 
-        $leaveRequests = LeaveRequest::with(['employee', 'leaveType'])
+        $leaveRequests = LeaveRequest::with(['employee', 'leaveType', 'reviewer'])
             ->whereIn('employee_id', $visibleEmployeeIds)
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->orderByDesc('from_date')
             ->paginate(15)
             ->withQueryString();
 
+        $canPickAnyEmployee = $user->can('hrm.create');
+
         return view('admin.leave-requests.index', [
             'leaveRequests' => $leaveRequests,
             'canApprove' => $user->can('hrm.approve'),
             'currentEmployeeId' => $user->employee?->id,
-        ]);
-    }
-
-    public function create()
-    {
-        $user = Auth::user();
-        $canPickAnyEmployee = $user->can('hrm.create');
-
-        return view('admin.leave-requests.create', [
             'employees' => $canPickAnyEmployee
                 ? Employee::where('employment_status', 'active')->orderBy('name')->get()
                 : collect(),

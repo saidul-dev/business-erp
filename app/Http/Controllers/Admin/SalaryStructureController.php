@@ -15,16 +15,8 @@ class SalaryStructureController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:hrm.edit', only: ['edit', 'update']),
+            new Middleware('permission:hrm.edit', only: ['update']),
         ];
-    }
-
-    public function edit(Employee $employee)
-    {
-        return view('admin.employees.salary', [
-            'employee' => $employee,
-            'structure' => $employee->salaryStructure,
-        ]);
     }
 
     public function update(Request $request, Employee $employee)

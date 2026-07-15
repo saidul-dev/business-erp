@@ -104,12 +104,87 @@
                         {{ __('Not set yet — required before this employee can be added to a payroll run.') }}
                     @endif
                 </p>
-                <a href="{{ route('employees.salary.edit', $employee) }}"
-                   class="mt-3 block w-full rounded-lg px-4 py-2 text-center text-sm font-semibold text-brand-700 ring-1 ring-brand-200 hover:bg-brand-50">
+                <button type="button" @click="$dispatch('open-modal', 'salary-structure')"
+                        class="mt-3 block w-full rounded-lg px-4 py-2 text-center text-sm font-semibold text-brand-700 ring-1 ring-brand-200 hover:bg-brand-50">
                     {{ $employee->salaryStructure ? __('Edit Salary Structure') : __('Set Salary Structure') }}
-                </a>
+                </button>
             </div>
             @endcan
         </div>
     </div>
+
+    @can('hrm.edit')
+    <x-modal name="salary-structure" max-width="lg" :show="$errors->any()">
+        <div class="p-6" x-data="{ mode: @js(old('mode', $employee->salaryStructure->mode ?? 'flat')) }">
+            <h2 class="text-lg font-bold text-brand-900">{{ __('Salary Structure') }}</h2>
+            <p class="text-xs text-slate-400 mt-0.5">{{ $employee->name }}</p>
+
+            <form method="POST" action="{{ route('employees.salary.update', $employee) }}" class="mt-4 space-y-5">
+                @csrf
+                @method('PUT')
+
+                <div>
+                    <x-input-label :value="__('Mode')" />
+                    <div class="mt-1 flex gap-4">
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="radio" name="mode" value="flat" x-model="mode" class="border-slate-300 text-accent-600 focus:ring-accent-500">
+                            {{ __('Flat monthly amount') }}
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="radio" name="mode" value="components" x-model="mode" class="border-slate-300 text-accent-600 focus:ring-accent-500">
+                            {{ __('Basic + House Rent + Medical + Conveyance') }}
+                        </label>
+                    </div>
+                    <x-input-error class="mt-2" :messages="$errors->get('mode')" />
+                </div>
+
+                <div x-show="mode === 'flat'">
+                    <x-input-label for="flat_amount" :value="__('Flat Amount')" />
+                    <x-text-input id="flat_amount" name="flat_amount" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                                  :value="old('flat_amount', $employee->salaryStructure->flat_amount ?? '0')" />
+                    <x-input-error class="mt-2" :messages="$errors->get('flat_amount')" />
+                </div>
+
+                <div x-show="mode === 'components'" x-cloak class="grid grid-cols-2 gap-4">
+                    <div>
+                        <x-input-label for="basic" :value="__('Basic')" />
+                        <x-text-input id="basic" name="basic" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                                      :value="old('basic', $employee->salaryStructure->basic ?? '0')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('basic')" />
+                    </div>
+                    <div>
+                        <x-input-label for="house_rent" :value="__('House Rent')" />
+                        <x-text-input id="house_rent" name="house_rent" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                                      :value="old('house_rent', $employee->salaryStructure->house_rent ?? '0')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('house_rent')" />
+                    </div>
+                    <div>
+                        <x-input-label for="medical" :value="__('Medical')" />
+                        <x-text-input id="medical" name="medical" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                                      :value="old('medical', $employee->salaryStructure->medical ?? '0')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('medical')" />
+                    </div>
+                    <div>
+                        <x-input-label for="conveyance" :value="__('Conveyance')" />
+                        <x-text-input id="conveyance" name="conveyance" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                                      :value="old('conveyance', $employee->salaryStructure->conveyance ?? '0')" />
+                        <x-input-error class="mt-2" :messages="$errors->get('conveyance')" />
+                    </div>
+                </div>
+
+                <div>
+                    <x-input-label for="effective_from" :value="__('Effective From')" />
+                    <x-text-input id="effective_from" name="effective_from" type="date" class="mt-1 block w-full"
+                                  :value="old('effective_from', $employee->salaryStructure?->effective_from?->format('Y-m-d') ?? now()->format('Y-m-d'))" required />
+                    <x-input-error class="mt-2" :messages="$errors->get('effective_from')" />
+                </div>
+
+                <div class="flex items-center gap-3 pt-2">
+                    <x-primary-button>{{ __('Save Salary Structure') }}</x-primary-button>
+                    <button type="button" x-on:click="$dispatch('close')" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Cancel') }}</button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
+    @endcan
 </x-app-layout>
