@@ -7,6 +7,7 @@ use App\Models\Collection;
 use App\Models\CompanySetting;
 use App\Models\LedgerAccount;
 use App\Models\Party;
+use App\Models\Project;
 use App\Services\LedgerService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -67,6 +68,7 @@ class CollectionController extends Controller implements HasMiddleware
     {
         $validated = $request->validate([
             'party_id' => ['required', 'integer', 'exists:parties,id'],
+            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
             'ledger_account_id' => ['required', 'integer', 'exists:ledger_accounts,id'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'collection_date' => ['required', 'date'],
@@ -79,12 +81,21 @@ class CollectionController extends Controller implements HasMiddleware
             throw ValidationException::withMessages(['party_id' => 'Pick a party marked as a Customer.']);
         }
 
+        $project = null;
+        if (! empty($validated['project_id'])) {
+            $project = Project::findOrFail($validated['project_id']);
+            if ($project->party_id !== $party->id) {
+                throw ValidationException::withMessages(['project_id' => 'This project does not belong to the selected party.']);
+            }
+        }
+
         $account = LedgerAccount::where('group', 'cash_bank')->findOrFail($validated['ledger_account_id']);
 
-        $collection = DB::transaction(function () use ($validated, $party, $account) {
+        $collection = DB::transaction(function () use ($validated, $party, $project, $account) {
             $collection = Collection::create([
                 'collection_no' => 'PENDING',
                 'party_id' => $party->id,
+                'project_id' => $project?->id,
                 'ledger_account_id' => $account->id,
                 'amount' => $validated['amount'],
                 'collection_date' => $validated['collection_date'],
@@ -109,7 +120,9 @@ class CollectionController extends Controller implements HasMiddleware
             return $collection;
         });
 
-        return redirect()->route('collections.show', $collection)->with('success', "Collection {$collection->collection_no} recorded.");
+        return $project
+            ? redirect()->route('projects.show', $project)->with('success', "Collection {$collection->collection_no} recorded.")
+            : redirect()->route('collections.show', $collection)->with('success', "Collection {$collection->collection_no} recorded.");
     }
 
     public function show(Collection $collection)

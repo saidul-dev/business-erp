@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
+use App\Models\LedgerAccount;
 use App\Models\Milestone;
 use App\Models\Party;
 use App\Models\Project;
@@ -78,11 +79,12 @@ class ProjectController extends Controller implements HasMiddleware
 
     public function show(Project $project)
     {
-        $project->load(['site', 'party', 'projectManager', 'milestones.tasks.assignedEmployee']);
+        $project->load(['site', 'party', 'projectManager', 'milestones.tasks.assignedEmployee', 'collections.account']);
 
         return view('admin.projects.show', [
             'project' => $project,
             'employees' => Employee::where('employment_status', 'active')->orderBy('name')->get(),
+            'cashAccounts' => LedgerAccount::where('group', 'cash_bank')->where('status', true)->orderBy('name')->get(),
             'milestoneStatuses' => $this->enumOptions(Milestone::STATUSES),
             'taskStatuses' => $this->enumOptions(Task::STATUSES),
             'taskPriorities' => $this->enumOptions(Task::PRIORITIES),
@@ -93,6 +95,10 @@ class ProjectController extends Controller implements HasMiddleware
     {
         if ($project->milestones()->exists()) {
             return back()->with('error', "\"{$project->name}\" already has milestones — delete those first before removing the project.");
+        }
+
+        if ($project->collections()->exists()) {
+            return back()->with('error', "\"{$project->name}\" has collections recorded against it — these financial records must stay linked to the project.");
         }
 
         foreach ($project->tasks as $task) {
@@ -118,7 +124,7 @@ class ProjectController extends Controller implements HasMiddleware
 
     protected function validated(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'site_id' => ['required', 'integer', 'exists:sites,id'],
             'party_id' => ['nullable', 'integer', 'exists:parties,id'],
             'project_manager_id' => ['required', 'integer', 'exists:employees,id'],
@@ -127,7 +133,16 @@ class ProjectController extends Controller implements HasMiddleware
             'status' => ['required', Rule::in(Project::STATUSES)],
             'due_date' => ['required', 'date'],
             'estimated_hours' => ['required', 'numeric', 'min:0'],
+            'budget_amount' => ['nullable', 'numeric', 'min:0'],
         ]);
+
+        // A budget only makes sense against a client — an internal project
+        // has nobody to collect payment from.
+        if (empty($validated['party_id'])) {
+            $validated['budget_amount'] = null;
+        }
+
+        return $validated;
     }
 
     protected function statusOptions(): array

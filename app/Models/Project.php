@@ -22,12 +22,14 @@ class Project extends Model
         'status',
         'due_date',
         'estimated_hours',
+        'budget_amount',
         'created_by',
     ];
 
     protected $casts = [
         'due_date' => 'date',
         'estimated_hours' => 'decimal:2',
+        'budget_amount' => 'decimal:2',
     ];
 
     public function site(): BelongsTo
@@ -62,5 +64,20 @@ class Project extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function collections(): HasMany
+    {
+        return $this->hasMany(Collection::class);
+    }
+
+    public function collectedAmount(): float
+    {
+        return (float) $this->collections()->sum('amount');
+    }
+
+    public function remainingBudget(): ?float
+    {
+        return $this->budget_amount === null ? null : (float) $this->budget_amount - $this->collectedAmount();
     }
 }

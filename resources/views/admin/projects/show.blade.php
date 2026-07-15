@@ -17,7 +17,7 @@
                 <a href="{{ route('projects.edit', $project) }}" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Edit') }}</a>
                 @endcan
                 @can('projects.delete')
-                @if ($project->milestones->isEmpty())
+                @if ($project->milestones->isEmpty() && $project->collections->isEmpty())
                 <form method="POST" action="{{ route('projects.destroy', $project) }}"
                       onsubmit="return confirm('{{ __('Delete this project?') }}');">
                     @csrf
@@ -48,6 +48,20 @@
                 <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Client') }}</dt>
                 <dd class="mt-1 font-semibold text-slate-800">{{ $project->party->name ?? __('None — internal project') }}</dd>
             </div>
+            @if ($project->budget_amount !== null)
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Budget') }}</dt>
+                <dd class="mt-1 font-semibold text-slate-800">{{ number_format($project->budget_amount, 2) }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Collected') }}</dt>
+                <dd class="mt-1 font-semibold text-emerald-600">{{ number_format($project->collectedAmount(), 2) }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Remaining') }}</dt>
+                <dd class="mt-1 font-semibold {{ $project->remainingBudget() > 0 ? 'text-amber-600' : 'text-slate-800' }}">{{ number_format($project->remainingBudget(), 2) }}</dd>
+            </div>
+            @endif
         </dl>
         @if ($project->description)
         <p class="mt-4 text-sm text-slate-600">{{ $project->description }}</p>
@@ -215,4 +229,107 @@
             </form>
         </div>
     </x-modal>
+
+    @if ($project->party_id)
+    <div class="flex items-center justify-between mb-4 mt-8">
+        <h3 class="text-lg font-bold text-brand-900">{{ __('Collections') }}</h3>
+        @can('accounts.create')
+        @if ($project->budget_amount > 0)
+        <button type="button" @click="$dispatch('open-modal', 'collect-payment')"
+                class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            {{ __('Collect Payment') }}
+        </button>
+        @endif
+        @endcan
+    </div>
+
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="w-full min-w-[700px] text-sm">
+            <thead>
+                <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                    <th class="px-5 py-3 font-semibold">{{ __('Collection No.') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Date') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Account') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Reference') }}</th>
+                    <th class="px-5 py-3 font-semibold text-right">{{ __('Amount') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @forelse ($project->collections as $collection)
+                <tr class="hover:bg-slate-50">
+                    <td class="px-5 py-3 font-semibold text-slate-800">
+                        <a href="{{ route('collections.show', $collection) }}" class="hover:text-accent-700 hover:underline">{{ $collection->collection_no }}</a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600">{{ $collection->collection_date->format('d M, Y') }}</td>
+                    <td class="px-5 py-3 text-slate-600">{{ $collection->account->name }}</td>
+                    <td class="px-5 py-3 text-slate-600">{{ $collection->reference_no ?? '—' }}</td>
+                    <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ number_format($collection->amount, 2) }}</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" class="px-5 py-10 text-center text-slate-400">{{ __('No collections recorded yet.') }}</td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    @can('accounts.create')
+    <x-modal name="collect-payment" max-width="md">
+        <div class="p-6">
+            <h2 class="text-lg font-bold text-brand-900">{{ __('Collect Payment') }}</h2>
+            <p class="text-xs text-slate-400 mt-0.5">{{ $project->party->name }}</p>
+
+            <form method="POST" action="{{ route('collections.store') }}" class="mt-4 space-y-4">
+                @csrf
+                <input type="hidden" name="party_id" value="{{ $project->party_id }}">
+                <input type="hidden" name="project_id" value="{{ $project->id }}">
+
+                <div>
+                    <x-input-label :value="__('Receive Into')" />
+                    <x-searchable-select name="ledger_account_id" :options="$cashAccounts" :selected="null"
+                                          placeholder="{{ __('Select a cash/bank account…') }}" />
+                    <x-input-error class="mt-2" :messages="$errors->get('ledger_account_id')" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <x-input-label for="collect_amount" :value="__('Amount')" />
+                        <x-text-input id="collect_amount" name="amount" type="number" step="0.01" min="0.01" class="mt-1 block w-full" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('amount')" />
+                    </div>
+                    <div>
+                        <x-input-label for="collect_date" :value="__('Collection Date')" />
+                        <x-text-input id="collect_date" name="collection_date" type="date" class="mt-1 block w-full"
+                                      :value="now()->toDateString()" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('collection_date')" />
+                    </div>
+                </div>
+
+                <div>
+                    <x-input-label for="collect_reference_no" :value="__('Reference No. (optional)')" />
+                    <x-text-input id="collect_reference_no" name="reference_no" type="text" class="mt-1 block w-full"
+                                  placeholder="{{ __('Cheque no. / transaction ID') }}" />
+                    <x-input-error class="mt-2" :messages="$errors->get('reference_no')" />
+                </div>
+
+                <div>
+                    <x-input-label for="collect_note" :value="__('Note (optional)')" />
+                    <textarea id="collect_note" name="note" rows="2"
+                              class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500"></textarea>
+                    <x-input-error class="mt-2" :messages="$errors->get('note')" />
+                </div>
+
+                <div class="flex items-center gap-3 pt-2">
+                    <x-primary-button>{{ __('Record Collection') }}</x-primary-button>
+                    <button type="button" x-on:click="$dispatch('close')" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Cancel') }}</button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
+    @endcan
+    @endif
 </x-app-layout>

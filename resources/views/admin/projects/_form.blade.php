@@ -51,6 +51,13 @@
                                   placeholder="{{ __('Select status…') }}" />
             <x-input-error class="mt-2" :messages="$errors->get('status')" />
         </div>
+        <div>
+            <x-input-label for="budget_amount" :value="__('Budget Amount (optional)')" />
+            <x-text-input id="budget_amount" name="budget_amount" type="number" step="0.01" min="0" class="mt-1 block w-full"
+                          :value="old('budget_amount', $project->budget_amount ?? '')" />
+            <p class="mt-1 text-xs text-slate-400">{{ __('Only used for client projects — leave blank for internal projects or when there\'s no fixed budget.') }}</p>
+            <x-input-error class="mt-2" :messages="$errors->get('budget_amount')" />
+        </div>
     </div>
 
     <div>
