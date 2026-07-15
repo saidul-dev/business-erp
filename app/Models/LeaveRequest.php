@@ -103,4 +103,27 @@ class LeaveRequest extends Model
             'rejection_reason' => $reason,
         ]);
     }
+
+    /**
+     * HR marking the employee present/absent (instead of leave) on a date
+     * covered by this approved request means the leave didn't actually
+     * happen — reverses the balance deduction from approve() and moves
+     * the request to 'rejected' so it stops counting as approved leave.
+     */
+    public function revokeApproval(User $actor, string $reason): void
+    {
+        if ($this->status !== 'approved') {
+            throw new RuntimeException('Only an approved leave request can be revoked.');
+        }
+
+        $balance = LeaveBalance::firstOrCreateFor($this->employee, $this->leaveType, $this->from_date->year);
+        $balance->decrement('used_days', $this->days);
+
+        $this->update([
+            'status' => 'rejected',
+            'reviewed_by' => $actor->id,
+            'reviewed_at' => now(),
+            'rejection_reason' => $reason,
+        ]);
+    }
 }

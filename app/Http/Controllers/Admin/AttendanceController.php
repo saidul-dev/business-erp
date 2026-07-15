@@ -61,9 +61,27 @@ class AttendanceController extends Controller implements HasMiddleware
 
         $date = Carbon::parse($validated['date']);
         $shiftThreshold = CompanySetting::current()->lateThresholdFor($date);
+        $actor = Auth::user();
+        $revokedCount = 0;
 
-        DB::transaction(function () use ($validated, $date, $shiftThreshold) {
+        DB::transaction(function () use ($validated, $date, $shiftThreshold, $actor, &$revokedCount) {
             foreach ($validated['records'] as $record) {
+                if ($record['status'] !== 'leave') {
+                    $approvedLeave = LeaveRequest::where('employee_id', $record['employee_id'])
+                        ->where('status', 'approved')
+                        ->whereDate('from_date', '<=', $date)
+                        ->whereDate('to_date', '>=', $date)
+                        ->first();
+
+                    if ($approvedLeave) {
+                        $approvedLeave->revokeApproval(
+                            $actor,
+                            "Marked '{$record['status']}' in the attendance register for {$date->format('d M, Y')}, overriding the approved leave."
+                        );
+                        $revokedCount++;
+                    }
+                }
+
                 $checkInAt = ! empty($record['check_in_time'])
                     ? Carbon::parse($date->format('Y-m-d').' '.$record['check_in_time'])
                     : null;
@@ -82,8 +100,13 @@ class AttendanceController extends Controller implements HasMiddleware
             }
         });
 
-        return redirect()->route('attendance.register', ['date' => $validated['date']])
-            ->with('success', 'Attendance saved for '.Carbon::parse($validated['date'])->format('d M, Y').'.');
+        $message = 'Attendance saved for '.$date->format('d M, Y').'.';
+
+        if ($revokedCount > 0) {
+            $message .= ' '.trans_choice('1 approved leave was cancelled because the employee was marked present/absent instead.|:count approved leaves were cancelled because those employees were marked present/absent instead.', $revokedCount, ['count' => $revokedCount]);
+        }
+
+        return redirect()->route('attendance.register', ['date' => $validated['date']])->with('success', $message);
     }
 
     public function summary(Request $request)
@@ -139,32 +162,43 @@ class AttendanceController extends Controller implements HasMiddleware
 
         $today = today();
 
-        $onApprovedLeave = LeaveRequest::where('employee_id', $employee->id)
-            ->where('status', 'approved')
-            ->whereDate('from_date', '<=', $today)
-            ->whereDate('to_date', '>=', $today)
-            ->exists();
-
-        if ($onApprovedLeave) {
-            return back()->with('error', 'You have an approved leave today — check-in is disabled.');
-        }
-
         $log = AttendanceLog::firstOrNew(['employee_id' => $employee->id, 'date' => $today]);
 
         if ($log->exists && $log->check_in_at) {
             return back()->with('error', 'You have already checked in today.');
         }
 
+        $approvedLeave = LeaveRequest::where('employee_id', $employee->id)
+            ->where('status', 'approved')
+            ->whereDate('from_date', '<=', $today)
+            ->whereDate('to_date', '>=', $today)
+            ->first();
+
         $shiftThreshold = CompanySetting::current()->lateThresholdFor($today);
 
-        $log->fill([
-            'status' => 'present',
-            'check_in_at' => now(),
-            'is_late' => now()->gt($shiftThreshold),
-            'source' => 'self',
-        ])->save();
+        DB::transaction(function () use ($log, $approvedLeave, $today, $shiftThreshold) {
+            if ($approvedLeave) {
+                $approvedLeave->revokeApproval(
+                    Auth::user(),
+                    "Employee checked in on {$today->format('d M, Y')}, overriding the approved leave."
+                );
+            }
 
-        return back()->with('success', $log->is_late ? 'Checked in — marked late.' : 'Checked in.');
+            $log->fill([
+                'status' => 'present',
+                'check_in_at' => now(),
+                'is_late' => now()->gt($shiftThreshold),
+                'source' => 'self',
+            ])->save();
+        });
+
+        $message = $log->is_late ? 'Checked in — marked late.' : 'Checked in.';
+
+        if ($approvedLeave) {
+            $message .= ' Note: your approved leave for today was cancelled since you checked in.';
+        }
+
+        return back()->with('success', $message);
     }
 
     public function checkOut()
