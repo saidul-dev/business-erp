@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\CompanySetting;
+use App\Models\Sale;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -39,5 +40,14 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('ecommerceEnabled', CompanySetting::current()->ecommerce_enabled);
             }
         );
+
+        // Sidebar badge counting online orders still awaiting fulfillment,
+        // so staff notice new storefront orders without opening the Sales menu.
+        View::composer('layouts.app', function ($view) {
+            $view->with('pendingOnlineOrdersCount', Sale::query()
+                ->where('channel', 'online')
+                ->where('status', 'pending')
+                ->count());
+        });
     }
 }

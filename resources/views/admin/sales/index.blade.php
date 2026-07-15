@@ -87,7 +87,9 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse ($sales as $sale)
                 <tr class="hover:bg-slate-50">
-                    <td class="px-5 py-3 font-semibold text-slate-800">{{ $sale->sale_no }}</td>
+                    <td class="px-5 py-3 font-semibold text-slate-800">
+                        <a href="{{ route('sales.show', $sale) }}" class="hover:text-accent-700 hover:underline">{{ $sale->sale_no }}</a>
+                    </td>
                     <td class="px-5 py-3 text-slate-600">{{ $sale->party->name }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $sale->site->name }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $sale->order_date->format('d M, Y') }}</td>

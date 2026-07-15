@@ -119,7 +119,8 @@
                     @endcan
 
                     @can('sales.view')
-                    <x-sidebar-dropdown :title="__('Sales')" :active="request()->routeIs('sales.*', 'sale-quotations.*')">
+                    <x-sidebar-dropdown :title="__('Sales')" :active="request()->routeIs('sales.*', 'sale-quotations.*')"
+                        :badge="$pendingOnlineOrdersCount ?: null">
                         <x-slot name="icon">
                             <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
                                 stroke="currentColor">
@@ -149,7 +150,12 @@
                         @if ($ecommerceEnabled)
                         <x-sidebar-sublink :href="route('sales.index', ['channel' => 'online'])"
                             :active="request()->routeIs('sales.index') && request('channel') === 'online'">
-                            {{ __('Online Orders') }}
+                            <span class="flex-1">{{ __('Online Orders') }}</span>
+                            @if ($pendingOnlineOrdersCount)
+                            <span class="ml-1 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white">
+                                {{ $pendingOnlineOrdersCount }}
+                            </span>
+                            @endif
                         </x-sidebar-sublink>
                         @endif
                         <x-sidebar-sublink :href="route('sales.manual')" :active="request()->routeIs('sales.manual')">

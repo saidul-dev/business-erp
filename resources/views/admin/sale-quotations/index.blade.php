@@ -72,7 +72,9 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse ($quotations as $quotation)
                 <tr class="hover:bg-slate-50">
-                    <td class="px-5 py-3 font-semibold text-slate-800">{{ $quotation->quotation_no }}</td>
+                    <td class="px-5 py-3 font-semibold text-slate-800">
+                        <a href="{{ route('sale-quotations.show', $quotation) }}" class="hover:text-accent-700 hover:underline">{{ $quotation->quotation_no }}</a>
+                    </td>
                     <td class="px-5 py-3 text-slate-600">{{ $quotation->party->name }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $quotation->site->name }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $quotation->quote_date->format('d M, Y') }}</td>

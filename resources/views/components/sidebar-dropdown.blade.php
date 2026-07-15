@@ -1,4 +1,4 @@
-@props(['title', 'active' => false])
+@props(['title', 'active' => false, 'badge' => null])
 
 {{-- Opens automatically when a child route is active; chevron rotates with state.
      If the sidebar is collapsed to icon rail, clicking auto-expands it so the
@@ -11,6 +11,10 @@
             class="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors {{ $active ? 'font-semibold bg-white/10 text-white border-l-2 border-accent-400' : 'font-medium text-brand-200 hover:bg-white/5 hover:text-white' }}">
         <span class="shrink-0">{{ $icon ?? '' }}</span>
         <span class="nav-label flex-1 text-left" x-bind:class="$store.sidebar.collapsed && 'lg:hidden'">{{ $title }}</span>
+        @if ($badge)
+        <span class="nav-label shrink-0 rounded-full bg-rose-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white"
+              x-bind:class="$store.sidebar.collapsed && 'lg:hidden'">{{ $badge }}</span>
+        @endif
         <svg class="nav-label h-4 w-4 shrink-0 transition-transform duration-200"
              x-bind:class="[open && 'rotate-180', $store.sidebar.collapsed && 'lg:hidden']"
              fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">

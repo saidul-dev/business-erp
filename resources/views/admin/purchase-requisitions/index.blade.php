@@ -72,7 +72,9 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse ($requisitions as $requisition)
                 <tr class="hover:bg-slate-50">
-                    <td class="px-5 py-3 font-semibold text-slate-800">{{ $requisition->requisition_no }}</td>
+                    <td class="px-5 py-3 font-semibold text-slate-800">
+                        <a href="{{ route('purchase-requisitions.show', $requisition) }}" class="hover:text-accent-700 hover:underline">{{ $requisition->requisition_no }}</a>
+                    </td>
                     <td class="px-5 py-3 text-slate-600">{{ $requisition->site->name }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $requisition->party->name ?? '—' }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $requisition->request_date->format('d M, Y') }}</td>
