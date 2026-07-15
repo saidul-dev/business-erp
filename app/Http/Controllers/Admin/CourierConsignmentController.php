@@ -128,6 +128,10 @@ class CourierConsignmentController extends Controller implements HasMiddleware
             LedgerService::post([
                 'type' => 'payment_in',
                 'date' => $validated['settled_date'],
+                // Same convention as CollectionController: the receiving
+                // account's own site wins if it's tied to one, else fall
+                // back to the site the original sale happened at.
+                'site_id' => $account->site_id ?? $sale->site_id,
                 'narration' => "COD remittance via {$courierConsignment->deliveryPartner->name} for {$sale->sale_no}",
                 'reference' => $courierConsignment,
                 'lines' => $lines,

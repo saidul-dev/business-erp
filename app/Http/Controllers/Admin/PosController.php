@@ -309,6 +309,10 @@ class PosController extends Controller implements HasMiddleware
             LedgerService::post([
                 'type' => 'payment_in',
                 'date' => $today,
+                // Same convention as CollectionController: the receiving
+                // account's own site wins if it's tied to one, else fall
+                // back to the site the sale itself happened at.
+                'site_id' => $account->site_id ?? $siteId,
                 'narration' => "POS payment for {$sale->sale_no} ({$collection->collection_no})",
                 'reference' => $collection,
                 'created_by' => Auth::id(),

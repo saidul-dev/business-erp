@@ -97,6 +97,9 @@ class PaymentController extends Controller implements HasMiddleware
             LedgerService::post([
                 'type' => 'payment_out',
                 'date' => $validated['payment_date'],
+                // Same convention as Collection: use the paying account's
+                // own site when it's tied to one, so Day Book isn't blank.
+                'site_id' => $account->site_id,
                 'narration' => "Payment to {$party->name} ({$payment->payment_no})",
                 'reference' => $payment,
                 'created_by' => Auth::id(),
