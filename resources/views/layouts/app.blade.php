@@ -494,6 +494,10 @@
                             :active="request()->routeIs('settings.approvals.*')">
                             {{ __('Approval Settings') }}
                         </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('settings.attendance.edit')"
+                            :active="request()->routeIs('settings.attendance.*')">
+                            {{ __('Attendance Settings') }}
+                        </x-sidebar-sublink>
                         @if (auth()->user()->hasRole('Super Admin'))
                         <x-sidebar-sublink :href="route('settings.ecommerce.edit')"
                             :active="request()->routeIs('settings.ecommerce.*')">

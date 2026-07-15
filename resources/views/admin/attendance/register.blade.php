@@ -30,6 +30,7 @@
                         <th class="px-5 py-3 font-semibold">{{ __('Employee') }}</th>
                         <th class="px-5 py-3 font-semibold">{{ __('Department') }}</th>
                         <th class="px-5 py-3 font-semibold">{{ __('Status') }}</th>
+                        <th class="px-5 py-3 font-semibold">{{ __('Check In Time') }}</th>
                         <th class="px-5 py-3 font-semibold">{{ __('Notes') }}</th>
                     </tr>
                 </thead>
@@ -60,6 +61,13 @@
                             </select>
                         </td>
                         <td class="px-5 py-3">
+                            <input type="time" name="records[{{ $i }}][check_in_time]" value="{{ $existing?->check_in_at?->format('H:i') }}"
+                                   class="rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
+                            @if ($existing?->is_late)
+                            <span class="ml-1 inline-flex rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-600 ring-1 ring-rose-200">{{ __('Late') }}</span>
+                            @endif
+                        </td>
+                        <td class="px-5 py-3">
                             <input type="text" name="records[{{ $i }}][notes]" value="{{ $existing->notes ?? '' }}"
                                    placeholder="{{ __('Optional') }}"
                                    class="block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
@@ -67,7 +75,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="px-5 py-10 text-center text-slate-400">{{ __('No active employees to mark attendance for.') }}</td>
+                        <td colspan="5" class="px-5 py-10 text-center text-slate-400">{{ __('No active employees to mark attendance for.') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

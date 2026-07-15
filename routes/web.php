@@ -277,6 +277,8 @@ Route::prefix('admin')->group(function () {
         Route::put('/settings/ecommerce', [SettingController::class, 'updateEcommerce'])->name('settings.ecommerce.update');
         Route::get('/settings/approvals', [SettingController::class, 'editApprovals'])->name('settings.approvals.edit');
         Route::put('/settings/approvals', [SettingController::class, 'updateApprovals'])->name('settings.approvals.update');
+        Route::get('/settings/attendance', [SettingController::class, 'editAttendance'])->name('settings.attendance.edit');
+        Route::put('/settings/attendance', [SettingController::class, 'updateAttendance'])->name('settings.attendance.update');
 
         Route::post('/site-health/refresh', [SiteHealthController::class, 'refresh'])->name('site-health.refresh');
 

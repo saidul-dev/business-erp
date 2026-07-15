@@ -56,6 +56,18 @@ class CompanySetting extends Model
         return static::firstOrCreate(['id' => 1], ['name' => config('app.name', 'Business ERP')]);
     }
 
+    /**
+     * The instant, on the given date, after which a check-in counts as
+     * late — shift start plus the configured grace period. Shared by both
+     * self check-in and HR's manual attendance register so "late" means
+     * the same thing regardless of who recorded the time.
+     */
+    public function lateThresholdFor(\Carbon\Carbon $date): \Carbon\Carbon
+    {
+        return \Carbon\Carbon::parse($date->format('Y-m-d').' '.$this->default_shift_start_time)
+            ->addMinutes($this->late_grace_minutes);
+    }
+
     public function getLogoUrlAttribute(): ?string
     {
         return $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null;

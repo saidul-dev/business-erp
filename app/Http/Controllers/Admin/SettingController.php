@@ -23,8 +23,8 @@ class SettingController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:settings.view', only: ['edit', 'editWebsite', 'editEcommerce', 'editApprovals']),
-            new Middleware('permission:settings.edit', only: ['update', 'updateWebsite', 'updateEcommerce', 'updateApprovals']),
+            new Middleware('permission:settings.view', only: ['edit', 'editWebsite', 'editEcommerce', 'editApprovals', 'editAttendance']),
+            new Middleware('permission:settings.edit', only: ['update', 'updateWebsite', 'updateEcommerce', 'updateApprovals', 'updateAttendance']),
             new Middleware('role:Super Admin', only: ['editEcommerce', 'updateEcommerce']),
         ];
     }
@@ -169,5 +169,22 @@ class SettingController extends Controller implements HasMiddleware
         ]);
 
         return redirect()->route('settings.approvals.edit')->with('success', 'Approval settings updated.');
+    }
+
+    public function editAttendance()
+    {
+        return view('admin.settings.attendance', ['company' => CompanySetting::current()]);
+    }
+
+    public function updateAttendance(Request $request)
+    {
+        $validated = $request->validate([
+            'default_shift_start_time' => ['required', 'date_format:H:i'],
+            'late_grace_minutes' => ['required', 'integer', 'min:0', 'max:180'],
+        ]);
+
+        CompanySetting::current()->update($validated);
+
+        return redirect()->route('settings.attendance.edit')->with('success', 'Attendance settings updated.');
     }
 }

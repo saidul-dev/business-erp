@@ -55,15 +55,25 @@ class AttendanceController extends Controller implements HasMiddleware
             'records' => ['required', 'array'],
             'records.*.employee_id' => ['required', 'integer', 'exists:employees,id'],
             'records.*.status' => ['required', Rule::in(AttendanceLog::STATUSES)],
+            'records.*.check_in_time' => ['nullable', 'date_format:H:i'],
             'records.*.notes' => ['nullable', 'string', 'max:500'],
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $date = Carbon::parse($validated['date']);
+        $shiftThreshold = CompanySetting::current()->lateThresholdFor($date);
+
+        DB::transaction(function () use ($validated, $date, $shiftThreshold) {
             foreach ($validated['records'] as $record) {
+                $checkInAt = ! empty($record['check_in_time'])
+                    ? Carbon::parse($date->format('Y-m-d').' '.$record['check_in_time'])
+                    : null;
+
                 AttendanceLog::updateOrCreate(
                     ['employee_id' => $record['employee_id'], 'date' => $validated['date']],
                     [
                         'status' => $record['status'],
+                        'check_in_at' => $checkInAt,
+                        'is_late' => $checkInAt ? $checkInAt->gt($shiftThreshold) : false,
                         'notes' => $record['notes'] ?? null,
                         'source' => 'manual',
                         'marked_by' => Auth::id(),
@@ -145,9 +155,7 @@ class AttendanceController extends Controller implements HasMiddleware
             return back()->with('error', 'You have already checked in today.');
         }
 
-        $settings = CompanySetting::current();
-        $shiftThreshold = Carbon::parse($today->format('Y-m-d').' '.$settings->default_shift_start_time)
-            ->addMinutes($settings->late_grace_minutes);
+        $shiftThreshold = CompanySetting::current()->lateThresholdFor($today);
 
         $log->fill([
             'status' => 'present',
