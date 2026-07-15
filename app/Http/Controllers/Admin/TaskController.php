@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\Milestone;
 use App\Models\Task;
 use App\Models\TaskComment;
+use App\Models\TaskTimeLog;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -20,7 +21,7 @@ class TaskController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:tasks.view', only: ['index', 'show']),
+            new Middleware('permission:tasks.view', only: ['index', 'show', 'storeTimeLog', 'destroyTimeLog', 'complete']),
             new Middleware('permission:tasks.create', only: ['store']),
             new Middleware('permission:tasks.edit', only: ['update', 'storeAttachment']),
             new Middleware('permission:tasks.delete', only: ['destroy']),
@@ -79,7 +80,7 @@ class TaskController extends Controller implements HasMiddleware
 
     public function show(Task $task)
     {
-        $task->load(['project', 'milestone', 'assignedEmployee', 'comments.user', 'attachments']);
+        $task->load(['project', 'milestone', 'assignedEmployee', 'comments.user', 'attachments', 'timeLogs.employee']);
 
         return view('admin.tasks.show', [
             'task' => $task,
@@ -169,6 +170,69 @@ class TaskController extends Controller implements HasMiddleware
         $attachment->delete();
 
         return back()->with('success', "Attachment \"{$attachment->label}\" removed.");
+    }
+
+    public function storeTimeLog(Request $request, Task $task)
+    {
+        abort_unless($task->assigned_employee_id === Auth::user()->employee?->id, 403, 'Only the assigned employee can log time on this task.');
+
+        $validated = $request->validate([
+            'hours' => ['required', 'numeric', 'min:0.25'],
+            'log_date' => ['required', 'date'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $task->timeLogs()->create([
+            'employee_id' => $task->assigned_employee_id,
+            'created_by' => Auth::id(),
+            ...$validated,
+        ]);
+
+        return back()->with('success', 'Time logged.');
+    }
+
+    public function destroyTimeLog(Task $task, TaskTimeLog $timeLog)
+    {
+        abort_unless($timeLog->task_id === $task->id, 404);
+        abort_unless($timeLog->employee_id === Auth::user()->employee?->id || Auth::user()->can('tasks.edit'), 403);
+
+        $timeLog->delete();
+
+        return back()->with('success', 'Time log removed.');
+    }
+
+    /**
+     * Restricted to the assigned employee only — completion is an
+     * attestation that the person who did the work is done, not a status
+     * change any manager can make on their behalf (they can still reopen
+     * via the general Edit modal if tasks.edit allows it).
+     */
+    public function complete(Request $request, Task $task)
+    {
+        abort_unless($task->assigned_employee_id === Auth::user()->employee?->id, 403, 'Only the assigned employee can complete this task.');
+
+        if (in_array($task->status, ['done', 'cancelled'])) {
+            return back()->with('error', 'This task is already closed.');
+        }
+
+        $validated = $request->validate([
+            'final_hours' => ['nullable', 'numeric', 'min:0.25'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        if (! empty($validated['final_hours'])) {
+            $task->timeLogs()->create([
+                'employee_id' => $task->assigned_employee_id,
+                'hours' => $validated['final_hours'],
+                'log_date' => now()->toDateString(),
+                'note' => $validated['note'] ?? null,
+                'created_by' => Auth::id(),
+            ]);
+        }
+
+        $task->update(['status' => 'done']);
+
+        return back()->with('success', "Task \"{$task->title}\" marked complete.");
     }
 
     protected function validated(Request $request): array

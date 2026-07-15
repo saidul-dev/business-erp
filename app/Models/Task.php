@@ -60,4 +60,14 @@ class Task extends Model
     {
         return $this->hasMany(TaskComment::class)->orderBy('created_at');
     }
+
+    public function timeLogs(): HasMany
+    {
+        return $this->hasMany(TaskTimeLog::class)->orderByDesc('log_date');
+    }
+
+    public function actualHours(): float
+    {
+        return (float) $this->timeLogs()->sum('hours');
+    }
 }

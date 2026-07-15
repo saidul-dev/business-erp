@@ -45,6 +45,10 @@
                 <dd class="mt-1 font-semibold text-slate-800">{{ number_format($project->estimated_hours, 1) }}</dd>
             </div>
             <div>
+                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Actual Hours') }}</dt>
+                <dd class="mt-1 font-semibold text-slate-800">{{ number_format($project->actualHours(), 1) }}</dd>
+            </div>
+            <div>
                 <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Client') }}</dt>
                 <dd class="mt-1 font-semibold text-slate-800">{{ $project->party->name ?? __('None — internal project') }}</dd>
             </div>

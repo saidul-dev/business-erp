@@ -247,6 +247,9 @@ Route::prefix('admin')->group(function () {
         Route::delete('/tasks/{task}/comments/{comment}', [TaskController::class, 'destroyComment'])->name('tasks.comments.destroy');
         Route::post('/tasks/{task}/attachments', [TaskController::class, 'storeAttachment'])->name('tasks.attachments.store');
         Route::delete('/tasks/{task}/attachments/{attachment}', [TaskController::class, 'destroyAttachment'])->name('tasks.attachments.destroy');
+        Route::post('/tasks/{task}/time-logs', [TaskController::class, 'storeTimeLog'])->name('tasks.time-logs.store');
+        Route::delete('/tasks/{task}/time-logs/{timeLog}', [TaskController::class, 'destroyTimeLog'])->name('tasks.time-logs.destroy');
+        Route::patch('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
 
         // Accounting foundation — see docs/accounting-foundation.md. Only
         // Bank Accounts has a CRUD screen in Phase 1; every other

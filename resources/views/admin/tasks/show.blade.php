@@ -22,10 +22,17 @@
                     @endif
                 </p>
             </div>
-            @can('tasks.edit')
-            <button type="button" @click="$dispatch('open-modal', 'task-edit')"
-                    class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Edit') }}</button>
-            @endcan
+            <div class="flex items-center gap-2">
+                @php $isAssignee = $task->assigned_employee_id === auth()->user()->employee?->id; @endphp
+                @if ($isAssignee && ! in_array($task->status, ['done', 'cancelled']))
+                <button type="button" @click="$dispatch('open-modal', 'complete-task')"
+                        class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">{{ __('Mark Complete') }}</button>
+                @endif
+                @can('tasks.edit')
+                <button type="button" @click="$dispatch('open-modal', 'task-edit')"
+                        class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Edit') }}</button>
+                @endcan
+            </div>
         </div>
     </x-slot>
 
@@ -42,6 +49,10 @@
                         <dd class="mt-1 font-semibold text-slate-800">{{ number_format($task->estimated_hours, 1) }}</dd>
                     </div>
                     <div>
+                        <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Actual Hours') }}</dt>
+                        <dd class="mt-1 font-semibold text-slate-800">{{ number_format($task->actualHours(), 1) }}</dd>
+                    </div>
+                    <div>
                         <dt class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Start Date') }}</dt>
                         <dd class="mt-1 font-semibold text-slate-800">{{ $task->start_date->format('d M, Y') }}</dd>
                     </div>
@@ -53,6 +64,42 @@
                 @if ($task->description)
                 <p class="mt-4 text-sm text-slate-600">{{ $task->description }}</p>
                 @endif
+            </div>
+
+            <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-brand-900">{{ __('Time Log') }}</h3>
+                    @if ($isAssignee && ! in_array($task->status, ['done', 'cancelled']))
+                    <button type="button" @click="$dispatch('open-modal', 'log-time')"
+                            class="rounded-lg px-2.5 py-1 text-xs font-semibold text-brand-700 ring-1 ring-brand-200 hover:bg-brand-50">{{ __('Log Time') }}</button>
+                    @endif
+                </div>
+
+                <div class="mt-3 divide-y divide-slate-100 rounded-lg ring-1 ring-slate-200">
+                    @forelse ($task->timeLogs as $timeLog)
+                    <div class="flex items-center justify-between px-4 py-2.5 text-sm">
+                        <div>
+                            <span class="font-semibold text-slate-800">{{ number_format($timeLog->hours, 1) }} {{ __('hrs') }}</span>
+                            <span class="text-slate-500">— {{ $timeLog->log_date->format('d M, Y') }}</span>
+                            @if ($timeLog->note)
+                            <p class="text-xs text-slate-400">{{ $timeLog->note }}</p>
+                            @endif
+                        </div>
+                        @if ($timeLog->employee_id === auth()->user()->employee?->id || auth()->user()->can('tasks.edit'))
+                        <form method="POST" action="{{ route('tasks.time-logs.destroy', [$task, $timeLog]) }}"
+                              onsubmit="return confirm('{{ __('Delete this time log entry?') }}');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                            </button>
+                        </form>
+                        @endif
+                    </div>
+                    @empty
+                    <p class="px-4 py-3 text-sm text-slate-400">{{ __('No time logged yet.') }}</p>
+                    @endforelse
+                </div>
             </div>
 
             <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
@@ -157,4 +204,64 @@
         </div>
     </x-modal>
     @endcan
+
+    @if ($isAssignee && ! in_array($task->status, ['done', 'cancelled']))
+    <x-modal name="log-time" max-width="md">
+        <div class="p-6">
+            <h2 class="text-lg font-bold text-brand-900">{{ __('Log Time') }}</h2>
+            <form method="POST" action="{{ route('tasks.time-logs.store', $task) }}" class="mt-4 space-y-4">
+                @csrf
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <x-input-label for="log_hours" :value="__('Hours')" />
+                        <x-text-input id="log_hours" name="hours" type="number" step="0.25" min="0.25" class="mt-1 block w-full" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('hours')" />
+                    </div>
+                    <div>
+                        <x-input-label for="log_date" :value="__('Date')" />
+                        <x-text-input id="log_date" name="log_date" type="date" class="mt-1 block w-full"
+                                      :value="now()->toDateString()" required />
+                        <x-input-error class="mt-2" :messages="$errors->get('log_date')" />
+                    </div>
+                </div>
+                <div>
+                    <x-input-label for="log_note" :value="__('Note (optional)')" />
+                    <textarea id="log_note" name="note" rows="2"
+                              class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500"></textarea>
+                    <x-input-error class="mt-2" :messages="$errors->get('note')" />
+                </div>
+                <div class="flex items-center gap-3 pt-2">
+                    <x-primary-button>{{ __('Log Time') }}</x-primary-button>
+                    <button type="button" x-on:click="$dispatch('close')" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Cancel') }}</button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
+
+    <x-modal name="complete-task" max-width="md">
+        <div class="p-6">
+            <h2 class="text-lg font-bold text-brand-900">{{ __('Mark Complete') }}</h2>
+            <p class="text-xs text-slate-400 mt-0.5">{{ __('Optionally log any remaining hours before closing this task out.') }}</p>
+            <form method="POST" action="{{ route('tasks.complete', $task) }}" class="mt-4 space-y-4">
+                @csrf
+                @method('PATCH')
+                <div>
+                    <x-input-label for="final_hours" :value="__('Final Hours (optional)')" />
+                    <x-text-input id="final_hours" name="final_hours" type="number" step="0.25" min="0.25" class="mt-1 block w-full" />
+                    <x-input-error class="mt-2" :messages="$errors->get('final_hours')" />
+                </div>
+                <div>
+                    <x-input-label for="complete_note" :value="__('Note (optional)')" />
+                    <textarea id="complete_note" name="note" rows="2"
+                              class="mt-1 block w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500"></textarea>
+                    <x-input-error class="mt-2" :messages="$errors->get('note')" />
+                </div>
+                <div class="flex items-center gap-3 pt-2">
+                    <x-primary-button class="!bg-emerald-600 hover:!bg-emerald-700">{{ __('Mark Complete') }}</x-primary-button>
+                    <button type="button" x-on:click="$dispatch('close')" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Cancel') }}</button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
+    @endif
 </x-app-layout>

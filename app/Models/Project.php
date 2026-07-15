@@ -6,6 +6,7 @@ use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Project extends Model
 {
@@ -79,5 +80,15 @@ class Project extends Model
     public function remainingBudget(): ?float
     {
         return $this->budget_amount === null ? null : (float) $this->budget_amount - $this->collectedAmount();
+    }
+
+    public function timeLogs(): HasManyThrough
+    {
+        return $this->hasManyThrough(TaskTimeLog::class, Task::class);
+    }
+
+    public function actualHours(): float
+    {
+        return (float) $this->timeLogs()->sum('hours');
     }
 }
