@@ -310,15 +310,32 @@
                     @endcan
 
                     @can('tasks.view')
-                    <x-sidebar-link href="#" :title="__('Tasks')">
-                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                        <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Tasks')
-                            }}</span>
-                    </x-sidebar-link>
+                    <x-sidebar-dropdown :title="__('Tasks')" :active="request()->routeIs('projects.*', 'tasks.*')">
+                        <x-slot name="icon">
+                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                        </x-slot>
+
+                        @can('projects.create')
+                        <x-sidebar-sublink :href="route('projects.create')" :active="request()->routeIs('projects.create')">
+                            {{ __('New Project') }}
+                        </x-sidebar-sublink>
+                        @endcan
+
+                        @can('projects.view')
+                        <x-sidebar-sublink :href="route('projects.index')"
+                            :active="request()->routeIs('projects.index', 'projects.show', 'projects.edit')">
+                            {{ __('Project List') }}
+                        </x-sidebar-sublink>
+                        @endcan
+
+                        <x-sidebar-sublink :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
+                            {{ __('Tasks') }}
+                        </x-sidebar-sublink>
+                    </x-sidebar-dropdown>
                     @endcan
 
                     @can('hrm.view')

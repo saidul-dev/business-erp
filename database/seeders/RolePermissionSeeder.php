@@ -29,6 +29,7 @@ class RolePermissionSeeder extends Seeder
         'parties'   => ['view', 'create', 'edit', 'delete'],
         'accounts'  => ['view', 'create', 'edit', 'delete', 'approve'],
         'delivery'  => ['view', 'create', 'edit', 'delete'],
+        'projects'  => ['view', 'create', 'edit', 'delete'],
         'tasks'     => ['view', 'create', 'edit', 'delete'],
         'hrm'       => ['view', 'create', 'edit', 'delete', 'approve'],
         'reports'   => ['view'],
@@ -69,6 +70,7 @@ class RolePermissionSeeder extends Seeder
             'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.approve',
             'parties.view', 'parties.create', 'parties.edit',
             'delivery.view', 'delivery.create', 'delivery.edit',
+            'projects.view', 'projects.create', 'projects.edit',
             'tasks.view', 'tasks.create', 'tasks.edit',
             // "Manager (own team only)" — view/approve their direct reports'
             // attendance & leave (Employee::visibleTo scopes this), but not
@@ -79,6 +81,7 @@ class RolePermissionSeeder extends Seeder
 
         Role::findOrCreate('HR')->syncPermissions([
             'hrm.view', 'hrm.create', 'hrm.edit', 'hrm.approve',
+            'projects.view', 'projects.create', 'projects.edit',
             'tasks.view', 'tasks.create', 'tasks.edit',
             'parties.view',
             'reports.view',

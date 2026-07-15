@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\InitialStockController;
 use App\Http\Controllers\Admin\LeaveRequestController;
 use App\Http\Controllers\Admin\LeaveTypeController;
 use App\Http\Controllers\Admin\LedgerAccountController;
+use App\Http\Controllers\Admin\MilestoneController;
 use App\Http\Controllers\Admin\PartyController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PayrollRunController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductReviewController;
 use App\Http\Controllers\Admin\ProfitLossController;
+use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\PurchaseController;
 use App\Http\Controllers\Admin\PurchaseRequisitionController;
 use App\Http\Controllers\Admin\RoleController;
@@ -44,6 +46,7 @@ use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\StockAdjustmentController;
 use App\Http\Controllers\Admin\StockReportController;
 use App\Http\Controllers\Admin\StockTransferController;
+use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\TrialBalanceController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
@@ -231,6 +234,19 @@ Route::prefix('admin')->group(function () {
         Route::patch('/payroll-runs/{payrollRun}/approve', [PayrollRunController::class, 'approve'])->name('payroll-runs.approve');
         Route::patch('/payroll-runs/{payrollRun}/items/{item}', [PayrollRunController::class, 'updateItem'])->name('payroll-runs.items.update');
         Route::get('/payroll-runs/items/{item}/payslip', [PayrollRunController::class, 'payslip'])->name('payroll-runs.items.payslip');
+
+        // Project & Task Management — Project > Milestone > Task, with
+        // Tasks also allowed to exist standalone (no project/milestone).
+        Route::resource('projects', ProjectController::class);
+        Route::post('/projects/{project}/milestones', [MilestoneController::class, 'store'])->name('projects.milestones.store');
+        Route::patch('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'update'])->name('projects.milestones.update');
+        Route::delete('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'destroy'])->name('projects.milestones.destroy');
+
+        Route::resource('tasks', TaskController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+        Route::post('/tasks/{task}/comments', [TaskController::class, 'storeComment'])->name('tasks.comments.store');
+        Route::delete('/tasks/{task}/comments/{comment}', [TaskController::class, 'destroyComment'])->name('tasks.comments.destroy');
+        Route::post('/tasks/{task}/attachments', [TaskController::class, 'storeAttachment'])->name('tasks.attachments.store');
+        Route::delete('/tasks/{task}/attachments/{attachment}', [TaskController::class, 'destroyAttachment'])->name('tasks.attachments.destroy');
 
         // Accounting foundation — see docs/accounting-foundation.md. Only
         // Bank Accounts has a CRUD screen in Phase 1; every other
