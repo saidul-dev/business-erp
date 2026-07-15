@@ -35,13 +35,13 @@
                             <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Category') }}</p>
                             <div class="space-y-1.5">
                                 <label class="flex items-center gap-2 text-sm text-slate-600">
-                                    <input type="radio" name="category_id" value="" class="text-accent-600 focus:ring-accent-500" @checked(! $categoryId)>
+                                    <input type="radio" name="category_id" value="" class="text-accent-600 focus:ring-accent-500" @checked(! $categoryId) onchange="this.form.submit()">
                                     {{ __('All Categories') }}
                                 </label>
                                 @foreach ($categories as $category)
                                 <label class="flex items-center justify-between gap-2 text-sm text-slate-600">
                                     <span class="flex items-center gap-2">
-                                        <input type="radio" name="category_id" value="{{ $category->id }}" class="text-accent-600 focus:ring-accent-500" @checked($categoryId === $category->id)>
+                                        <input type="radio" name="category_id" value="{{ $category->id }}" class="text-accent-600 focus:ring-accent-500" @checked($categoryId === $category->id) onchange="this.form.submit()">
                                         {{ $category->name }}
                                     </span>
                                     <span class="text-xs text-slate-400">{{ $category->products_count }}</span>
@@ -56,12 +56,12 @@
                             <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Brand') }}</p>
                             <div class="space-y-1.5">
                                 <label class="flex items-center gap-2 text-sm text-slate-600">
-                                    <input type="radio" name="brand_id" value="" class="text-accent-600 focus:ring-accent-500" @checked(! $brandId)>
+                                    <input type="radio" name="brand_id" value="" class="text-accent-600 focus:ring-accent-500" @checked(! $brandId) onchange="this.form.submit()">
                                     {{ __('All Brands') }}
                                 </label>
                                 @foreach ($brands as $brand)
                                 <label class="flex items-center gap-2 text-sm text-slate-600">
-                                    <input type="radio" name="brand_id" value="{{ $brand->id }}" class="text-accent-600 focus:ring-accent-500" @checked($brandId === $brand->id)>
+                                    <input type="radio" name="brand_id" value="{{ $brand->id }}" class="text-accent-600 focus:ring-accent-500" @checked($brandId === $brand->id) onchange="this.form.submit()">
                                     {{ $brand->name }}
                                 </label>
                                 @endforeach
@@ -82,7 +82,7 @@
 
                         <div>
                             <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Sort By') }}</p>
-                            <select name="sort" class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
+                            <select name="sort" onchange="this.form.submit()" class="w-full rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                                 <option value="newest" @selected($sort === 'newest')>{{ __('Newest') }}</option>
                                 <option value="price_asc" @selected($sort === 'price_asc')>{{ __('Price: Low to High') }}</option>
                                 <option value="price_desc" @selected($sort === 'price_desc')>{{ __('Price: High to Low') }}</option>
