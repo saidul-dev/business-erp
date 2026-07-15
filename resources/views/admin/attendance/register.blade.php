@@ -35,10 +35,17 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($employees as $i => $employee)
-                    @php $existing = $employee->attendanceLogs->first(); @endphp
+                    @php
+                        $existing = $employee->attendanceLogs->first();
+                        $onApprovedLeave = $employee->leaveRequests->isNotEmpty();
+                        $defaultStatus = $existing->status ?? ($onApprovedLeave ? 'leave' : 'present');
+                    @endphp
                     <tr class="hover:bg-slate-50">
                         <td class="px-5 py-3 font-semibold text-slate-800">
                             {{ $employee->name }}
+                            @if ($onApprovedLeave)
+                            <span class="ml-1 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-600 ring-1 ring-amber-200">{{ __('On Approved Leave') }}</span>
+                            @endif
                             <input type="hidden" name="records[{{ $i }}][employee_id]" value="{{ $employee->id }}">
                         </td>
                         <td class="px-5 py-3 text-slate-600">{{ $employee->department?->name ?? '—' }}</td>
@@ -46,7 +53,7 @@
                             <select name="records[{{ $i }}][status]"
                                     class="rounded-lg border-slate-300 text-sm focus:border-accent-500 focus:ring-accent-500">
                                 @foreach (\App\Models\AttendanceLog::STATUSES as $status)
-                                    <option value="{{ $status }}" @selected(($existing->status ?? 'present') === $status)>
+                                    <option value="{{ $status }}" @selected($defaultStatus === $status)>
                                         {{ ucfirst(str_replace('_', ' ', $status)) }}
                                     </option>
                                 @endforeach

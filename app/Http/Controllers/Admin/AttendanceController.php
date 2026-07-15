@@ -7,6 +7,7 @@ use App\Models\AttendanceLog;
 use App\Models\CompanySetting;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\LeaveRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -31,7 +32,13 @@ class AttendanceController extends Controller implements HasMiddleware
 
         $employees = Employee::visibleTo(Auth::user())
             ->where('employment_status', 'active')
-            ->with(['department', 'attendanceLogs' => fn ($q) => $q->whereDate('date', $date)])
+            ->with([
+                'department',
+                'attendanceLogs' => fn ($q) => $q->whereDate('date', $date),
+                'leaveRequests' => fn ($q) => $q->where('status', 'approved')
+                    ->whereDate('from_date', '<=', $date)
+                    ->whereDate('to_date', '>=', $date),
+            ])
             ->orderBy('name')
             ->get();
 
@@ -121,6 +128,17 @@ class AttendanceController extends Controller implements HasMiddleware
         abort_unless($employee, 403, "No employee profile is linked to your login.");
 
         $today = today();
+
+        $onApprovedLeave = LeaveRequest::where('employee_id', $employee->id)
+            ->where('status', 'approved')
+            ->whereDate('from_date', '<=', $today)
+            ->whereDate('to_date', '>=', $today)
+            ->exists();
+
+        if ($onApprovedLeave) {
+            return back()->with('error', 'You have an approved leave today — check-in is disabled.');
+        }
+
         $log = AttendanceLog::firstOrNew(['employee_id' => $employee->id, 'date' => $today]);
 
         if ($log->exists && $log->check_in_at) {
