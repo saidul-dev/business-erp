@@ -61,7 +61,7 @@
             <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
                 @foreach ($categories as $category)
                 <a href="{{ route('shop', ['category_id' => $category->id]) }}" class="flex flex-col items-center gap-2 rounded-xl p-3 text-center hover:bg-slate-50">
-                    <span class="grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-brand-50 text-brand-700 ring-1 ring-brand-100">
+                    <span class="grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-brand-50 p-2.5 text-brand-700 ring-1 ring-brand-100">
                         @if ($category->icon_url)
                             <img src="{{ $category->icon_url }}" alt="{{ $category->name }}" class="h-full w-full object-cover">
                         @else
