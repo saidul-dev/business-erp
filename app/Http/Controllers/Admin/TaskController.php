@@ -28,14 +28,13 @@ class TaskController extends Controller implements HasMiddleware
     }
 
     /**
-     * Standalone/general tasks only — project-linked tasks are managed
-     * inline on their Project's show page, not listed here.
+     * Every task, project-linked or standalone — an employee assigned to
+     * a task under a project they can't otherwise see (no projects.view)
+     * still needs one place to find everything on their plate.
      */
     public function index(Request $request)
     {
-        $tasks = Task::with('assignedEmployee')
-            ->whereNull('project_id')
-            ->whereNull('milestone_id')
+        $tasks = Task::with(['assignedEmployee', 'project', 'milestone'])
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->when($request->filled('priority'), fn ($q) => $q->where('priority', $request->priority))
             ->when($request->filled('assigned_employee_id'), fn ($q) => $q->where('assigned_employee_id', $request->assigned_employee_id))
@@ -85,7 +84,6 @@ class TaskController extends Controller implements HasMiddleware
         return view('admin.tasks.show', [
             'task' => $task,
             'employees' => Employee::where('employment_status', 'active')->orderBy('name')->get(),
-            'milestones' => $task->project?->milestones ?? collect(),
             'statuses' => $this->enumOptions(Task::STATUSES),
             'priorities' => $this->enumOptions(Task::PRIORITIES),
         ]);

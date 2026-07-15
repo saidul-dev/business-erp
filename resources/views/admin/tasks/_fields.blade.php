@@ -8,18 +8,6 @@
      modal's fields too. Safer to always show the real default/current
      value and let the user retype on a validation error. --}}
 
-@isset($milestones)
-@if ($milestones->isNotEmpty())
-<div>
-    <x-input-label :value="__('Milestone (optional)')" />
-    <x-searchable-select name="milestone_id" :options="$milestones" :selected="$task?->milestone_id"
-                          placeholder="{{ __('Make this a standalone task…') }}" />
-    <p class="mt-1 text-xs text-slate-400">{{ __('Leave blank to make this a standalone task, unlinked from the project.') }}</p>
-    <x-input-error class="mt-2" :messages="$errors->get('milestone_id')" />
-</div>
-@endif
-@endisset
-
 <div>
     <x-input-label for="task_title_{{ $idPrefix }}" :value="__('Task Title')" />
     <x-text-input id="task_title_{{ $idPrefix }}" name="title" type="text" class="mt-1 block w-full"

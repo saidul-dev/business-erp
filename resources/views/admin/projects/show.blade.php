@@ -117,7 +117,12 @@
                     <td class="px-5 py-2.5 text-slate-600">{{ $task->assignedEmployee->name }}</td>
                     <td class="px-5 py-2.5 text-slate-600">{{ $task->due_date->format('d M, Y') }}</td>
                     <td class="px-5 py-2.5 text-slate-600">{{ ucfirst($task->priority) }}</td>
-                    <td class="px-5 py-2.5 text-slate-600">{{ ucfirst(str_replace('_', ' ', $task->status)) }}</td>
+                    <td class="px-5 py-2.5">
+                        <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1
+                            {{ $task->status === 'done' ? 'bg-emerald-50 text-emerald-600 ring-emerald-200' : ($task->status === 'cancelled' ? 'bg-rose-50 text-rose-600 ring-rose-200' : 'bg-amber-50 text-amber-600 ring-amber-200') }}">
+                            {{ ucfirst(str_replace('_', ' ', $task->status)) }}
+                        </span>
+                    </td>
                     <td class="px-5 py-2.5 text-right">
                         <div class="flex items-center justify-end gap-2">
                             @can('tasks.edit')

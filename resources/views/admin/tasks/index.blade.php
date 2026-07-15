@@ -4,7 +4,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-brand-900">{{ __('Tasks') }}</h2>
-                <p class="text-sm text-slate-500 mt-0.5">{{ __('Standalone tasks not tied to any project') }}</p>
+                <p class="text-sm text-slate-500 mt-0.5">{{ __('Every task assigned to you or your team, project-linked or standalone') }}</p>
             </div>
             @can('tasks.create')
             <button type="button" @click="$dispatch('open-modal', 'task-create')"
@@ -42,6 +42,7 @@
             <thead>
                 <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                     <th class="px-5 py-3 font-semibold">{{ __('Task') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Project') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Assignee') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Due Date') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Priority') }}</th>
@@ -55,10 +56,23 @@
                     <td class="px-5 py-3 font-semibold text-slate-800">
                         <a href="{{ route('tasks.show', $task) }}" class="hover:text-accent-700 hover:underline">{{ $task->title }}</a>
                     </td>
+                    <td class="px-5 py-3 text-slate-600">
+                        @if ($task->project)
+                            <a href="{{ route('projects.show', $task->project) }}" class="hover:underline">{{ $task->project->name }}</a>
+                            @if ($task->milestone) <span class="text-xs text-slate-400">· {{ $task->milestone->name }}</span> @endif
+                        @else
+                            <span class="text-slate-400">{{ __('Standalone') }}</span>
+                        @endif
+                    </td>
                     <td class="px-5 py-3 text-slate-600">{{ $task->assignedEmployee->name }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $task->due_date->format('d M, Y') }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ ucfirst($task->priority) }}</td>
-                    <td class="px-5 py-3 text-slate-600">{{ ucfirst(str_replace('_', ' ', $task->status)) }}</td>
+                    <td class="px-5 py-3">
+                        <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1
+                            {{ $task->status === 'done' ? 'bg-emerald-50 text-emerald-600 ring-emerald-200' : ($task->status === 'cancelled' ? 'bg-rose-50 text-rose-600 ring-rose-200' : 'bg-amber-50 text-amber-600 ring-amber-200') }}">
+                            {{ ucfirst(str_replace('_', ' ', $task->status)) }}
+                        </span>
+                    </td>
                     <td class="px-5 py-3 text-right">
                         <div class="flex items-center justify-end gap-2">
                             <a href="{{ route('tasks.show', $task) }}" class="rounded-lg px-2.5 py-1 text-xs font-semibold text-brand-700 ring-1 ring-brand-200 hover:bg-brand-50">{{ __('View') }}</a>
@@ -75,7 +89,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-5 py-10 text-center text-slate-400">{{ __('No standalone tasks yet.') }}</td>
+                    <td colspan="7" class="px-5 py-10 text-center text-slate-400">{{ __('No tasks yet.') }}</td>
                 </tr>
                 @endforelse
             </tbody>

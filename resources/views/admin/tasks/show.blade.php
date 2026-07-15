@@ -135,10 +135,20 @@
     <x-modal name="task-edit" max-width="lg" :show="$errors->any()">
         <div class="p-6">
             <h2 class="text-lg font-bold text-brand-900">{{ __('Edit Task') }}</h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+                {{ __('Project') }}:
+                @if ($task->project)
+                    {{ $task->project->name }}{{ $task->milestone ? ' · '.$task->milestone->name : '' }}
+                @else
+                    {{ __('Standalone task') }}
+                @endif
+                <span class="italic">({{ __('read-only') }})</span>
+            </p>
             <form method="POST" action="{{ route('tasks.update', $task) }}" class="mt-4 space-y-4">
                 @csrf
                 @method('PUT')
-                @include('admin.tasks._fields', ['milestones' => $milestones])
+                <input type="hidden" name="milestone_id" value="{{ $task->milestone_id }}">
+                @include('admin.tasks._fields')
                 <div class="flex items-center gap-3 pt-2">
                     <x-primary-button>{{ __('Save Changes') }}</x-primary-button>
                     <button type="button" x-on:click="$dispatch('close')" class="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">{{ __('Cancel') }}</button>
