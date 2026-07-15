@@ -49,17 +49,17 @@
                     <td class="px-4 py-3 font-semibold text-slate-800">{{ $item->employee->name }}</td>
                     <td class="px-4 py-3 text-right text-slate-600">{{ number_format($item->gross_amount, 2) }}</td>
                     @if ($payrollRun->status === 'draft')
-                    <td class="px-4 py-3">
+                    <td class="px-4 py-3 text-center">
                         <input form="item-form-{{ $item->id }}" type="number" step="0.5" min="0" name="absence_days" value="{{ $item->absence_days }}"
-                               class="w-20 rounded-lg border-slate-300 text-sm text-center focus:border-accent-500 focus:ring-accent-500">
+                               class="w-20 mx-auto rounded-lg border-slate-300 text-sm text-center focus:border-accent-500 focus:ring-accent-500">
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="px-4 py-3 text-right">
                         <input form="item-form-{{ $item->id }}" type="number" step="0.01" min="0" name="absence_deduction" value="{{ $item->absence_deduction }}"
-                               class="w-28 rounded-lg border-slate-300 text-sm text-right focus:border-accent-500 focus:ring-accent-500">
+                               class="w-28 ml-auto rounded-lg border-slate-300 text-sm text-right focus:border-accent-500 focus:ring-accent-500">
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="px-4 py-3 text-right">
                         <input form="item-form-{{ $item->id }}" type="number" step="0.01" min="0" name="advance_recovery" value="{{ $item->advance_recovery }}"
-                               class="w-28 rounded-lg border-slate-300 text-sm text-right focus:border-accent-500 focus:ring-accent-500">
+                               class="w-28 ml-auto rounded-lg border-slate-300 text-sm text-right focus:border-accent-500 focus:ring-accent-500">
                     </td>
                     <td class="px-4 py-3 text-right font-semibold text-slate-800">{{ number_format($item->net_amount, 2) }}</td>
                     <td class="px-4 py-3">
