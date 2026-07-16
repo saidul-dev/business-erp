@@ -340,6 +340,7 @@ Alpine.data('quotationCart', (initial) => ({
 }));
 
 Alpine.data('posTerminal', (initial) => ({
+    siteId: initial.siteId,
     accounts: initial.accounts || [],
     productsUrl: initial.productsUrl,
     checkoutUrl: initial.checkoutUrl,
@@ -347,8 +348,11 @@ Alpine.data('posTerminal', (initial) => ({
 
     query: '',
     results: [],
+    highlightedIndex: -1,
     searching: false,
     searchTimer: null,
+    scanFeedback: '',
+    scanFeedbackTimer: null,
 
     cart: [],
     customer: null,
@@ -357,6 +361,8 @@ Alpine.data('posTerminal', (initial) => ({
     cashTendered: '',
     referenceNo: '',
 
+    heldSales: [],
+
     newCustomerName: '',
     newCustomerPhone: '',
     customerError: '',
@@ -364,6 +370,115 @@ Alpine.data('posTerminal', (initial) => ({
 
     submitting: false,
     checkoutError: '',
+
+    init() {
+        this.loadHeldSales();
+        // Deferred: $refs to child x-data components (the customer
+        // searchable-select) aren't registered yet while this element's
+        // own init() is still running — Alpine walks the DOM top-down.
+        this.$nextTick(() => this.loadDraft());
+        this.$watch('cart', () => this.saveDraft());
+        this.$watch('customer', () => this.saveDraft());
+        this.$watch('discount', () => this.saveDraft());
+    },
+
+    draftKey() {
+        return `pos_draft_${this.siteId}`;
+    },
+
+    heldKey() {
+        return `pos_held_${this.siteId}`;
+    },
+
+    saveDraft() {
+        localStorage.setItem(this.draftKey(), JSON.stringify({
+            cart: this.cart,
+            customer: this.customer,
+            discount: this.discount,
+        }));
+    },
+
+    loadDraft() {
+        const raw = localStorage.getItem(this.draftKey());
+        if (! raw) return;
+        try {
+            const draft = JSON.parse(raw);
+            this.cart = draft.cart || [];
+            this.customer = draft.customer || null;
+            this.discount = draft.discount || '';
+            this.syncCustomerSelect();
+        } catch (e) { /* corrupt draft, ignore */ }
+    },
+
+    loadHeldSales() {
+        try {
+            this.heldSales = JSON.parse(localStorage.getItem(this.heldKey()) || '[]');
+        } catch (e) {
+            this.heldSales = [];
+        }
+    },
+
+    saveHeldSales() {
+        localStorage.setItem(this.heldKey(), JSON.stringify(this.heldSales));
+    },
+
+    holdSale() {
+        if (! this.cart.length) return;
+        this.heldSales.push({
+            id: Date.now(),
+            cart: this.cart,
+            customer: this.customer,
+            discount: this.discount,
+            heldAt: new Date().toLocaleString(),
+        });
+        this.saveHeldSales();
+        this.cart = [];
+        this.customer = null;
+        this.discount = '';
+        this.syncCustomerSelect();
+        this.$refs.scanInput?.focus();
+    },
+
+    openHeldSales() {
+        window.dispatchEvent(new CustomEvent('open-modal', { detail: 'pos-held-sales' }));
+    },
+
+    resumeHeld(id) {
+        const held = this.heldSales.find((h) => h.id === id);
+        if (! held) return;
+        this.cart = held.cart;
+        this.customer = held.customer;
+        this.discount = held.discount;
+        this.syncCustomerSelect();
+        this.heldSales = this.heldSales.filter((h) => h.id !== id);
+        this.saveHeldSales();
+        window.dispatchEvent(new CustomEvent('close-modal', { detail: 'pos-held-sales' }));
+        this.$refs.scanInput?.focus();
+    },
+
+    deleteHeld(id) {
+        this.heldSales = this.heldSales.filter((h) => h.id !== id);
+        this.saveHeldSales();
+    },
+
+    syncCustomerSelect() {
+        const el = this.$refs.customerSelect;
+        if (! el || ! window.Alpine) return;
+        window.Alpine.$data(el).select(this.customer
+            ? { id: String(this.customer.id), name: `${this.customer.name} — ${this.customer.phone}` }
+            : null);
+    },
+
+    selectCustomer(opt) {
+        this.customer = opt ? { id: opt.id, name: opt.name.split(' — ')[0], phone: opt.phone } : null;
+    },
+
+    handleShortcut(event) {
+        if (event.key === 'F9') {
+            event.preventDefault();
+            this.checkout();
+        }
+    },
 
     get selectedAccount() {
         return this.accounts.find((a) => a.id === this.selectedAccountId) || null;
@@ -388,6 +503,7 @@ Alpine.data('posTerminal', (initial) => ({
     search() {
         clearTimeout(this.searchTimer);
         const q = this.query.trim();
+        this.highlightedIndex = -1;
         if (!q) {
             this.results = [];
             return;
@@ -400,10 +516,35 @@ Alpine.data('posTerminal', (initial) => ({
         }, 250);
     },
 
+    moveHighlight(delta) {
+        if (! this.results.length) return;
+        const next = (this.highlightedIndex < 0 ? -1 : this.highlightedIndex) + delta;
+        this.highlightedIndex = Math.max(0, Math.min(this.results.length - 1, next));
+    },
+
+    // A barcode scanner types the code then sends Enter almost instantly —
+    // often faster than the 250ms debounce above resolves — so Enter always
+    // cancels any pending debounce and fires an immediate lookup instead of
+    // trusting whatever `results` happens to hold at that moment.
     handleEnter() {
-        if (this.results.length === 1) {
-            this.addResult(this.results[0]);
+        clearTimeout(this.searchTimer);
+        if (this.highlightedIndex >= 0 && this.results[this.highlightedIndex]) {
+            this.addResult(this.results[this.highlightedIndex]);
+            return;
         }
+        const q = this.query.trim();
+        if (! q) return;
+        this.searching = true;
+        axios.get(this.productsUrl, { params: { q } })
+            .then((res) => {
+                this.results = res.data.results;
+                if (this.results.length === 1) {
+                    this.addResult(this.results[0]);
+                } else if (this.results.length > 1) {
+                    this.highlightedIndex = 0;
+                }
+            })
+            .finally(() => { this.searching = false; });
     },
 
     addResult(item) {
@@ -422,7 +563,15 @@ Alpine.data('posTerminal', (initial) => ({
         }
         this.query = '';
         this.results = [];
+        this.highlightedIndex = -1;
+        this.flashScan(item.name);
         this.$refs.scanInput?.focus();
+    },
+
+    flashScan(name) {
+        clearTimeout(this.scanFeedbackTimer);
+        this.scanFeedback = `${name} added`;
+        this.scanFeedbackTimer = setTimeout(() => { this.scanFeedback = ''; }, 1200);
     },
 
     incQty(row) {
@@ -439,6 +588,7 @@ Alpine.data('posTerminal', (initial) => ({
 
     selectWalkIn() {
         this.customer = null;
+        this.syncCustomerSelect();
     },
 
     openNewCustomer() {
@@ -454,6 +604,11 @@ Alpine.data('posTerminal', (initial) => ({
         axios.post(this.customersUrl, { name: this.newCustomerName, phone: this.newCustomerPhone })
             .then((res) => {
                 this.customer = res.data;
+                const el = this.$refs.customerSelect;
+                if (el && window.Alpine) {
+                    window.Alpine.$data(el).options.push({ id: String(res.data.id), name: `${res.data.name} — ${res.data.phone}`, phone: res.data.phone });
+                }
+                this.syncCustomerSelect();
                 window.dispatchEvent(new CustomEvent('close-modal', { detail: 'pos-new-customer' }));
             })
             .catch((err) => {
@@ -484,6 +639,8 @@ Alpine.data('posTerminal', (initial) => ({
                 this.discount = '';
                 this.cashTendered = '';
                 this.referenceNo = '';
+                this.syncCustomerSelect();
+                localStorage.removeItem(this.draftKey());
                 this.$refs.scanInput?.focus();
             })
             .catch((err) => {

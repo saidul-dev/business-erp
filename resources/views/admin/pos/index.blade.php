@@ -14,25 +14,39 @@
     </div>
     @else
     <div x-data="posTerminal(@js([
+            'siteId' => $siteId,
             'accounts' => $accounts,
+            'customers' => $customers,
             'productsUrl' => route('pos.products'),
             'checkoutUrl' => route('pos.checkout'),
             'customersUrl' => route('pos.customers.store'),
-        ]))" class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        ]))" @keydown.window="handleShortcut($event)" class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+
+        <!-- Scan-added toast -->
+        <div x-show="scanFeedback" x-cloak x-transition
+             class="fixed top-4 right-4 z-50 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg">
+            ✓ <span x-text="scanFeedback"></span>
+        </div>
 
         <!-- Left: scan/search + cart -->
         <div class="lg:col-span-2 space-y-4">
             <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
                 <div class="relative">
-                    <input x-ref="scanInput" x-model="query" @input="search()" @keydown.enter.prevent="handleEnter()"
+                    <svg class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5v15m3-15v15m3.75-15v15M13.5 4.5v15m2.25-15v15m3-15v15m2.25-15v15" />
+                    </svg>
+                    <input x-ref="scanInput" x-model="query" @input="search()"
+                           @keydown.enter.prevent="handleEnter()"
+                           @keydown.down.prevent="moveHighlight(1)" @keydown.up.prevent="moveHighlight(-1)"
+                           @keydown.escape="query = ''; results = []"
                            autofocus placeholder="{{ __('Scan a barcode or type a product name / SKU…') }}"
-                           class="block w-full rounded-lg border-slate-300 text-base py-3 focus:border-accent-500 focus:ring-accent-500">
+                           class="block w-full rounded-lg border-slate-300 text-base py-3 pl-11 focus:border-accent-500 focus:ring-accent-500">
                     <div x-show="results.length" x-cloak
                          class="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto rounded-xl bg-white py-1.5 shadow-lg ring-1 ring-slate-200">
-                        <template x-for="opt in results" :key="opt.id">
-                            <div @click="addResult(opt)"
-                                 class="flex cursor-pointer items-center justify-between gap-3 px-4 py-2 text-sm hover:bg-slate-50"
-                                 :class="opt.available_qty <= 0 && 'opacity-40 pointer-events-none'">
+                        <template x-for="(opt, idx) in results" :key="opt.id">
+                            <div @click="addResult(opt)" @mouseenter="highlightedIndex = idx"
+                                 class="flex cursor-pointer items-center justify-between gap-3 px-4 py-2 text-sm"
+                                 :class="[opt.available_qty <= 0 && 'opacity-40 pointer-events-none', idx === highlightedIndex ? 'bg-accent-50' : 'hover:bg-slate-50']">
                                 <span>
                                     <span x-text="opt.name" class="text-slate-700 font-medium"></span>
                                     <span class="block text-xs text-slate-400" x-text="(opt.available_qty ?? 0) + ' ' + (opt.unit || '') + ' available'"></span>
@@ -42,6 +56,7 @@
                         </template>
                     </div>
                 </div>
+                <p class="mt-2 text-xs text-slate-400">{{ __('↑↓ to navigate, Enter to add, Esc to clear, F9 to checkout') }}</p>
             </div>
 
             <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
@@ -91,14 +106,30 @@
         <!-- Right: customer + payment + checkout -->
         <div class="space-y-4">
             <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-                <x-input-label :value="__('Customer')" />
-                <div class="mt-2 flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-                    <span class="text-sm font-semibold text-slate-700" x-text="customer ? customer.name + ' (' + customer.phone + ')' : '{{ __('Walk-in Customer') }}'"></span>
+                <div class="flex items-center justify-between">
+                    <x-input-label :value="__('Customer')" />
                     <button type="button" x-show="customer" x-cloak @click="selectWalkIn()" class="text-xs font-semibold text-slate-400 hover:text-rose-600">{{ __('Clear') }}</button>
+                </div>
+                <div class="mt-1">
+                    <x-searchable-select name="party_id" :options="$customers" :extra="['phone']"
+                                          placeholder="{{ __('Walk-in Customer') }}"
+                                          x-ref="customerSelect"
+                                          x-on:option-selected-party_id="selectCustomer($event.detail)" />
                 </div>
                 <button type="button" @click="openNewCustomer()"
                         class="mt-2 w-full rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
                     {{ __('+ New Customer') }}
+                </button>
+            </div>
+
+            <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+                <button type="button" @click="openHeldSales()"
+                        class="flex w-full items-center justify-between rounded-lg px-1 py-1 text-sm font-semibold text-slate-600 hover:text-brand-800">
+                    <span>{{ __('Held Sales') }}</span>
+                    <span x-show="heldSales.length" x-cloak
+                          class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-xs font-bold text-white"
+                          x-text="heldSales.length"></span>
+                    <span x-show="!heldSales.length" x-cloak class="text-xs font-normal text-slate-400">{{ __('None') }}</span>
                 </button>
             </div>
 
@@ -146,13 +177,46 @@
 
                 <p x-show="checkoutError" x-cloak x-text="checkoutError" class="mt-3 text-sm text-rose-600"></p>
 
-                <button type="button" @click="checkout()" :disabled="cart.length === 0 || submitting"
-                        class="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-brand-800 px-4 py-3 text-base font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50">
-                    <span x-show="!submitting">{{ __('Checkout & Print') }}</span>
-                    <span x-show="submitting" x-cloak>{{ __('Processing…') }}</span>
-                </button>
+                <div class="mt-4 flex gap-2">
+                    <button type="button" @click="holdSale()" :disabled="cart.length === 0"
+                            class="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
+                        {{ __('Hold Sale') }}
+                    </button>
+                    <button type="button" @click="checkout()" :disabled="cart.length === 0 || submitting"
+                            class="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-brand-800 px-4 py-3 text-base font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50">
+                        <span x-show="!submitting">{{ __('Checkout & Print') }}</span>
+                        <span x-show="submitting" x-cloak>{{ __('Processing…') }}</span>
+                    </button>
+                </div>
+                <p class="mt-2 text-right text-xs text-slate-400">{{ __('F9') }}</p>
             </div>
         </div>
+
+        <x-modal name="pos-held-sales" max-width="lg" focusable>
+            <div class="p-6">
+                <h2 class="text-lg font-bold text-brand-900">{{ __('Held Sales') }}</h2>
+                <div class="mt-4 max-h-96 space-y-2 overflow-y-auto">
+                    <template x-for="held in heldSales" :key="held.id">
+                        <div class="flex items-center justify-between rounded-lg px-3 py-2.5 ring-1 ring-slate-200">
+                            <div>
+                                <span class="block text-sm font-semibold text-slate-700" x-text="(held.customer ? held.customer.name : '{{ __('Walk-in Customer') }}') + ' — ' + held.cart.length + ' {{ __('item(s)') }}'"></span>
+                                <span class="block text-xs text-slate-400" x-text="held.heldAt + ' · {{ __('Total') }} ' + held.cart.reduce((s, i) => s + i.quantity * i.price, 0).toFixed(2)"></span>
+                            </div>
+                            <div class="flex shrink-0 gap-2">
+                                <x-secondary-button type="button" @click="resumeHeld(held.id)">{{ __('Resume') }}</x-secondary-button>
+                                <button type="button" @click="deleteHeld(held.id)" class="text-slate-400 hover:text-rose-600" title="{{ __('Delete') }}">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <p x-show="!heldSales.length" x-cloak class="py-8 text-center text-sm text-slate-400">{{ __('No held sales.') }}</p>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <x-secondary-button x-on:click="$dispatch('close')">{{ __('Close') }}</x-secondary-button>
+                </div>
+            </div>
+        </x-modal>
 
         <x-modal name="pos-new-customer" max-width="md" focusable>
             <div class="p-6">

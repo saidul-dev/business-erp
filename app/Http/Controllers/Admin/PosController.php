@@ -44,8 +44,15 @@ class PosController extends Controller implements HasMiddleware
     {
         $siteId = $this->currentSiteId();
         $accounts = LedgerAccount::where('group', 'cash_bank')->where('status', true)->orderBy('name')->get(['id', 'name', 'is_cash']);
+        $customers = Party::where('is_customer', true)->where('status', true)->orderBy('name')
+            ->get(['id', 'name', 'phone'])
+            ->map(fn ($party) => (object) [
+                'id' => $party->id,
+                'name' => "{$party->name} — {$party->phone}",
+                'phone' => $party->phone,
+            ]);
 
-        return view('admin.pos.index', compact('siteId', 'accounts'));
+        return view('admin.pos.index', compact('siteId', 'accounts', 'customers'));
     }
 
     /**

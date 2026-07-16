@@ -55,7 +55,7 @@
             this.$nextTick(() => this.$refs.hiddenInput.form.submit());
             @endif
         },
-    }" class="relative" @keydown.escape="open = false">
+    }" {{ $attributes->merge(['class' => 'relative']) }} @keydown.escape="open = false">
     <input type="hidden" name="{{ $name }}" x-ref="hiddenInput" :value="selectedId">
 
     <button type="button" x-ref="trigger" @click="toggle()"
