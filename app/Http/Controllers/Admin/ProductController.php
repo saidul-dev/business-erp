@@ -9,6 +9,14 @@ use App\Models\Category;
 use App\Models\CompanySetting;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\PurchaseReceipt;
+use App\Models\PurchaseReturn;
+use App\Models\SaleDelivery;
+use App\Models\SaleDeliveryItem;
+use App\Models\SaleReturn;
+use App\Models\Site;
+use App\Models\StockMovement;
+use App\Models\StockTransfer;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -22,7 +30,7 @@ class ProductController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:inventory.view', only: ['index', 'barcode']),
+            new Middleware('permission:inventory.view', only: ['index', 'barcode', 'history']),
             new Middleware('permission:inventory.create', only: ['create', 'store']),
             new Middleware('permission:inventory.edit', only: ['edit', 'update', 'toggleStatus']),
             new Middleware('permission:inventory.delete', only: ['destroy']),
@@ -145,6 +153,133 @@ class ProductController extends Controller implements HasMiddleware
             'products' => $products,
             'companyName' => CompanySetting::current()->name,
         ]);
+    }
+
+    /**
+     * Stock ledger for one product: every StockMovement row across its
+     * variants, newest first — the audit trail current-balance-only
+     * reports (Stock Report) can't answer ("why did this drop?", "what did
+     * we pay/sell this batch at?"). "in" rows show unit_cost as recorded;
+     * "sale" (out) rows resolve the *actual* sale price from the SaleItem
+     * behind the delivery, since their unit_cost holds COGS, not price.
+     */
+    public function history(Request $request, Product $product)
+    {
+        $product->load(['stockUnit', 'variants.attributeValues']);
+        $sites = Site::where('status', true)->orderBy('name')->get(['id', 'name']);
+        $siteId = $request->filled('site_id') ? $request->integer('site_id') : null;
+
+        $movements = StockMovement::with(['productVariant.attributeValues', 'site', 'createdBy'])
+            ->where('product_id', $product->id)
+            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
+            ->orderByDesc('moved_at')
+            ->orderByDesc('id')
+            ->paginate(30)
+            ->withQueryString();
+
+        $this->attachSalePrices($movements->getCollection());
+        $this->attachReferenceLabels($movements->getCollection());
+
+        $currentStock = $this->currentStockBreakdown($product, $siteId);
+        $totalStock = $currentStock->sum('balance');
+        $totalCostValuation = $currentStock->sum('cost_valuation');
+        $totalSaleValuation = $currentStock->sum('sale_valuation');
+
+        return view('admin.products.history', compact(
+            'product', 'movements', 'sites', 'siteId',
+            'currentStock', 'totalStock', 'totalCostValuation', 'totalSaleValuation'
+        ));
+    }
+
+    /**
+     * On-hand balance per Site (and per Variant, for variable products),
+     * so the ledger page answers "how much is there right now?" alongside
+     * "how did it get there?" — not just aggregate movement rows. Rows
+     * that have netted to zero are dropped; a site/variant combo with no
+     * stock left isn't "current stock." Valuations use each variant's own
+     * cost/selling price (falling back to the parent product's), same as
+     * the Stock Report's group-row valuation.
+     */
+    protected function currentStockBreakdown(Product $product, ?int $siteId)
+    {
+        $rows = StockMovement::where('product_id', $product->id)
+            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
+            ->selectRaw("site_id, product_variant_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
+            ->groupBy('site_id', 'product_variant_id')
+            ->having('balance', '!=', 0)
+            ->get();
+
+        $siteNames = Site::whereIn('id', $rows->pluck('site_id')->unique())->pluck('name', 'id');
+        $variants = $product->variants->keyBy('id');
+
+        return $rows->map(function ($row) use ($siteNames, $variants, $product) {
+            $variant = $row->product_variant_id ? $variants[$row->product_variant_id] : null;
+            $balance = (float) $row->balance;
+            $costPrice = (float) ($variant?->estimated_cost ?? $product->estimated_cost);
+            $salePrice = (float) ($variant?->selling_price ?? $product->selling_price);
+
+            return (object) [
+                'site' => $siteNames[$row->site_id] ?? '—',
+                'variant' => $variant?->label,
+                'balance' => $balance,
+                'cost_price' => $costPrice,
+                'sale_price' => $salePrice,
+                'cost_valuation' => $balance * $costPrice,
+                'sale_valuation' => $balance * $salePrice,
+            ];
+        })->sortBy(['site', 'variant'])->values();
+    }
+
+    /**
+     * For type=sale movements, unit_cost is the weighted-average COGS
+     * posted to the ledger — not what the customer actually paid. The real
+     * per-unit sale price lives on the SaleItem behind the delivery, so
+     * resolve it in one batched query instead of trusting unit_cost.
+     */
+    protected function attachSalePrices($movements): void
+    {
+        $deliveryIds = $movements->where('type', 'sale')->pluck('reference_id')->filter()->unique();
+
+        $prices = $deliveryIds->isEmpty() ? collect() : SaleDeliveryItem::whereIn('sale_delivery_id', $deliveryIds)
+            ->with('saleItem:id,product_id,product_variant_id,unit_price')
+            ->get()
+            ->filter(fn ($di) => $di->saleItem)
+            ->keyBy(fn ($di) => $di->sale_delivery_id.':'.$di->saleItem->product_id.':'.($di->saleItem->product_variant_id ?? 0));
+
+        $movements->each(function (StockMovement $movement) use ($prices) {
+            $movement->sale_price = $movement->type === 'sale'
+                ? $prices->get($movement->reference_id.':'.$movement->product_id.':'.($movement->product_variant_id ?? 0))?->saleItem?->unit_price
+                : null;
+        });
+    }
+
+    /**
+     * Human label + a link to the source document for each movement's
+     * polymorphic reference (null for adjustment/initial-stock rows, which
+     * carry no document — just a reason/note).
+     */
+    protected function attachReferenceLabels($movements): void
+    {
+        $refs = [
+            SaleDelivery::class => fn ($r) => ['label' => $r->delivery_no, 'url' => route('sales.deliveries.print', $r)],
+            PurchaseReceipt::class => fn ($r) => ['label' => $r->receipt_no, 'url' => route('purchases.receipts.print', $r)],
+            PurchaseReturn::class => fn ($r) => ['label' => $r->return_no, 'url' => route('purchases.returns.print', $r)],
+            SaleReturn::class => fn ($r) => ['label' => $r->return_no, 'url' => route('sales.returns.print', $r)],
+            StockTransfer::class => fn ($r) => ['label' => $r->transfer_no, 'url' => route('stock.transfers.show', $r)],
+        ];
+
+        $movements->loadMorph('reference', array_map(fn () => [], $refs));
+
+        $movements->each(function (StockMovement $movement) use ($refs) {
+            $movement->reference_label = null;
+            $movement->reference_url = null;
+
+            if ($movement->reference && isset($refs[$movement->reference_type])) {
+                $resolved = $refs[$movement->reference_type]($movement->reference);
+                $movement->reference_label = $resolved['label'];
+                $movement->reference_url = $resolved['url'];
+            }
+        });
     }
 
     public function destroy(Product $product)
