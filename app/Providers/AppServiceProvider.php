@@ -35,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
         // their own data scope, so the layout view alone isn't enough —
         // each page view that needs it has to be listed here too.
         View::composer(
-            ['layouts.app', 'admin.sales.index', 'admin.products.create', 'admin.products.edit'],
+            ['layouts.app', 'admin.sales.index', 'admin.sales.report', 'admin.products.create', 'admin.products.edit'],
             function ($view) {
                 $view->with('ecommerceEnabled', CompanySetting::current()->ecommerce_enabled);
             }

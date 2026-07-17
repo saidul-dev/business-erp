@@ -98,6 +98,9 @@
                             :active="request()->routeIs('purchases.index', 'purchases.show', 'purchases.receive.*', 'purchases.print', 'purchases.receipts.print')">
                             {{ __('Purchase List') }}
                         </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('purchases.report')" :active="request()->routeIs('purchases.report')">
+                            {{ __('Purchase Report') }}
+                        </x-sidebar-sublink>
                         <x-sidebar-sublink :href="route('purchases.manual')"
                             :active="request()->routeIs('purchases.manual')">
                             {{ __('User Manual') }}
@@ -158,6 +161,9 @@
                             @endif
                         </x-sidebar-sublink>
                         @endif
+                        <x-sidebar-sublink :href="route('sales.report')" :active="request()->routeIs('sales.report')">
+                            {{ __('Sale Report') }}
+                        </x-sidebar-sublink>
                         <x-sidebar-sublink :href="route('sales.manual')" :active="request()->routeIs('sales.manual')">
                             {{ __('User Manual') }}
                         </x-sidebar-sublink>

@@ -35,11 +35,13 @@ use App\Http\Controllers\Admin\ProductReviewController;
 use App\Http\Controllers\Admin\ProfitLossController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\PurchaseController;
+use App\Http\Controllers\Admin\PurchaseReportController;
 use App\Http\Controllers\Admin\PurchaseRequisitionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SalaryStructureController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SaleQuotationController;
+use App\Http\Controllers\Admin\SaleReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SiteHealthController;
 use App\Http\Controllers\Admin\SiteController;
@@ -151,6 +153,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/stock/transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('stock.transfers.cancel');
 
         Route::get('/purchases/manual', [PurchaseController::class, 'manual'])->name('purchases.manual');
+        Route::get('/purchases/report', [PurchaseReportController::class, 'index'])->name('purchases.report');
         Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
         Route::get('/purchases/{purchase}/print', [PurchaseController::class, 'printOrder'])->name('purchases.print');
         Route::get('/purchases/{purchase}/receive', [PurchaseController::class, 'receiveForm'])->name('purchases.receive.create');
@@ -169,6 +172,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/purchase-requisitions/{purchaseRequisition}/cancel', [PurchaseRequisitionController::class, 'cancel'])->name('purchase-requisitions.cancel');
 
         Route::get('/sales/manual', [SaleController::class, 'manual'])->name('sales.manual');
+        Route::get('/sales/report', [SaleReportController::class, 'index'])->name('sales.report');
         Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
         Route::get('/sales/{sale}/print', [SaleController::class, 'printOrder'])->name('sales.print');
         Route::get('/sales/{sale}/deliver', [SaleController::class, 'deliverForm'])->name('sales.deliver.create');
