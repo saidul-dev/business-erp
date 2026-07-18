@@ -195,6 +195,10 @@
                             :active="request()->routeIs('stock.adjustment.*')">
                             {{ __('Stock Adjustment') }}
                         </x-sidebar-sublink>
+                        <x-sidebar-sublink :href="route('stock.internal-consumption.index')"
+                            :active="request()->routeIs('stock.internal-consumption.*')">
+                            {{ __('Internal Consumption') }}
+                        </x-sidebar-sublink>
                         <x-sidebar-sublink :href="route('stock.transfers.index')"
                             :active="request()->routeIs('stock.transfers.*')">
                             {{ __('Stock Transfer') }}

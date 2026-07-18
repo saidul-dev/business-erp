@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\FundTransferController;
 use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\IncomeController;
 use App\Http\Controllers\Admin\InitialStockController;
+use App\Http\Controllers\Admin\InternalConsumptionController;
 use App\Http\Controllers\Admin\LeaveRequestController;
 use App\Http\Controllers\Admin\LeaveTypeController;
 use App\Http\Controllers\Admin\LedgerAccountController;
@@ -144,6 +145,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/stock/report', [StockReportController::class, 'index'])->name('stock.report');
         Route::get('/stock/adjustment', [StockAdjustmentController::class, 'index'])->name('stock.adjustment.index');
         Route::post('/stock/adjustment', [StockAdjustmentController::class, 'store'])->name('stock.adjustment.store');
+        Route::get('/stock/internal-consumption', [InternalConsumptionController::class, 'index'])->name('stock.internal-consumption.index');
+        Route::post('/stock/internal-consumption', [InternalConsumptionController::class, 'store'])->name('stock.internal-consumption.store');
 
         Route::get('/stock/transfers', [StockTransferController::class, 'index'])->name('stock.transfers.index');
         Route::get('/stock/transfers/create', [StockTransferController::class, 'create'])->name('stock.transfers.create');
