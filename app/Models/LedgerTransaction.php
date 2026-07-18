@@ -25,6 +25,7 @@ class LedgerTransaction extends Model
         'opening_balance',
         'journal',
         'salary',
+        'internal_consumption',
     ];
 
     /**
@@ -41,6 +42,7 @@ class LedgerTransaction extends Model
         'opening_balance' => 'OB',
         'journal' => 'JNL',
         'salary' => 'SLR',
+        'internal_consumption' => 'ICN',
     ];
 
     /**
@@ -58,6 +60,7 @@ class LedgerTransaction extends Model
         'opening_balance' => 'Opening Balance',
         'journal' => 'Journal',
         'salary' => 'Salary Payment',
+        'internal_consumption' => 'Internal Consumption',
     ];
 
     protected $fillable = [
@@ -116,6 +119,7 @@ class LedgerTransaction extends Model
             \App\Models\FundTransfer::class => route('fund-transfers.show', $this->reference_id),
             \App\Models\CapitalTransaction::class => route('capital-transactions.show', $this->reference_id),
             \App\Models\Party::class => route('parties.ledger', $this->reference_id),
+            \App\Models\StockMovement::class => route('products.history', $this->reference->product_id),
             default => null,
         };
     }

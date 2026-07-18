@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class StockMovement extends Model
@@ -149,6 +150,15 @@ class StockMovement extends Model
     public function reference(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * The ledger voucher this movement posted (currently only
+     * internal_consumption does) — see InternalConsumptionController.
+     */
+    public function ledgerTransaction(): MorphOne
+    {
+        return $this->morphOne(LedgerTransaction::class, 'reference');
     }
 
     /**

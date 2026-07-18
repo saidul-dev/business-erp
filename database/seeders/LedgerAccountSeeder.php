@@ -32,6 +32,12 @@ class LedgerAccountSeeder extends Seeder
             ['code' => 'office_expense', 'name' => 'Office Expense', 'group' => 'income_expense', 'nature' => 'debit'],
             ['code' => 'other_expense', 'name' => 'Other Expense', 'group' => 'income_expense', 'nature' => 'debit'],
 
+            // Cost of inventory consumed internally (office/self-use, not a
+            // sale) — see InternalConsumptionController. Kept distinct from
+            // cost_of_goods_sold (sale-specific) and office_expense (not
+            // tied to inventory) so P&L reports this cost on its own line.
+            ['code' => 'internal_consumption_expense', 'name' => 'Internal Consumption Expense', 'group' => 'income_expense', 'nature' => 'debit'],
+
             // Courier fee, deducted from a COD remittance — see
             // CourierConsignmentController::settleCod().
             ['code' => 'courier_expense', 'name' => 'Courier & Delivery Expense', 'group' => 'income_expense', 'nature' => 'debit'],
