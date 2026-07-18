@@ -3,23 +3,18 @@
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\BalanceSheetController;
 use App\Http\Controllers\Admin\BrandController;
-use App\Http\Controllers\Admin\CampaignPageController;
 use App\Http\Controllers\Admin\CapitalTransactionController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CollectionController;
 use App\Http\Controllers\Admin\ContactMessageController;
-use App\Http\Controllers\Admin\CourierConsignmentController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DayBookController;
-use App\Http\Controllers\Admin\DeliveryPartnerController;
-use App\Http\Controllers\Admin\DeliveryZoneController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\DesignationController;
 use App\Http\Controllers\Admin\DueReportController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\FundTransferController;
-use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\IncomeController;
 use App\Http\Controllers\Admin\InitialStockController;
 use App\Http\Controllers\Admin\LeaveRequestController;
@@ -29,19 +24,11 @@ use App\Http\Controllers\Admin\MilestoneController;
 use App\Http\Controllers\Admin\PartyController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PayrollRunController;
-use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\ProductController;
-use App\Http\Controllers\Admin\ProductReviewController;
 use App\Http\Controllers\Admin\ProfitLossController;
 use App\Http\Controllers\Admin\ProjectController;
-use App\Http\Controllers\Admin\PurchaseController;
-use App\Http\Controllers\Admin\PurchaseReportController;
-use App\Http\Controllers\Admin\PurchaseRequisitionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SalaryStructureController;
-use App\Http\Controllers\Admin\SaleController;
-use App\Http\Controllers\Admin\SaleQuotationController;
-use App\Http\Controllers\Admin\SaleReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SiteHealthController;
 use App\Http\Controllers\Admin\SiteController;
@@ -52,18 +39,15 @@ use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\TrialBalanceController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\CurrentSiteController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\ShopController;
-use App\Http\Controllers\SteadfastWebhookController;
 use App\Http\Controllers\WebsiteController;
 use Illuminate\Support\Facades\Route;
 
-// Public company website — the e-commerce storefront link only appears
-// once "Enable E-commerce" is switched on from Admin > Settings.
+// Public company website — About, Media, Career, Contact. Every vertical
+// built on this base (property/hospital/resort/agency/restaurant, etc.)
+// gets a public-facing company site out of the box.
 Route::get('/', [WebsiteController::class, 'home'])->name('home');
 Route::get('/about', [WebsiteController::class, 'about'])->name('about');
 Route::get('/media', [WebsiteController::class, 'media'])->name('media');
@@ -71,43 +55,11 @@ Route::get('/career', [WebsiteController::class, 'career'])->name('career');
 Route::get('/contact', [WebsiteController::class, 'contact'])->name('contact');
 Route::post('/contact', [WebsiteController::class, 'submitContact'])->name('contact.submit');
 
-// The storefront — catalog, cart, guest checkout, order tracking. All
-// gated behind the 'ecommerce' middleware (404 until Admin > Settings >
-// E-commerce is switched on).
-Route::middleware('ecommerce')->group(function () {
-    Route::get('/shop', [ShopController::class, 'index'])->name('shop');
-    Route::get('/shop/{product}', [ShopController::class, 'show'])->name('shop.product');
-    Route::post('/shop/{product}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
-
-    Route::get('/cart', [ShopController::class, 'cart'])->name('cart');
-    Route::post('/cart', [ShopController::class, 'addToCart'])->name('cart.add');
-    Route::patch('/cart/{itemKey}', [ShopController::class, 'updateCart'])->name('cart.update');
-    Route::delete('/cart/{itemKey}', [ShopController::class, 'removeFromCart'])->name('cart.remove');
-
-    Route::get('/checkout', [ShopController::class, 'checkout'])->name('checkout');
-    Route::post('/checkout', [ShopController::class, 'placeOrder'])->name('checkout.store');
-    Route::get('/order-confirmation/{sale}', [ShopController::class, 'confirmation'])->name('order.confirmation');
-
-    Route::post('/payment/sslcommerz/success/{sale}', [ShopController::class, 'paymentSuccess'])->name('payment.sslcommerz.success');
-    Route::post('/payment/sslcommerz/fail/{sale}', [ShopController::class, 'paymentFail'])->name('payment.sslcommerz.fail');
-    Route::post('/payment/sslcommerz/cancel/{sale}', [ShopController::class, 'paymentCancel'])->name('payment.sslcommerz.cancel');
-
-    Route::get('/track-order', [ShopController::class, 'trackForm'])->name('track-order');
-    Route::post('/track-order', [ShopController::class, 'track'])->name('track-order.result');
-
-    Route::get('/campaign/{campaignPage:slug}', [CampaignController::class, 'show'])->name('campaign.show');
-    Route::post('/campaign/{campaignPage:slug}/buy', [CampaignController::class, 'buyNow'])->name('campaign.buy');
-});
-
-// Not gated behind 'ecommerce' — courier bookings happen for POS sales too.
-Route::post('/webhooks/steadfast/status', [SteadfastWebhookController::class, 'handle'])->name('webhooks.steadfast.status');
-
 // UI language switch — not an authenticated action, just a session preference.
 Route::post('/language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
 // Backend/admin panel — kept under /admin so the public company website
-// (and its optional e-commerce storefront, toggled from Settings) can
-// live at the root without colliding with these routes.
+// can live at the root without colliding with these routes.
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->middleware(['auth', 'verified', 'current-site'])->name('dashboard');
@@ -151,58 +103,6 @@ Route::prefix('admin')->group(function () {
         Route::get('/stock/transfers/{transfer}', [StockTransferController::class, 'show'])->name('stock.transfers.show');
         Route::post('/stock/transfers/{transfer}/receive', [StockTransferController::class, 'receive'])->name('stock.transfers.receive');
         Route::post('/stock/transfers/{transfer}/cancel', [StockTransferController::class, 'cancel'])->name('stock.transfers.cancel');
-
-        Route::get('/purchases/manual', [PurchaseController::class, 'manual'])->name('purchases.manual');
-        Route::get('/purchases/report', [PurchaseReportController::class, 'index'])->name('purchases.report');
-        Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
-        Route::get('/purchases/{purchase}/print', [PurchaseController::class, 'printOrder'])->name('purchases.print');
-        Route::get('/purchases/{purchase}/receive', [PurchaseController::class, 'receiveForm'])->name('purchases.receive.create');
-        Route::post('/purchases/{purchase}/receive', [PurchaseController::class, 'receive'])->name('purchases.receive.store');
-        Route::post('/purchases/{purchase}/cancel', [PurchaseController::class, 'cancel'])->name('purchases.cancel');
-        Route::get('/purchase-receipts/{receipt}/print', [PurchaseController::class, 'printReceipt'])->name('purchases.receipts.print');
-        Route::get('/purchases/{purchase}/return', [PurchaseController::class, 'returnForm'])->name('purchases.return.create');
-        Route::post('/purchases/{purchase}/return', [PurchaseController::class, 'storeReturn'])->name('purchases.return.store');
-        Route::get('/purchase-returns/{purchaseReturn}/print', [PurchaseController::class, 'printReturn'])->name('purchases.returns.print');
-
-        Route::resource('purchase-requisitions', PurchaseRequisitionController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update'])
-            ->parameters(['purchase-requisitions' => 'purchaseRequisition']);
-        Route::get('/purchase-requisitions/{purchaseRequisition}/print', [PurchaseRequisitionController::class, 'print'])->name('purchase-requisitions.print');
-        Route::post('/purchase-requisitions/{purchaseRequisition}/approve', [PurchaseRequisitionController::class, 'approve'])->name('purchase-requisitions.approve');
-        Route::post('/purchase-requisitions/{purchaseRequisition}/reject', [PurchaseRequisitionController::class, 'reject'])->name('purchase-requisitions.reject');
-        Route::post('/purchase-requisitions/{purchaseRequisition}/cancel', [PurchaseRequisitionController::class, 'cancel'])->name('purchase-requisitions.cancel');
-
-        Route::get('/sales/manual', [SaleController::class, 'manual'])->name('sales.manual');
-        Route::get('/sales/report', [SaleReportController::class, 'index'])->name('sales.report');
-        Route::resource('sales', SaleController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
-        Route::get('/sales/{sale}/print', [SaleController::class, 'printOrder'])->name('sales.print');
-        Route::get('/sales/{sale}/deliver', [SaleController::class, 'deliverForm'])->name('sales.deliver.create');
-        Route::post('/sales/{sale}/deliver', [SaleController::class, 'deliver'])->name('sales.deliver.store');
-        Route::post('/sales/{sale}/cancel', [SaleController::class, 'cancel'])->name('sales.cancel');
-        Route::get('/sale-deliveries/{delivery}/print', [SaleController::class, 'printDelivery'])->name('sales.deliveries.print');
-        Route::get('/sales/{sale}/return', [SaleController::class, 'returnForm'])->name('sales.return.create');
-        Route::post('/sales/{sale}/return', [SaleController::class, 'storeReturn'])->name('sales.return.store');
-        Route::get('/sale-returns/{saleReturn}/print', [SaleController::class, 'printReturn'])->name('sales.returns.print');
-
-        Route::resource('sale-quotations', SaleQuotationController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update'])
-            ->parameters(['sale-quotations' => 'saleQuotation']);
-        Route::get('/sale-quotations/{saleQuotation}/print', [SaleQuotationController::class, 'print'])->name('sale-quotations.print');
-        Route::post('/sale-quotations/{saleQuotation}/approve', [SaleQuotationController::class, 'approve'])->name('sale-quotations.approve');
-        Route::post('/sale-quotations/{saleQuotation}/reject', [SaleQuotationController::class, 'reject'])->name('sale-quotations.reject');
-        Route::post('/sale-quotations/{saleQuotation}/cancel', [SaleQuotationController::class, 'cancel'])->name('sale-quotations.cancel');
-
-        Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
-        Route::get('/pos/products', [PosController::class, 'products'])->name('pos.products');
-        Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
-        Route::post('/pos/customers', [PosController::class, 'storeCustomer'])->name('pos.customers.store');
-        Route::get('/pos/{sale}/receipt', [PosController::class, 'receipt'])->name('pos.receipt');
-
-        Route::resource('delivery-partners', DeliveryPartnerController::class)->except('show')
-            ->parameters(['delivery-partners' => 'deliveryPartner']);
-        Route::patch('/delivery-partners/{deliveryPartner}/toggle-status', [DeliveryPartnerController::class, 'toggleStatus'])->name('delivery-partners.toggle-status');
-        Route::get('/courier-consignments', [CourierConsignmentController::class, 'index'])->name('courier-consignments.index');
-        Route::get('/courier-consignments/{courierConsignment}', [CourierConsignmentController::class, 'show'])->name('courier-consignments.show');
-        Route::patch('/courier-consignments/{courierConsignment}/status', [CourierConsignmentController::class, 'updateStatus'])->name('courier-consignments.status');
-        Route::post('/courier-consignments/{courierConsignment}/settle-cod', [CourierConsignmentController::class, 'settleCod'])->name('courier-consignments.settle-cod');
 
         Route::resource('parties', PartyController::class)->except('show');
         Route::patch('/parties/{party}/toggle-status', [PartyController::class, 'toggleStatus'])->name('parties.toggle-status');
@@ -287,36 +187,14 @@ Route::prefix('admin')->group(function () {
         Route::get('/contact-messages/{contactMessage}', [ContactMessageController::class, 'show'])->name('contact-messages.show');
         Route::delete('/contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy'])->name('contact-messages.destroy');
 
-        Route::get('/product-reviews', [ProductReviewController::class, 'index'])->name('product-reviews.index');
-        Route::get('/product-reviews/{productReview}', [ProductReviewController::class, 'show'])->name('product-reviews.show');
-        Route::post('/product-reviews/{productReview}/approve', [ProductReviewController::class, 'approve'])->name('product-reviews.approve');
-        Route::post('/product-reviews/{productReview}/reject', [ProductReviewController::class, 'reject'])->name('product-reviews.reject');
-        Route::delete('/product-reviews/{productReview}', [ProductReviewController::class, 'destroy'])->name('product-reviews.destroy');
-
         Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
         Route::get('/settings/website', [SettingController::class, 'editWebsite'])->name('settings.website.edit');
         Route::put('/settings/website', [SettingController::class, 'updateWebsite'])->name('settings.website.update');
-        Route::get('/settings/ecommerce', [SettingController::class, 'editEcommerce'])->name('settings.ecommerce.edit');
-        Route::put('/settings/ecommerce', [SettingController::class, 'updateEcommerce'])->name('settings.ecommerce.update');
-        Route::get('/settings/approvals', [SettingController::class, 'editApprovals'])->name('settings.approvals.edit');
-        Route::put('/settings/approvals', [SettingController::class, 'updateApprovals'])->name('settings.approvals.update');
         Route::get('/settings/attendance', [SettingController::class, 'editAttendance'])->name('settings.attendance.edit');
         Route::put('/settings/attendance', [SettingController::class, 'updateAttendance'])->name('settings.attendance.update');
 
         Route::post('/site-health/refresh', [SiteHealthController::class, 'refresh'])->name('site-health.refresh');
-
-        Route::resource('hero-slides', HeroSlideController::class)->except('show')
-            ->parameters(['hero-slides' => 'heroSlide']);
-        Route::patch('/hero-slides/{heroSlide}/toggle-status', [HeroSlideController::class, 'toggleStatus'])->name('hero-slides.toggle-status');
-
-        Route::resource('campaign-pages', CampaignPageController::class)->except('show')
-            ->parameters(['campaign-pages' => 'campaignPage']);
-        Route::patch('/campaign-pages/{campaignPage}/toggle-status', [CampaignPageController::class, 'toggleStatus'])->name('campaign-pages.toggle-status');
-
-        Route::resource('delivery-zones', DeliveryZoneController::class)->except('show')
-            ->parameters(['delivery-zones' => 'deliveryZone']);
-        Route::patch('/delivery-zones/{deliveryZone}/toggle-status', [DeliveryZoneController::class, 'toggleStatus'])->name('delivery-zones.toggle-status');
     });
 });
 

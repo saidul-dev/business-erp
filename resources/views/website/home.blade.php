@@ -20,11 +20,6 @@
                             <a href="{{ route('contact') }}" class="rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors">
                                 {{ __('Get in Touch') }}
                             </a>
-                            @if ($company->ecommerce_enabled)
-                            <a href="{{ route('shop') }}" class="rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
-                                {{ __('Visit Our Shop') }}
-                            </a>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -75,11 +70,6 @@
                 <a href="{{ route('contact') }}" class="rounded-lg bg-accent-500 px-6 py-3 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors">
                     {{ __('Get in Touch') }}
                 </a>
-                @if ($company->ecommerce_enabled)
-                <a href="{{ route('shop') }}" class="rounded-lg border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
-                    {{ __('Visit Our Shop') }}
-                </a>
-                @endif
             </div>
 
             @if ($heroStats['products'] > 0 || $heroStats['categories'] > 0 || $heroStats['branches'] > 1)
@@ -224,12 +214,6 @@
                     </div>
 
                     <div class="flex flex-wrap items-center justify-center gap-3 shrink-0">
-                        @if ($company->ecommerce_enabled)
-                        <a href="{{ route('shop') }}" class="inline-flex items-center gap-2 rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-semibold text-brand-950 hover:bg-accent-400 transition-colors">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
-                            {{ __('Shop Now') }}
-                        </a>
-                        @endif
                         <a href="{{ route('contact') }}" class="inline-flex items-center gap-2 rounded-lg border border-white/20 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a1.5 1.5 0 0 0 1.5-1.5v-3.379a1.5 1.5 0 0 0-1.06-1.436l-4.318-1.318a1.5 1.5 0 0 0-1.567.44l-1.03 1.235a11.25 11.25 0 0 1-5.632-5.633l1.235-1.03a1.5 1.5 0 0 0 .44-1.566L7.755 3.31a1.5 1.5 0 0 0-1.436-1.06H3a1.5 1.5 0 0 0-1.5 1.5v3Z"/></svg>
                             {{ __('Contact Us') }}

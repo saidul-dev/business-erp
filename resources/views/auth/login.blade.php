@@ -199,8 +199,6 @@
                 ['role' => 'Branch Manager', 'email' => 'manager@businesserp.test'],
                 ['role' => 'HR Executive', 'email' => 'hr@businesserp.test'],
                 ['role' => 'Head Accountant', 'email' => 'accountant@businesserp.test'],
-                ['role' => 'Store Keeper', 'email' => 'storekeeper@businesserp.test'],
-                ['role' => 'Sales Person', 'email' => 'sales@businesserp.test'],
                 ];
                 @endphp
                 <div class="mt-8 border-t border-slate-200 pt-5">

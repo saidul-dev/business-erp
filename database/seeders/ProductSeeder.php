@@ -117,40 +117,6 @@ class ProductSeeder extends Seeder
     ];
 
     /**
-     * Flash-sale products (see WebsiteController::ecommerceHome, which shows
-     * up to 12) — one per category, plus 4 extra across categories that
-     * already have more than one product for extra storefront variety.
-     */
-    protected const FLASH_SALE_SKUS = [
-        'BH-101',   // Moisturizing Cream
-        'ELEC-101', // Bluetooth Speaker
-        'FAS-101',  // Casual Sneakers
-        'GRO-101',  // Apple
-        'HK-101',   // Blender & Juicer
-        'SPO-101',  // Adjustable Dumbbells
-        'STA-101',  // School Backpack
-        'TOY-101',  // Baby Feeding Set
-        'GRO-103',  // Eggs (Dozen)
-        'HK-104',   // Electric Kettle
-        'SPO-103',  // Camping Tent
-        'STA-103',  // Document File Folder
-    ];
-
-    /**
-     * A handful of featured products (WebsiteController::ecommerceHome shows
-     * up to 6) — deliberately different SKUs from FLASH_SALE_SKUS for
-     * storefront variety.
-     */
-    protected const FEATURED_SKUS = [
-        'ELEC-104', // Smartphone
-        'BH-103',   // Perfume
-        'FAS-103',  // Leather Handbag
-        'TOY-102',  // Baby Stroller
-        'GRO-104',  // Mixed Fruits Basket
-        'HK-102',   // Decorative Table Lamp
-    ];
-
-    /**
      * Run the database seeds.
      */
     public function run(): void
@@ -304,9 +270,6 @@ class ProductSeeder extends Seeder
 
         $this->seedVariantProducts($categories, $brands, $units);
         $this->seedImageBackedProducts($categories, $brands['Generic'], $units);
-
-        Product::whereIn('sku', self::FLASH_SALE_SKUS)->update(['is_flash_sale' => true]);
-        Product::whereIn('sku', self::FEATURED_SKUS)->update(['is_featured' => true]);
     }
 
     /**

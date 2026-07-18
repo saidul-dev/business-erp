@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\CompanySetting;
 use App\Models\ContactMessage;
-use App\Models\HeroSlide;
 use App\Models\Product;
-use App\Models\SaleItem;
 use App\Models\Site;
 use Illuminate\Http\Request;
 
@@ -16,10 +14,6 @@ class WebsiteController extends Controller
     public function home()
     {
         $company = CompanySetting::current();
-
-        if ($company->ecommerce_enabled) {
-            return $this->ecommerceHome($company);
-        }
 
         $categories = Category::whereNull('parent_id')->where('status', true)
             ->withCount('products')
@@ -48,62 +42,6 @@ class WebsiteController extends Controller
             'featuredProducts' => $featuredProducts,
             'branches' => $branches,
             'heroStats' => $this->catalogStats(),
-        ]);
-    }
-
-    /**
-     * The shopping-style homepage (see website/home-shop.blade.php) — only
-     * ever reached once ecommerce_enabled is on (checked in home() above).
-     */
-    private function ecommerceHome(CompanySetting $company)
-    {
-        $slides = HeroSlide::where('status', true)->orderBy('sort_order')->orderBy('id')->get();
-
-        $categories = Category::whereNull('parent_id')->where('status', true)
-            ->orderBy('name')
-            ->get();
-
-        $flashSaleProducts = Product::where('status', true)->where('is_flash_sale', true)
-            ->orderByDesc('id')->limit(12)->get();
-
-        $featuredProducts = Product::where('status', true)->where('is_featured', true)
-            ->orderByDesc('id')->limit(6)->get();
-
-        $latestProducts = Product::where('status', true)
-            ->orderByDesc('id')->limit(6)->get();
-
-        // Ranked by total quantity ever sold (any non-cancelled sale,
-        // POS or online) — not a curated flag, so it reflects real demand.
-        $bestSellerIds = SaleItem::query()
-            ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
-            ->where('sales.status', '!=', 'cancelled')
-            ->selectRaw('sale_items.product_id, SUM(sale_items.quantity) as total_qty')
-            ->groupBy('sale_items.product_id')
-            ->orderByDesc('total_qty')
-            ->limit(6)
-            ->pluck('product_id');
-
-        $bestSellers = Product::where('status', true)->whereIn('id', $bestSellerIds)->get()
-            ->sortBy(fn (Product $p) => array_search($p->id, $bestSellerIds->all()))
-            ->values();
-
-        // No sales yet (fresh install, or just no online/POS orders today)
-        // means the "Best Sellers" ranking has nothing to show — the
-        // cheapest products fill that column instead so it's never empty.
-        $thirdColumnIsBestSellers = $bestSellers->isNotEmpty();
-        $thirdColumn = $thirdColumnIsBestSellers
-            ? $bestSellers
-            : Product::where('status', true)->orderBy('selling_price')->limit(6)->get();
-
-        return view('website.home-shop', [
-            'company' => $company,
-            'slides' => $slides,
-            'categories' => $categories,
-            'flashSaleProducts' => $flashSaleProducts,
-            'featuredProducts' => $featuredProducts,
-            'latestProducts' => $latestProducts,
-            'thirdColumn' => $thirdColumn,
-            'thirdColumnIsBestSellers' => $thirdColumnIsBestSellers,
         ]);
     }
 

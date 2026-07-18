@@ -70,106 +70,6 @@
                     <p class="nav-label px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-brand-300/70"
                         :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Operations') }}</p>
 
-                    @can('sourcing.view')
-                    <x-sidebar-dropdown :title="__('Purchase')" :active="request()->routeIs('purchases.*', 'purchase-requisitions.*')">
-                        <x-slot name="icon">
-                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z" />
-                            </svg>
-                        </x-slot>
-
-                        @can('purchase-requisitions.view')
-                        <x-sidebar-sublink :href="route('purchase-requisitions.create')"
-                            :active="request()->routeIs('purchase-requisitions.create', 'purchase-requisitions.store')">
-                            {{ __('New Requisition') }}
-                        </x-sidebar-sublink>
-                        <x-sidebar-sublink :href="route('purchase-requisitions.index')"
-                            :active="request()->routeIs('purchase-requisitions.index', 'purchase-requisitions.show', 'purchase-requisitions.edit', 'purchase-requisitions.print')">
-                            {{ __('Requisition List') }}
-                        </x-sidebar-sublink>
-                        @endcan
-                        <x-sidebar-sublink :href="route('purchases.create')"
-                            :active="request()->routeIs('purchases.create', 'purchases.store')">
-                            {{ __('New Purchase') }}
-                        </x-sidebar-sublink>
-                        <x-sidebar-sublink :href="route('purchases.index')"
-                            :active="request()->routeIs('purchases.index', 'purchases.show', 'purchases.receive.*', 'purchases.print', 'purchases.receipts.print')">
-                            {{ __('Purchase List') }}
-                        </x-sidebar-sublink>
-                        <x-sidebar-sublink :href="route('purchases.report')" :active="request()->routeIs('purchases.report')">
-                            {{ __('Purchase Report') }}
-                        </x-sidebar-sublink>
-                        <x-sidebar-sublink :href="route('purchases.manual')"
-                            :active="request()->routeIs('purchases.manual')">
-                            {{ __('User Manual') }}
-                        </x-sidebar-sublink>
-                    </x-sidebar-dropdown>
-                    @endcan
-
-                    @can('pos.view')
-                    <x-sidebar-link :href="route('pos.index')" :active="request()->routeIs('pos.*')"
-                        :title="__('POS Terminal')">
-                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-9-8.25h19.5v9.75a1.5 1.5 0 0 1-1.5 1.5h-16.5a1.5 1.5 0 0 1-1.5-1.5V6.75a1.5 1.5 0 0 1 1.5-1.5Z" />
-                        </svg>
-                        <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('POS Terminal')
-                            }}</span>
-                    </x-sidebar-link>
-                    @endcan
-
-                    @can('sales.view')
-                    <x-sidebar-dropdown :title="__('Sales')" :active="request()->routeIs('sales.*', 'sale-quotations.*')"
-                        :badge="$pendingOnlineOrdersCount ?: null">
-                        <x-slot name="icon">
-                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                            </svg>
-                        </x-slot>
-
-                        @can('sale-quotations.view')
-                        <x-sidebar-sublink :href="route('sale-quotations.create')"
-                            :active="request()->routeIs('sale-quotations.create', 'sale-quotations.store')">
-                            {{ __('New Quotation') }}
-                        </x-sidebar-sublink>
-                        <x-sidebar-sublink :href="route('sale-quotations.index')"
-                            :active="request()->routeIs('sale-quotations.index', 'sale-quotations.show', 'sale-quotations.edit', 'sale-quotations.print')">
-                            {{ __('Quotation List') }}
-                        </x-sidebar-sublink>
-                        @endcan
-                        <x-sidebar-sublink :href="route('sales.create')"
-                            :active="request()->routeIs('sales.create', 'sales.store')">
-                            {{ __('New Sale') }}
-                        </x-sidebar-sublink>
-                        <x-sidebar-sublink :href="route('sales.index')"
-                            :active="request()->routeIs('sales.index', 'sales.show', 'sales.deliver.*', 'sales.print', 'sales.deliveries.print') && request('channel') !== 'online'">
-                            {{ __('Sales List') }}
-                        </x-sidebar-sublink>
-                        @if ($ecommerceEnabled)
-                        <x-sidebar-sublink :href="route('sales.index', ['channel' => 'online'])"
-                            :active="request()->routeIs('sales.index') && request('channel') === 'online'">
-                            <span class="flex-1">{{ __('Online Orders') }}</span>
-                            @if ($pendingOnlineOrdersCount)
-                            <span class="ml-1 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white">
-                                {{ $pendingOnlineOrdersCount }}
-                            </span>
-                            @endif
-                        </x-sidebar-sublink>
-                        @endif
-                        <x-sidebar-sublink :href="route('sales.report')" :active="request()->routeIs('sales.report')">
-                            {{ __('Sale Report') }}
-                        </x-sidebar-sublink>
-                        <x-sidebar-sublink :href="route('sales.manual')" :active="request()->routeIs('sales.manual')">
-                            {{ __('User Manual') }}
-                        </x-sidebar-sublink>
-                    </x-sidebar-dropdown>
-                    @endcan
-
                     @can('inventory.view')
                     <x-sidebar-dropdown :title="__('Inventory')"
                         :active="request()->routeIs('products.*', 'categories.*', 'brands.*', 'units.*', 'attributes.*', 'stock.*')">
@@ -291,30 +191,6 @@
                     </x-sidebar-dropdown>
                     @endcan
 
-                    @can('delivery.view')
-                    <x-sidebar-dropdown :title="__('Delivery')"
-                        :active="request()->routeIs('courier-consignments.*', 'delivery-partners.*')">
-                        <x-slot name="icon">
-                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
-                            </svg>
-                        </x-slot>
-
-                        <x-sidebar-sublink :href="route('courier-consignments.index')"
-                            :active="request()->routeIs('courier-consignments.*')">
-                            {{ __('Courier Consignments') }}
-                        </x-sidebar-sublink>
-                        @can('delivery.edit')
-                        <x-sidebar-sublink :href="route('delivery-partners.index')"
-                            :active="request()->routeIs('delivery-partners.*')">
-                            {{ __('Delivery Partners') }}
-                        </x-sidebar-sublink>
-                        @endcan
-                    </x-sidebar-dropdown>
-                    @endcan
-
                     @can('tasks.view')
                     <x-sidebar-dropdown :title="__('Tasks')" :active="request()->routeIs('projects.*', 'tasks.*')">
                         <x-slot name="icon">
@@ -407,7 +283,7 @@
                     @endcan
                 </div>
 
-                @canany(['users.view', 'roles.view', 'settings.view', 'sites.view', 'website.view', 'product-reviews.view'])
+                @canany(['users.view', 'roles.view', 'settings.view', 'sites.view', 'website.view'])
                 <div>
                     <p class="nav-label px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-brand-300/70"
                         :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Administration') }}</p>
@@ -447,28 +323,6 @@
                     </x-sidebar-link>
                     @endcan
 
-                    @can('product-reviews.view')
-                    <x-sidebar-link :href="route('product-reviews.index')"
-                        :active="request()->routeIs('product-reviews.*')" :title="__('Product Reviews')">
-                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.563.563 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
-                        </svg>
-                        <span class="nav-label flex flex-1 items-center justify-between"
-                            :class="$store.sidebar.collapsed && 'lg:hidden'">
-                            {{ __('Product Reviews') }}
-                            @php $pendingReviewCount = \App\Models\ProductReview::where('status', 'pending')->count();
-                            @endphp
-                            @if ($pendingReviewCount > 0)
-                            <span
-                                class="ml-2 rounded-full bg-accent-500 px-2 py-0.5 text-[11px] font-bold text-brand-950">{{
-                                $pendingReviewCount }}</span>
-                            @endif
-                        </span>
-                    </x-sidebar-link>
-                    @endcan
-
                     @canany(['users.view', 'roles.view'])
                     <x-sidebar-dropdown :title="__('User Management')"
                         :active="request()->routeIs('users.*') || request()->routeIs('roles.*')">
@@ -495,7 +349,7 @@
                     @endcanany
 
                     @can('settings.view')
-                    <x-sidebar-dropdown :title="__('Settings')" :active="request()->routeIs('settings.*', 'hero-slides.*', 'campaign-pages.*', 'delivery-zones.*')">
+                    <x-sidebar-dropdown :title="__('Settings')" :active="request()->routeIs('settings.*')">
                         <x-slot name="icon">
                             <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
                                 stroke="currentColor">
@@ -513,34 +367,10 @@
                             :active="request()->routeIs('settings.website.*')">
                             {{ __('Website Settings') }}
                         </x-sidebar-sublink>
-                        <x-sidebar-sublink :href="route('settings.approvals.edit')"
-                            :active="request()->routeIs('settings.approvals.*')">
-                            {{ __('Approval Settings') }}
-                        </x-sidebar-sublink>
                         <x-sidebar-sublink :href="route('settings.attendance.edit')"
                             :active="request()->routeIs('settings.attendance.*')">
                             {{ __('Attendance Settings') }}
                         </x-sidebar-sublink>
-                        @if (auth()->user()->hasRole('Super Admin'))
-                        <x-sidebar-sublink :href="route('settings.ecommerce.edit')"
-                            :active="request()->routeIs('settings.ecommerce.*')">
-                            {{ __('E-commerce') }}
-                        </x-sidebar-sublink>
-                        @endif
-                        @if ($ecommerceEnabled)
-                        <x-sidebar-sublink :href="route('hero-slides.index')"
-                            :active="request()->routeIs('hero-slides.*')">
-                            {{ __('Hero Slides') }}
-                        </x-sidebar-sublink>
-                        <x-sidebar-sublink :href="route('campaign-pages.index')"
-                            :active="request()->routeIs('campaign-pages.*')">
-                            {{ __('Campaign Pages') }}
-                        </x-sidebar-sublink>
-                        <x-sidebar-sublink :href="route('delivery-zones.index')"
-                            :active="request()->routeIs('delivery-zones.*')">
-                            {{ __('Delivery Charges') }}
-                        </x-sidebar-sublink>
-                        @endif
                     </x-sidebar-dropdown>
                     @endcan
                 </div>

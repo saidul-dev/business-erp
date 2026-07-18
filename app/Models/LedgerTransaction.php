@@ -10,15 +10,11 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class LedgerTransaction extends Model
 {
     /**
-     * Fixed voucher types. Every module that posts to the ledger (Purchase,
-     * Sale, Payment, Expense, ...) uses one of these — never a free-form
-     * string — so voucher numbering and future reporting can rely on it.
+     * Fixed voucher types. Every module that posts to the ledger (Payment,
+     * Expense, ...) uses one of these — never a free-form string — so
+     * voucher numbering and future reporting can rely on it.
      */
     public const TYPES = [
-        'purchase',
-        'purchase_return',
-        'sale',
-        'sales_return',
         'payment_out',
         'payment_in',
         'expense',
@@ -35,10 +31,6 @@ class LedgerTransaction extends Model
      * Voucher number prefix per type — see LedgerService::nextVoucherNo().
      */
     public const PREFIXES = [
-        'purchase' => 'PUR',
-        'purchase_return' => 'PRT',
-        'sale' => 'SAL',
-        'sales_return' => 'SRT',
         'payment_out' => 'PAY',
         'payment_in' => 'REC',
         'expense' => 'EXP',
@@ -56,10 +48,6 @@ class LedgerTransaction extends Model
      * else that lists mixed-type vouchers) instead of the raw type string.
      */
     public const TYPE_LABELS = [
-        'purchase' => 'Purchase Receipt',
-        'purchase_return' => 'Purchase Return',
-        'sale' => 'Sale Delivery',
-        'sales_return' => 'Sales Return',
         'payment_out' => 'Payment',
         'payment_in' => 'Collection',
         'expense' => 'Expense',
@@ -120,13 +108,8 @@ class LedgerTransaction extends Model
         }
 
         return match ($this->reference_type) {
-            \App\Models\PurchaseReceipt::class => route('purchases.show', $this->reference->purchase_id),
-            \App\Models\PurchaseReturn::class => route('purchases.show', $this->reference->purchase_id),
-            \App\Models\SaleDelivery::class => route('sales.show', $this->reference->sale_id),
-            \App\Models\SaleReturn::class => route('sales.show', $this->reference->sale_id),
             \App\Models\Payment::class => route('payments.show', $this->reference_id),
             \App\Models\Collection::class => route('collections.show', $this->reference_id),
-            \App\Models\CourierConsignment::class => route('courier-consignments.show', $this->reference_id),
             \App\Models\Expense::class => route('expenses.show', $this->reference_id),
             \App\Models\PayrollRunItem::class => route('payroll-runs.items.payslip', $this->reference_id),
             \App\Models\Income::class => route('incomes.show', $this->reference_id),

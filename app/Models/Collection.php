@@ -12,7 +12,6 @@ class Collection extends Model
         'collection_no',
         'party_id',
         'project_id',
-        'sale_id',
         'ledger_account_id',
         'amount',
         'collection_date',
@@ -34,11 +33,6 @@ class Collection extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
-    }
-
-    public function sale(): BelongsTo
-    {
-        return $this->belongsTo(Sale::class);
     }
 
     public function account(): BelongsTo

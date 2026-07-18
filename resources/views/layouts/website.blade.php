@@ -17,12 +17,12 @@
     </head>
     <body class="font-sans text-slate-900 antialiased" x-data="{ mobileNavOpen: false }">
 
-        @include($company->ecommerce_enabled ? 'website.partials.header-shop' : 'website.partials.header-default')
+        @include('website.partials.header-default')
 
         <main>
             {{ $slot }}
         </main>
 
-        @include($company->ecommerce_enabled ? 'website.partials.footer-shop' : 'website.partials.footer-default')
+        @include('website.partials.footer-default')
     </body>
 </html>

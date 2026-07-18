@@ -79,7 +79,7 @@ class AttributeManagementTest extends TestCase
     {
         $this->seed(RolePermissionSeeder::class);
         $user = User::factory()->create();
-        $user->assignRole('Sales'); // has inventory.view only
+        $user->givePermissionTo('inventory.view'); // view only, no create
 
         $this->actingAs($user)
             ->post(route('attributes.store'), ['name' => 'X', 'values' => ['a']])

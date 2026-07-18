@@ -13,28 +13,21 @@ class RolePermissionSeeder extends Seeder
      * Canonical display order for role lists (Roles & Permissions page,
      * the Users form role picker). Not creation order — just presentation.
      */
-    public const ROLE_ORDER = ['Super Admin', 'Admin', 'Manager', 'HR', 'Accountant', 'Store-keeper', 'Sales', 'Employee'];
+    public const ROLE_ORDER = ['Super Admin', 'Admin', 'Manager', 'HR', 'Accountant', 'Employee'];
 
     /**
-     * ERP modules (README §3) and the actions available on each.
+     * Base modules (README §3) and the actions available on each.
      * Permission names follow the "module.action" convention.
      */
     protected array $modules = [
-        'sourcing'  => ['view', 'create', 'edit', 'delete', 'approve'],
-        'purchase-requisitions' => ['view', 'create', 'edit', 'delete', 'approve'],
-        'sales'     => ['view', 'create', 'edit', 'delete', 'approve'],
-        'sale-quotations' => ['view', 'create', 'edit', 'delete', 'approve'],
-        'pos'       => ['view', 'sell'],
         'inventory' => ['view', 'create', 'edit', 'delete', 'approve'],
         'parties'   => ['view', 'create', 'edit', 'delete'],
         'accounts'  => ['view', 'create', 'edit', 'delete', 'approve'],
-        'delivery'  => ['view', 'create', 'edit', 'delete'],
         'projects'  => ['view', 'create', 'edit', 'delete'],
         'tasks'     => ['view', 'create', 'edit', 'delete'],
         'hrm'       => ['view', 'create', 'edit', 'delete', 'approve'],
         'reports'   => ['view'],
         'website'   => ['view', 'delete'],
-        'product-reviews' => ['view', 'approve', 'delete'],
         'settings'  => ['view', 'edit'],
         'users'     => ['view', 'create', 'edit', 'delete'],
         'roles'     => ['view', 'create', 'edit', 'delete'],
@@ -62,14 +55,8 @@ class RolePermissionSeeder extends Seeder
             ->syncPermissions(Permission::all());
 
         Role::findOrCreate('Manager')->syncPermissions([
-            'sourcing.view', 'sourcing.create', 'sourcing.edit', 'sourcing.approve',
-            'purchase-requisitions.view', 'purchase-requisitions.create', 'purchase-requisitions.edit', 'purchase-requisitions.approve',
-            'sales.view', 'sales.create', 'sales.edit', 'sales.approve',
-            'sale-quotations.view', 'sale-quotations.create', 'sale-quotations.edit', 'sale-quotations.approve',
-            'pos.view', 'pos.sell',
             'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.approve',
             'parties.view', 'parties.create', 'parties.edit',
-            'delivery.view', 'delivery.create', 'delivery.edit',
             'projects.view', 'projects.create', 'projects.edit',
             'tasks.view', 'tasks.create', 'tasks.edit',
             // "Manager (own team only)" — view/approve their direct reports'
@@ -89,31 +76,10 @@ class RolePermissionSeeder extends Seeder
 
         Role::findOrCreate('Accountant')->syncPermissions([
             'accounts.view', 'accounts.create', 'accounts.edit', 'accounts.approve',
-            'sourcing.view',
-            'purchase-requisitions.view',
-            'sales.view',
-            'sale-quotations.view',
             'parties.view',
             // "Accountant (payroll approval)" — reviews and approves salary
             // runs before they post to Accounts, but doesn't manage HR records.
             'hrm.view', 'hrm.approve',
-            'reports.view',
-        ]);
-
-        Role::findOrCreate('Store-keeper')->syncPermissions([
-            'inventory.view', 'inventory.create', 'inventory.edit',
-            'sourcing.view',
-            'purchase-requisitions.view', 'purchase-requisitions.create',
-            'delivery.view', 'delivery.create', 'delivery.edit',
-        ]);
-
-        Role::findOrCreate('Sales')->syncPermissions([
-            'sales.view', 'sales.create', 'sales.edit',
-            'sale-quotations.view', 'sale-quotations.create', 'sale-quotations.edit',
-            'pos.view', 'pos.sell',
-            'parties.view', 'parties.create', 'parties.edit',
-            'inventory.view',
-            'delivery.view',
             'reports.view',
         ]);
 

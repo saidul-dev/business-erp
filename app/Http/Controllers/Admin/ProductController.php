@@ -9,11 +9,6 @@ use App\Models\Category;
 use App\Models\CompanySetting;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\PurchaseReceipt;
-use App\Models\PurchaseReturn;
-use App\Models\SaleDelivery;
-use App\Models\SaleDeliveryItem;
-use App\Models\SaleReturn;
 use App\Models\Site;
 use App\Models\StockMovement;
 use App\Models\StockTransfer;
@@ -159,9 +154,7 @@ class ProductController extends Controller implements HasMiddleware
      * Stock ledger for one product: every StockMovement row across its
      * variants, newest first — the audit trail current-balance-only
      * reports (Stock Report) can't answer ("why did this drop?", "what did
-     * we pay/sell this batch at?"). "in" rows show unit_cost as recorded;
-     * "sale" (out) rows resolve the *actual* sale price from the SaleItem
-     * behind the delivery, since their unit_cost holds COGS, not price.
+     * we pay this batch at?").
      */
     public function history(Request $request, Product $product)
     {
@@ -177,7 +170,6 @@ class ProductController extends Controller implements HasMiddleware
             ->paginate(30)
             ->withQueryString();
 
-        $this->attachSalePrices($movements->getCollection());
         $this->attachReferenceLabels($movements->getCollection());
 
         $currentStock = $this->currentStockBreakdown($product, $siteId);
@@ -231,29 +223,6 @@ class ProductController extends Controller implements HasMiddleware
     }
 
     /**
-     * For type=sale movements, unit_cost is the weighted-average COGS
-     * posted to the ledger — not what the customer actually paid. The real
-     * per-unit sale price lives on the SaleItem behind the delivery, so
-     * resolve it in one batched query instead of trusting unit_cost.
-     */
-    protected function attachSalePrices($movements): void
-    {
-        $deliveryIds = $movements->where('type', 'sale')->pluck('reference_id')->filter()->unique();
-
-        $prices = $deliveryIds->isEmpty() ? collect() : SaleDeliveryItem::whereIn('sale_delivery_id', $deliveryIds)
-            ->with('saleItem:id,product_id,product_variant_id,unit_price')
-            ->get()
-            ->filter(fn ($di) => $di->saleItem)
-            ->keyBy(fn ($di) => $di->sale_delivery_id.':'.$di->saleItem->product_id.':'.($di->saleItem->product_variant_id ?? 0));
-
-        $movements->each(function (StockMovement $movement) use ($prices) {
-            $movement->sale_price = $movement->type === 'sale'
-                ? $prices->get($movement->reference_id.':'.$movement->product_id.':'.($movement->product_variant_id ?? 0))?->saleItem?->unit_price
-                : null;
-        });
-    }
-
-    /**
      * Human label + a link to the source document for each movement's
      * polymorphic reference (null for adjustment/initial-stock rows, which
      * carry no document — just a reason/note).
@@ -261,10 +230,6 @@ class ProductController extends Controller implements HasMiddleware
     protected function attachReferenceLabels($movements): void
     {
         $refs = [
-            SaleDelivery::class => fn ($r) => ['label' => $r->delivery_no, 'url' => route('sales.deliveries.print', $r)],
-            PurchaseReceipt::class => fn ($r) => ['label' => $r->receipt_no, 'url' => route('purchases.receipts.print', $r)],
-            PurchaseReturn::class => fn ($r) => ['label' => $r->return_no, 'url' => route('purchases.returns.print', $r)],
-            SaleReturn::class => fn ($r) => ['label' => $r->return_no, 'url' => route('sales.returns.print', $r)],
             StockTransfer::class => fn ($r) => ['label' => $r->transfer_no, 'url' => route('stock.transfers.show', $r)],
         ];
 
@@ -329,9 +294,6 @@ class ProductController extends Controller implements HasMiddleware
             'short_description' => ['nullable', 'string', 'max:500'],
             'estimated_cost' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
-            'compare_at_price' => ['nullable', 'numeric', 'min:0'],
-            'is_featured' => ['nullable', 'boolean'],
-            'is_flash_sale' => ['nullable', 'boolean'],
             'reorder_level' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'max:2048'],
             'remove_image' => ['nullable', 'boolean'],
@@ -350,7 +312,7 @@ class ProductController extends Controller implements HasMiddleware
         ]);
 
         // Normalize booleans (unchecked checkboxes are absent from the request).
-        foreach (['has_variants', 'track_batch', 'track_expiry', 'track_serial', 'is_featured', 'is_flash_sale'] as $flag) {
+        foreach (['has_variants', 'track_batch', 'track_expiry', 'track_serial'] as $flag) {
             $validated[$flag] = $request->boolean($flag);
         }
 

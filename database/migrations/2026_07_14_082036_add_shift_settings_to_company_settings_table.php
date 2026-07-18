@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('company_settings', function (Blueprint $table) {
-            $table->time('default_shift_start_time')->default('09:00:00')->after('sale_quotation_approval_required');
+            $table->time('default_shift_start_time')->default('09:00:00')->after('values_text');
             $table->unsignedInteger('late_grace_minutes')->default(15)->after('default_shift_start_time');
         });
     }

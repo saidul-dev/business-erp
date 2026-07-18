@@ -26,9 +26,7 @@ class DatabaseSeeder extends Seeder
         $this->call(AttributeSeeder::class);
         $this->call(ProductSeeder::class);
         $this->call(PartySeeder::class);
-        $this->call(DeliveryPartnerSeeder::class);
         $this->call(HeroImageSeeder::class);
-        $this->call(EcommerceBannerSeeder::class);
         $this->call(CompanyProfileSeeder::class);
 
         User::firstOrCreate(
@@ -55,16 +53,6 @@ class DatabaseSeeder extends Seeder
             ['email' => 'accountant@businesserp.test'],
             ['name' => 'Head Accountant', 'password' => 'password']
         )->syncRoles('Accountant');
-
-        User::firstOrCreate(
-            ['email' => 'storekeeper@businesserp.test'],
-            ['name' => 'Store Keeper', 'password' => 'password']
-        )->syncRoles('Store-keeper');
-
-        User::firstOrCreate(
-            ['email' => 'sales@businesserp.test'],
-            ['name' => 'Sales Person', 'password' => 'password']
-        )->syncRoles('Sales');
 
         $this->call(SiteSeeder::class);
     }

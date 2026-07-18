@@ -4,28 +4,24 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CompanySetting;
-use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Three separate pages over the same single CompanySetting row, split by
- * who should touch what: General (accounting/invoice profile) and Website
- * (public homepage copy) are both fine for a client's own Admin role to
- * edit — Ecommerce is the one page gated to Super Admin only (see
- * editEcommerce()), since turning that on/off is a vendor decision, not a
- * client one.
+ * Separate pages over the same single CompanySetting row, split by who
+ * should touch what: General (accounting/invoice profile), Website
+ * (public homepage copy), and Attendance are all fine for a client's own
+ * Admin role to edit.
  */
 class SettingController extends Controller implements HasMiddleware
 {
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:settings.view', only: ['edit', 'editWebsite', 'editEcommerce', 'editApprovals', 'editAttendance']),
-            new Middleware('permission:settings.edit', only: ['update', 'updateWebsite', 'updateEcommerce', 'updateApprovals', 'updateAttendance']),
-            new Middleware('role:Super Admin', only: ['editEcommerce', 'updateEcommerce']),
+            new Middleware('permission:settings.view', only: ['edit', 'editWebsite', 'editAttendance']),
+            new Middleware('permission:settings.edit', only: ['update', 'updateWebsite', 'updateAttendance']),
         ];
     }
 
@@ -46,7 +42,6 @@ class SettingController extends Controller implements HasMiddleware
             'vat_registration_no' => ['nullable', 'string', 'max:100'],
             'bin_no' => ['nullable', 'string', 'max:100'],
             'financial_year_start_month' => ['required', 'integer', 'between:1,12'],
-            'pos_receipt_paper_width' => ['required', 'in:58mm,80mm'],
             'logo' => ['nullable', 'image', 'max:2048'],
             'remove_logo' => ['nullable', 'boolean'],
         ]);
@@ -104,71 +99,6 @@ class SettingController extends Controller implements HasMiddleware
         $company->update(collect($validated)->except(['hero_image', 'remove_hero_image'])->all());
 
         return redirect()->route('settings.website.edit')->with('success', 'Website content updated.');
-    }
-
-    public function editEcommerce()
-    {
-        return view('admin.settings.ecommerce', [
-            'company' => CompanySetting::current(),
-            'sites' => Site::where('status', true)->orderBy('name')->get(),
-        ]);
-    }
-
-    public function updateEcommerce(Request $request)
-    {
-        $validated = $request->validate([
-            'online_site_id' => ['nullable', 'integer', 'exists:sites,id'],
-            'side_banner_1' => ['nullable', 'image', 'max:2048'],
-            'remove_side_banner_1' => ['nullable', 'boolean'],
-            'side_banner_2' => ['nullable', 'image', 'max:2048'],
-            'remove_side_banner_2' => ['nullable', 'boolean'],
-        ]);
-
-        $company = CompanySetting::current();
-
-        $data = [
-            // Checkboxes omit the field entirely when unchecked, so read it directly.
-            'ecommerce_enabled' => $request->boolean('ecommerce_enabled'),
-            'online_site_id' => $validated['online_site_id'] ?? null,
-        ];
-
-        foreach (['side_banner_1', 'side_banner_2'] as $field) {
-            $pathField = "{$field}_path";
-
-            if ($request->boolean("remove_{$field}") && $company->$pathField) {
-                Storage::disk('public')->delete($company->$pathField);
-                $data[$pathField] = null;
-            }
-
-            if ($request->hasFile($field)) {
-                if ($company->$pathField) {
-                    Storage::disk('public')->delete($company->$pathField);
-                }
-                $data[$pathField] = $request->file($field)->store('company', 'public');
-            }
-        }
-
-        $company->update($data);
-
-        return redirect()->route('settings.ecommerce.edit')->with('success', 'E-commerce setting updated.');
-    }
-
-    public function editApprovals()
-    {
-        return view('admin.settings.approvals', ['company' => CompanySetting::current()]);
-    }
-
-    public function updateApprovals(Request $request)
-    {
-        $company = CompanySetting::current();
-
-        $company->update([
-            // Checkboxes omit the field entirely when unchecked, so read them directly.
-            'purchase_requisition_approval_required' => $request->boolean('purchase_requisition_approval_required'),
-            'sale_quotation_approval_required' => $request->boolean('sale_quotation_approval_required'),
-        ]);
-
-        return redirect()->route('settings.approvals.edit')->with('success', 'Approval settings updated.');
     }
 
     public function editAttendance()

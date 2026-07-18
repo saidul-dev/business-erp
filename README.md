@@ -6,6 +6,31 @@
 
 ---
 
+## 0. `base-version-1.0.0` branch scope note
+
+This branch is trimmed down to a **generic base** meant to seed any vertical
+(property management, hospital management, resort management, agency
+management, restaurant management, etc.) — not just the trading/retail
+business described in the original vision below. It keeps only the
+cross-industry-common modules:
+
+- **Auth/Access:** Users, Roles & Permissions, Sites (multi-branch)
+- **Company Website:** Home/About/Media/Career/Contact + Contact Messages inbox
+- **HRM:** Departments, Designations, Employees, Attendance, Leave, Salary, Payroll
+- **Project/Task Management**
+- **Accounting foundation:** Bank Accounts, Payments, Collections, Expenses, Income, Fund Transfers, Capital Transactions, Day Book, Trial Balance, Balance Sheet, P&L, Due Report, Parties (contacts)
+- **Inventory:** Categories, Brands, Units, Attributes, Products/Variants, Stock movements/adjustments/transfers, Stock report
+
+Removed for being retail/trading/e-commerce-specific (not generic across
+verticals): **Sales, Purchases, Purchase Requisitions, Sale Quotations, POS,
+Courier/Delivery, Online Shop/Cart/Checkout/Campaign, Product Reviews,
+Payment-gateway/Steadfast integrations.** Sections 1–8 below describe the
+*original* trading-ERP product vision this codebase started from — read them
+as historical context for the modules that remain, not as a live spec for
+this branch.
+
+---
+
 ## 1. Product Vision & Positioning
 
 A single ERP platform where a trading house, a small factory, a wholesaler, or a retail chain can each run their business — enabling only the modules they need. Instead of building "Garments ERP" or "Pharmacy ERP" from day one, the platform ships with universal business logic (buy → make/stock → sell → collect → report) and grows vertical depth in whichever industry pulls hardest.

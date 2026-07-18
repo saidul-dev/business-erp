@@ -4,19 +4,19 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Collection as CollectionModel;
+use App\Models\Expense;
 use App\Models\LedgerAccount;
 use App\Models\Party;
 use App\Models\Product;
-use App\Models\Sale;
 use App\Models\StockMovement;
 use Illuminate\Support\Facades\Auth;
 
 /**
  * Owner's Daily Digest (README M9) — every stat here is scoped to the
- * user's Current Site (see SetCurrentSite middleware), except Collections:
- * collections/payments carry no site_id (they're pure accounting entries,
- * not tied to a warehouse), so that side of the picture is always
- * company-wide regardless of the site selector.
+ * user's Current Site (see SetCurrentSite middleware), except Collections
+ * and Expenses: they carry no site_id (pure accounting entries, not tied
+ * to a warehouse), so that side of the picture is always company-wide
+ * regardless of the site selector.
  */
 class DashboardController extends Controller
 {
@@ -24,18 +24,14 @@ class DashboardController extends Controller
     {
         $siteId = Auth::user()->current_site_id;
 
-        $todaySales = (float) Sale::whereDate('order_date', today())
-            ->where('status', '!=', 'cancelled')
-            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
-            ->sum('total_amount');
-
         $todayCollection = (float) CollectionModel::whereDate('collection_date', today())->sum('amount');
+        $todayExpense = (float) Expense::whereDate('expense_date', today())->sum('amount');
 
         $totalReceivable = $this->accountBalance('accounts_receivable', $siteId);
 
         [$lowStockItems, $lowStockCount, $criticalCount] = $this->lowStock($siteId);
 
-        [$chartLabels, $salesSeries, $collectionSeries] = $this->weeklyChart($siteId);
+        [$chartLabels, $collectionSeries, $expenseSeries] = $this->weeklyChart();
 
         $topOverdueCustomers = Party::where('is_customer', true)->where('status', true)->get()
             ->map(fn (Party $party) => ['id' => $party->id, 'name' => $party->name, 'due' => $party->receivableBalance()])
@@ -44,18 +40,17 @@ class DashboardController extends Controller
             ->take(6)
             ->values();
 
-        $recentSales = Sale::with('party')
-            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
-            ->orderByDesc('order_date')
+        $recentCollections = CollectionModel::with('party')
+            ->orderByDesc('collection_date')
             ->orderByDesc('id')
             ->take(5)
             ->get();
 
         return view('dashboard', compact(
-            'todaySales', 'todayCollection', 'totalReceivable',
+            'todayCollection', 'todayExpense', 'totalReceivable',
             'lowStockItems', 'lowStockCount', 'criticalCount',
-            'chartLabels', 'salesSeries', 'collectionSeries',
-            'topOverdueCustomers', 'recentSales',
+            'chartLabels', 'collectionSeries', 'expenseSeries',
+            'topOverdueCustomers', 'recentCollections',
         ));
     }
 
@@ -151,29 +146,26 @@ class DashboardController extends Controller
     }
 
     /**
-     * Last 7 days (today inclusive) of Sales value vs Collections received,
-     * for the "Sales vs Collection" chart.
+     * Last 7 days (today inclusive) of Collections received vs Expenses
+     * paid, for the "Collection vs Expense" chart. Both are company-wide
+     * (no site_id), so there's no site filter to apply here.
      *
      * @return array{0: array<string>, 1: array<float>, 2: array<float>}
      */
-    protected function weeklyChart(?int $siteId): array
+    protected function weeklyChart(): array
     {
         $labels = [];
-        $salesSeries = [];
         $collectionSeries = [];
+        $expenseSeries = [];
 
         for ($i = 6; $i >= 0; $i--) {
             $date = today()->subDays($i);
             $labels[] = $date->format('d M');
 
-            $salesSeries[] = (float) Sale::whereDate('order_date', $date)
-                ->where('status', '!=', 'cancelled')
-                ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
-                ->sum('total_amount');
-
             $collectionSeries[] = (float) CollectionModel::whereDate('collection_date', $date)->sum('amount');
+            $expenseSeries[] = (float) Expense::whereDate('expense_date', $date)->sum('amount');
         }
 
-        return [$labels, $salesSeries, $collectionSeries];
+        return [$labels, $collectionSeries, $expenseSeries];
     }
 }

@@ -16,19 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'current-site' => \App\Http\Middleware\SetCurrentSite::class,
-            'ecommerce' => \App\Http\Middleware\EnsureEcommerceEnabled::class,
         ]);
 
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
-        ]);
-
-        // SSLCommerz posts these callbacks server-to-server with no Laravel
-        // session/CSRF token — the val_id round-trip through the Validation
-        // API (see SslCommerzService) is what actually proves authenticity.
-        $middleware->validateCsrfTokens(except: [
-            'payment/sslcommerz/*',
-            'webhooks/steadfast/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
