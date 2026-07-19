@@ -69,6 +69,7 @@ Route::get('/', [WebsiteController::class, 'home'])->name('home');
 Route::get('/about', [WebsiteController::class, 'about'])->name('about');
 Route::get('/media', [WebsiteController::class, 'media'])->name('media');
 Route::get('/career', [WebsiteController::class, 'career'])->name('career');
+Route::get('/pricing', [WebsiteController::class, 'pricing'])->name('pricing');
 Route::get('/contact', [WebsiteController::class, 'contact'])->name('contact');
 Route::post('/contact', [WebsiteController::class, 'submitContact'])->name('contact.submit');
 

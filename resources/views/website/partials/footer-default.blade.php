@@ -15,6 +15,7 @@
                 <li><a href="{{ route('about') }}" class="hover:text-white">{{ __('About') }}</a></li>
                 <li><a href="{{ route('media') }}" class="hover:text-white">{{ __('Media') }}</a></li>
                 <li><a href="{{ route('career') }}" class="hover:text-white">{{ __('Career') }}</a></li>
+                <li><a href="{{ route('pricing') }}" class="hover:text-white">{{ __('Pricing') }}</a></li>
             </ul>
         </div>
 

@@ -19,6 +19,7 @@
                 <a href="{{ route('about') }}" class="text-sm font-medium {{ request()->routeIs('about') ? 'text-white' : 'text-brand-100 hover:text-white' }}">{{ __('About') }}</a>
                 <a href="{{ route('media') }}" class="text-sm font-medium {{ request()->routeIs('media') ? 'text-white' : 'text-brand-100 hover:text-white' }}">{{ __('Media') }}</a>
                 <a href="{{ route('career') }}" class="text-sm font-medium {{ request()->routeIs('career') ? 'text-white' : 'text-brand-100 hover:text-white' }}">{{ __('Career') }}</a>
+                <a href="{{ route('pricing') }}" class="text-sm font-medium {{ request()->routeIs('pricing') ? 'text-white' : 'text-brand-100 hover:text-white' }}">{{ __('Pricing') }}</a>
                 <a href="{{ route('contact') }}" class="text-sm font-medium {{ request()->routeIs('contact') ? 'text-white' : 'text-brand-100 hover:text-white' }}">{{ __('Contact') }}</a>
             </div>
 
@@ -47,6 +48,7 @@
             <a href="{{ route('about') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('About') }}</a>
             <a href="{{ route('media') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Media') }}</a>
             <a href="{{ route('career') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Career') }}</a>
+            <a href="{{ route('pricing') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Pricing') }}</a>
             <a href="{{ route('contact') }}" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Contact') }}</a>
             <div class="flex items-center gap-2 pt-2">
                 @foreach (config('app.available_locales', ['en' => 'English']) as $code => $label)

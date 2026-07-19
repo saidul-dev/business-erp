@@ -152,6 +152,16 @@ class WebsiteController extends Controller
         return view('website.career', ['company' => CompanySetting::current()]);
     }
 
+    /**
+     * Static pricing page — one-time setup + monthly maintenance copy is
+     * hardcoded for now (explicit decision: ship the page design now,
+     * wire real, admin-editable pricing later).
+     */
+    public function pricing()
+    {
+        return view('website.pricing', ['company' => CompanySetting::current()]);
+    }
+
     public function contact()
     {
         return view('website.contact', [
