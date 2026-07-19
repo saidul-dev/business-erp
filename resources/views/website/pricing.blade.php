@@ -1,7 +1,104 @@
-<x-website-layout :title="__('Pricing')">
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
-    <!-- Hero -->
-    <section class="relative overflow-hidden bg-gradient-to-b from-brand-950 to-brand-900">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{{ ($company->name ?? config('app.name', 'Business ERP')) }} — {{ __('Pricing') }}</title>
+    <meta name="description" content="{{ $description ?? $company->tagline ?? $company->about_text ?? 'Own your software, not a subscription.' }}">
+
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800|fraunces:400,500,600&display=swap" rel="stylesheet" />
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+        }
+    </style>
+</head>
+
+<body class="font-sans text-slate-900 antialiased" x-data="{ mobileNavOpen: false }">
+
+    {{-- Own header — this page is a self-contained single-pager, not part of the main site nav --}}
+    <header class="sticky top-0 z-40 bg-brand-950/95 backdrop-blur border-b border-white/10">
+        <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="flex h-16 items-center justify-between">
+                <a href="#home" class="flex items-center gap-3 shrink-0">
+                    @if ($company->logo_url)
+                        <img src="{{ $company->logo_url }}" alt="{{ $company->name }}" class="h-9 w-9 rounded-lg object-cover">
+                    @else
+                        <x-application-logo class="h-9 w-9" />
+                    @endif
+                    <div class="leading-tight">
+                        <span class="block text-lg font-bold text-white tracking-wide">{{ $company->name ?? 'Business ERP' }}</span>
+                        <span class="block text-[11px] font-medium text-accent-400">{{ __('Enterprise Suite') }}</span>
+                    </div>
+                </a>
+
+                <div class="hidden lg:flex items-center gap-8">
+                    <a href="#home" class="text-sm font-medium text-brand-100 hover:text-white">{{ __('Home') }}</a>
+                    <a href="#pricing" class="text-sm font-medium text-brand-100 hover:text-white">{{ __('Pricing') }}</a>
+                    <a href="#features" class="text-sm font-medium text-brand-100 hover:text-white">{{ __('Features') }}</a>
+                    <a href="#contact" class="text-sm font-medium text-brand-100 hover:text-white">{{ __('Contact') }}</a>
+                </div>
+
+                <div class="hidden lg:flex items-center gap-3">
+                    @include('website.partials.language-switcher')
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="rounded-lg bg-accent-500 px-4 py-2 text-sm font-semibold text-brand-950 hover:bg-accent-400">
+                            {{ __('Go to Dashboard') }}
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" class="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10">
+                            {{ __('Login') }}
+                        </a>
+                    @endauth
+                </div>
+
+                <button @click="mobileNavOpen = !mobileNavOpen" class="lg:hidden text-white p-2">
+                    <svg x-show="!mobileNavOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+                    <svg x-show="mobileNavOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="display:none"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Mobile nav -->
+            <div x-show="mobileNavOpen" x-transition class="lg:hidden pb-4 space-y-1" style="display:none">
+                <a href="#home" @click="mobileNavOpen = false" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Home') }}</a>
+                <a href="#pricing" @click="mobileNavOpen = false" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Pricing') }}</a>
+                <a href="#features" @click="mobileNavOpen = false" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Features') }}</a>
+                <a href="#contact" @click="mobileNavOpen = false" class="block rounded-lg px-3 py-2 text-sm font-medium text-brand-100 hover:bg-white/10">{{ __('Contact') }}</a>
+                <div class="flex items-center gap-2 pt-2">
+                    @foreach (config('app.available_locales', ['en' => 'English']) as $code => $label)
+                    <form method="POST" action="{{ route('language.switch', $code) }}">
+                        @csrf
+                        <button type="submit" class="rounded-lg px-3 py-1.5 text-xs font-semibold {{ app()->getLocale() === $code ? 'bg-accent-500 text-brand-950' : 'bg-white/10 text-white' }}">{{ $label }}</button>
+                    </form>
+                    @endforeach
+                </div>
+                <div class="pt-2">
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="block rounded-lg bg-accent-500 px-3 py-2 text-center text-sm font-semibold text-brand-950">{{ __('Go to Dashboard') }}</a>
+                    @else
+                        <a href="{{ route('login') }}" class="block rounded-lg border border-white/20 px-3 py-2 text-center text-sm font-semibold text-white">{{ __('Login') }}</a>
+                    @endauth
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+
+    {{-- Home: hero + why-not-saas --}}
+    <section id="home" class="scroll-mt-24 relative overflow-hidden bg-gradient-to-b from-brand-950 to-brand-900">
         <div class="pointer-events-none absolute inset-0 opacity-[0.06]"
             style="background-image: linear-gradient(#67e8f9 1px, transparent 1px), linear-gradient(90deg, #67e8f9 1px, transparent 1px); background-size: 32px 32px;">
         </div>
@@ -65,8 +162,8 @@
         </div>
     </section>
 
-    <!-- Pricing tiers -->
-    <section class="bg-slate-50 py-20 sm:py-28">
+    {{-- Pricing --}}
+    <section id="pricing" class="scroll-mt-24 bg-slate-50 py-20 sm:py-28">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto">
                 <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">{{ __('Transparent Pricing') }}</p>
@@ -108,7 +205,7 @@
                         <p class="mt-2 text-[11px] text-slate-500">{{ __('Storage can be upgraded any time as your data grows.') }}</p>
                     </div>
 
-                    <a href="{{ route('contact') }}" class="mt-8 block rounded-lg border border-brand-900 px-6 py-3 text-center text-sm font-semibold text-brand-900 hover:bg-brand-900 hover:text-white">
+                    <a href="#contact" class="mt-8 block rounded-lg border border-brand-900 px-6 py-3 text-center text-sm font-semibold text-brand-900 hover:bg-brand-900 hover:text-white">
                         {{ __('Request a Quote') }}
                     </a>
 
@@ -151,7 +248,7 @@
                         </li>
                     </ul>
 
-                    <a href="#full-feature-list" class="mt-5 flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-700 hover:text-brand-900">
+                    <a href="#features" class="mt-5 flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-700 hover:text-brand-900">
                         {{ __('See full feature list') }}
                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/></svg>
                     </a>
@@ -186,7 +283,7 @@
                         <p class="mt-2 text-[11px] text-slate-500">{{ __('Storage can be upgraded any time as your data grows.') }}</p>
                     </div>
 
-                    <a href="{{ route('contact') }}" class="mt-8 block rounded-lg bg-brand-900 px-6 py-3 text-center text-sm font-semibold text-white hover:bg-brand-800">
+                    <a href="#contact" class="mt-8 block rounded-lg bg-brand-900 px-6 py-3 text-center text-sm font-semibold text-white hover:bg-brand-800">
                         {{ __('Request a Quote') }}
                     </a>
 
@@ -240,7 +337,7 @@
                         </li>
                     </ul>
 
-                    <a href="#full-feature-list" class="mt-5 flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-700 hover:text-brand-900">
+                    <a href="#features" class="mt-5 flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-700 hover:text-brand-900">
                         {{ __('See full feature list') }}
                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/></svg>
                     </a>
@@ -272,7 +369,7 @@
                         <p class="mt-2 text-[11px] text-slate-500">{{ __('Storage can be upgraded any time as your data grows.') }}</p>
                     </div>
 
-                    <a href="{{ route('contact') }}" class="mt-8 block rounded-lg border border-brand-900 px-6 py-3 text-center text-sm font-semibold text-brand-900 hover:bg-brand-900 hover:text-white">
+                    <a href="#contact" class="mt-8 block rounded-lg border border-brand-900 px-6 py-3 text-center text-sm font-semibold text-brand-900 hover:bg-brand-900 hover:text-white">
                         {{ __('Talk to Sales') }}
                     </a>
 
@@ -330,7 +427,7 @@
                         </li>
                     </ul>
 
-                    <a href="#full-feature-list" class="mt-5 flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-700 hover:text-brand-900">
+                    <a href="#features" class="mt-5 flex items-center justify-center gap-1.5 text-xs font-semibold text-brand-700 hover:text-brand-900">
                         {{ __('See full feature list') }}
                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/></svg>
                     </a>
@@ -362,7 +459,7 @@
                             {{ __("Every business works a little differently. New reports, custom workflows, third-party integrations — we build it and quote it individually, based on the scope of work, not a fixed plan.") }}
                         </p>
                     </div>
-                    <a href="{{ route('contact') }}" class="inline-block whitespace-nowrap rounded-lg bg-accent-500 px-8 py-3 text-center text-sm font-semibold text-brand-950 hover:bg-accent-400">
+                    <a href="#contact" class="inline-block whitespace-nowrap rounded-lg bg-accent-500 px-8 py-3 text-center text-sm font-semibold text-brand-950 hover:bg-accent-400">
                         {{ __('Request a Quotation') }}
                     </a>
                 </div>
@@ -370,8 +467,8 @@
         </div>
     </section>
 
-    <!-- Full feature list -->
-    <section id="full-feature-list" class="scroll-mt-24 bg-slate-50 py-20 sm:py-28">
+    {{-- Features --}}
+    <section id="features" class="scroll-mt-24 bg-slate-50 py-20 sm:py-28">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto">
                 <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">{{ __('Full Feature List') }}</p>
@@ -556,23 +653,102 @@
         </div>
     </section>
 
-    <!-- Final CTA -->
-    <section class="bg-slate-50 pb-20 sm:pb-28">
+    {{-- Contact --}}
+    <section id="contact" class="scroll-mt-24 bg-slate-50 py-20 sm:py-28">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-b from-brand-950 to-brand-900 px-6 py-14 sm:px-14 sm:py-16 text-center">
-                <div class="pointer-events-none absolute inset-0 opacity-[0.06]"
-                    style="background-image: linear-gradient(#67e8f9 1px, transparent 1px), linear-gradient(90deg, #67e8f9 1px, transparent 1px); background-size: 32px 32px;">
+            <div class="text-center max-w-2xl mx-auto">
+                <p class="text-sm font-semibold text-accent-600 tracking-wide uppercase">{{ __('Get in Touch') }}</p>
+                <h2 class="font-display leading-[1.7] mt-2 text-3xl sm:text-4xl font-medium text-brand-950">{{ __('Ready to run your business on your own system?') }}</h2>
+                <p class="mt-4 leading-relaxed text-slate-600">{{ __('Tell us about your business and we will recommend the right package and setup timeline.') }}</p>
+            </div>
+
+            <div class="mt-14 mx-auto max-w-5xl grid gap-10 lg:grid-cols-2">
+                <div class="space-y-5">
+                    @if ($company->email)
+                        <div class="flex items-center gap-3">
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white text-brand-700 ring-1 ring-slate-200">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+                            </span>
+                            <span class="text-slate-700">{{ $company->email }}</span>
+                        </div>
+                    @endif
+                    @if ($company->phone)
+                        <div class="flex items-center gap-3">
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white text-brand-700 ring-1 ring-slate-200">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a1.5 1.5 0 0 0 1.5-1.5v-3.379a1.5 1.5 0 0 0-1.06-1.436l-4.318-1.318a1.5 1.5 0 0 0-1.567.44l-1.03 1.235a11.25 11.25 0 0 1-5.632-5.633l1.235-1.03a1.5 1.5 0 0 0 .44-1.566L7.755 3.31a1.5 1.5 0 0 0-1.436-1.06H3a1.5 1.5 0 0 0-1.5 1.5v3Z"/></svg>
+                            </span>
+                            <span class="text-slate-700">{{ $company->phone }}</span>
+                        </div>
+                    @endif
+                    @if ($company->address)
+                        <div class="flex items-start gap-3">
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white text-brand-700 ring-1 ring-slate-200">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                            </span>
+                            <span class="text-slate-700">{{ $company->address }}</span>
+                        </div>
+                    @endif
+                    @if (!$company->email && !$company->phone && !$company->address)
+                        <p class="text-slate-500">{{ __('Contact details will appear here once added in Admin > Settings.') }}</p>
+                    @endif
                 </div>
 
-                <div class="relative">
-                    <h2 class="font-display leading-[1.7] text-2xl sm:text-3xl font-medium text-white">{{ __('Ready to run your business on your own system?') }}</h2>
-                    <p class="mt-3 max-w-xl mx-auto leading-relaxed text-brand-200/90">{{ __('Tell us about your business and we will recommend the right package and setup timeline.') }}</p>
-                    <a href="{{ route('contact') }}" class="mt-8 inline-block rounded-lg bg-accent-500 px-8 py-3 text-sm font-semibold text-brand-950 hover:bg-accent-400">
-                        {{ __('Get a Free Consultation') }}
-                    </a>
+                <div>
+                    @include('website.partials.contact-form')
                 </div>
             </div>
         </div>
     </section>
 
-</x-website-layout>
+    </main>
+
+    {{-- Own footer — matches the header in being scoped to this single page --}}
+    <footer class="bg-brand-950 text-brand-200/80 border-t border-white/10">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+                <div class="flex items-center gap-3 mb-3">
+                    @if ($company->logo_url)
+                        <img src="{{ $company->logo_url }}" alt="{{ $company->name }}" class="h-8 w-8 rounded-lg object-cover">
+                    @else
+                        <x-application-logo class="h-8 w-8" />
+                    @endif
+                    <span class="text-base font-bold text-white">{{ $company->name ?? 'Business ERP' }}</span>
+                </div>
+                <p class="text-sm">{{ $company->tagline ?: __('Own your software, not a subscription.') }}</p>
+            </div>
+
+            <div>
+                <p class="text-sm font-semibold text-white mb-3">{{ __('Menu') }}</p>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#home" class="hover:text-white">{{ __('Home') }}</a></li>
+                    <li><a href="#pricing" class="hover:text-white">{{ __('Pricing') }}</a></li>
+                    <li><a href="#features" class="hover:text-white">{{ __('Features') }}</a></li>
+                    <li><a href="#contact" class="hover:text-white">{{ __('Contact') }}</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <p class="text-sm font-semibold text-white mb-3">{{ __('Contact') }}</p>
+                <ul class="space-y-2 text-sm">
+                    @if ($company->email)
+                        <li>{{ $company->email }}</li>
+                    @endif
+                    @if ($company->phone)
+                        <li>{{ $company->phone }}</li>
+                    @endif
+                    @if ($company->address)
+                        <li>{{ $company->address }}</li>
+                    @endif
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-white/10 py-6 text-center text-xs text-brand-300/70">
+            &copy; {{ date('Y') }} {{ $company->name ?? 'Business ERP' }} &middot; {{ __('Enterprise Suite') }}
+            &middot; {{ __('Powered by') }} <a href="https://vexasoft.net" target="_blank" rel="noopener" class="font-semibold hover:text-white">Vexasoft</a>
+        </div>
+    </footer>
+
+</body>
+
+</html>
