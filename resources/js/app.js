@@ -652,6 +652,48 @@ Alpine.data('posTerminal', (initial) => ({
     },
 }));
 
+Alpine.data('aiTerminal', (initial) => ({
+    askUrl: initial.askUrl,
+    query: '',
+    asking: false,
+    history: [],
+
+    init() {
+        this.$nextTick(() => this.$refs.input?.focus());
+    },
+
+    ask() {
+        const question = this.query.trim();
+        if (! question || this.asking) return;
+
+        const index = this.history.push({ question, reply: null, error: null }) - 1;
+        this.query = '';
+        this.asking = true;
+
+        this.$nextTick(() => this.scrollToEnd());
+
+        axios.post(this.askUrl, { query: question })
+            .then((res) => { this.history[index].reply = res.data.reply; })
+            .catch((err) => {
+                this.history[index].error = err.response?.data?.errors
+                    ? Object.values(err.response.data.errors).flat().join(' ')
+                    : 'Something went wrong. Try again.';
+            })
+            .finally(() => {
+                this.asking = false;
+                this.$nextTick(() => {
+                    this.scrollToEnd();
+                    this.$refs.input?.focus();
+                });
+            });
+    },
+
+    scrollToEnd() {
+        const el = this.$refs.scrollback;
+        if (el) el.scrollTop = el.scrollHeight;
+    },
+}));
+
 window.Alpine = Alpine;
 window.Chart = Chart;
 

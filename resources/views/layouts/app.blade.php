@@ -64,6 +64,19 @@
                         <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Dashboard')
                             }}</span>
                     </x-sidebar-link>
+
+                    @can('accounts.view')
+                    <x-sidebar-link :href="route('ai-terminal.index')" :active="request()->routeIs('ai-terminal.*')"
+                        :title="__('AI Terminal')">
+                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.75 7.5 9 9.75 6.75 12m4.5 3h4.5M4.5 18.75h15A2.25 2.25 0 0 0 21.75 16.5V6a2.25 2.25 0 0 0-2.25-2.25h-15A2.25 2.25 0 0 0 2.25 6v10.5A2.25 2.25 0 0 0 4.5 18.75Z" />
+                        </svg>
+                        <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('AI Terminal')
+                            }}</span>
+                    </x-sidebar-link>
+                    @endcan
                 </div>
 
                 <div>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AiTerminalController;
 use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\BalanceSheetController;
 use App\Http\Controllers\Admin\BrandController;
@@ -286,6 +287,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/balance-sheet', [BalanceSheetController::class, 'index'])->name('balance-sheet.index');
         Route::get('/profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index');
         Route::get('/due-report', [DueReportController::class, 'index'])->name('due-report.index');
+        Route::get('/ai-terminal', [AiTerminalController::class, 'index'])->name('ai-terminal.index');
+        Route::post('/ai-terminal/ask', [AiTerminalController::class, 'ask'])->name('ai-terminal.ask');
 
         Route::get('/contact-messages', [ContactMessageController::class, 'index'])->name('contact-messages.index');
         Route::get('/contact-messages/{contactMessage}', [ContactMessageController::class, 'show'])->name('contact-messages.show');

@@ -48,4 +48,9 @@ return [
         'webhook_token' => env('STEADFAST_WEBHOOK_TOKEN'),
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-flash-latest'),
+    ],
+
 ];
