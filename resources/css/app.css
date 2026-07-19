@@ -8,6 +8,10 @@
     display: none !important;
 }
 
+.font-display {
+    font-family: 'Fraunces', ui-serif, Georgia, serif;
+}
+
 /* Trix ships its own light-grey chrome — this restyles it to match the
    admin's rounded/slate form-field look instead of overriding every rule. */
 trix-toolbar .trix-button-row {
