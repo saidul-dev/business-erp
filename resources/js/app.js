@@ -662,7 +662,8 @@ Alpine.data('aiTerminal', (initial) => ({
         this.$nextTick(() => this.$refs.input?.focus());
     },
 
-    ask() {
+    ask(preset) {
+        if (typeof preset === 'string') this.query = preset;
         const question = this.query.trim();
         if (! question || this.asking) return;
 
@@ -691,6 +692,11 @@ Alpine.data('aiTerminal', (initial) => ({
     scrollToEnd() {
         const el = this.$refs.scrollback;
         if (el) el.scrollTop = el.scrollHeight;
+    },
+
+    clear() {
+        this.history = [];
+        this.$nextTick(() => this.$refs.input?.focus());
     },
 }));
 
