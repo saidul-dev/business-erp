@@ -89,42 +89,14 @@
         </a>
 
         {{-- Hero: oversized headline (decorative background) + tagline & card (normal flow, layered on top) --}}
-        <div class="relative mt-8 lg:mt-10">
-            <h1 class="headline-oversized pointer-events-none select-none lg:absolute lg:inset-x-0 lg:top-0 lg:z-0">{{
+        {{-- Mobile: card appears first (usable immediately). Large screens: original side-by-side layout via lg:order-*. --}}
+        <div class="relative mt-8 flex flex-col gap-6 lg:mt-10 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+            <h1 class="headline-oversized pointer-events-none select-none order-2 lg:order-none lg:absolute lg:inset-x-0 lg:top-0 lg:z-0">{{
                 __('Sign in.') }}</h1>
 
-            <div class="relative z-10 lg:flex lg:items-start lg:justify-between lg:gap-10">
-                <div class="mt-4 max-w-sm lg:mt-24">
-                    <p class="font-display text-base italic text-[#3c3527]">
-                        {{ __('Every sale.') }} {{ __('Every transaction.') }}
-                        <span class="not-italic font-semibold text-brand-900">{{ __('One system.') }}</span>
-                    </p>
-                    <p class="mt-2.5 text-sm leading-relaxed text-[#8a8577]">
-                        {{ __('The operational backbone for modern businesses — from purchasing and inventory to
-                        accounting,
-                        POS, and eCommerce, all in one platform.') }}
-                    </p>
-
-                    {{-- Module list --}}
-                    <div class="mt-8 border-t border-[#e9e5d8] pt-5">
-                        <p class="font-mono-label text-[10px] tracking-[0.18em] text-[#a39d8a] uppercase">{{
-                            __('What\'s inside') }}</p>
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            @foreach ([__('Purchase, Sales & POS'), __('Inventory & Multi-Warehouse'), __('E-commerce
-                            & Delivery'), __('Accounts & Reports'), __('Customer & Supplier Management'), __('HRM')]
-                            as $module)
-                            <span
-                                class="fade-row rounded-full border border-[#e2ddcc] px-3 py-1.5 text-xs font-medium text-[#4a4636]">
-                                {{ $module }}
-                            </span>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Sign-in card --}}
-                <div
-                    class="relative mt-8 w-full max-w-sm shrink-0 rounded-2xl bg-gradient-to-br from-brand-900 to-brand-950 p-6 shadow-2xl shadow-brand-950/30 sm:p-7 lg:mt-4">
+            {{-- Sign-in card --}}
+            <div
+                class="relative z-10 order-1 w-full max-w-sm shrink-0 rounded-2xl bg-gradient-to-br from-brand-900 to-brand-950 p-6 shadow-2xl shadow-brand-950/30 sm:p-7 lg:order-2 lg:mt-4">
                 <p class="font-mono-label text-[10px] tracking-[0.18em] text-accent-300/80 uppercase">{{ __('Welcome back') }}</p>
                 <h2 class="font-display mt-1 text-2xl font-medium text-white">{{ __('Sign in') }}</h2>
 
@@ -195,6 +167,33 @@
                     </div>
                 </div>
                 @endif
+            </div>
+
+            <div class="relative z-10 order-3 max-w-sm lg:order-1 lg:mt-24">
+                <p class="font-display text-base italic text-[#3c3527]">
+                    {{ __('Every sale.') }} {{ __('Every transaction.') }}
+                    <span class="not-italic font-semibold text-brand-900">{{ __('One system.') }}</span>
+                </p>
+                <p class="mt-2.5 text-sm leading-relaxed text-[#8a8577]">
+                    {{ __('The operational backbone for modern businesses — from purchasing and inventory to
+                    accounting,
+                    POS, and eCommerce, all in one platform.') }}
+                </p>
+
+                {{-- Module list --}}
+                <div class="mt-8 border-t border-[#e9e5d8] pt-5">
+                    <p class="font-mono-label text-[10px] tracking-[0.18em] text-[#a39d8a] uppercase">{{
+                        __('What\'s inside') }}</p>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        @foreach ([__('Purchase, Sales & POS'), __('Inventory & Multi-Warehouse'), __('E-commerce
+                        & Delivery'), __('Accounts & Reports'), __('Customer & Supplier Management'), __('HRM')]
+                        as $module)
+                        <span
+                            class="fade-row rounded-full border border-[#e2ddcc] px-3 py-1.5 text-xs font-medium text-[#4a4636]">
+                            {{ $module }}
+                        </span>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
