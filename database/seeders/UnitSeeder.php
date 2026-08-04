@@ -19,11 +19,12 @@ class UnitSeeder extends Seeder
             ['name' => 'Gram', 'short_name' => 'g'],
             ['name' => 'Litre', 'short_name' => 'L'],
             ['name' => 'Millilitre', 'short_name' => 'mL'],
+            ['name' => 'Plate', 'short_name' => 'Plate'],
+            ['name' => 'Bottle', 'short_name' => 'Btl'],
+            ['name' => 'Cup', 'short_name' => 'Cup'],
             ['name' => 'Box', 'short_name' => 'Box'],
             ['name' => 'Dozen', 'short_name' => 'Dz'],
-            ['name' => 'Meter', 'short_name' => 'm'],
             ['name' => 'Pack', 'short_name' => 'Pack'],
-            ['name' => 'Set', 'short_name' => 'Set'],
         ];
 
         foreach ($units as $unit) {

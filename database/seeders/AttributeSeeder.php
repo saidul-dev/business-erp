@@ -15,8 +15,8 @@ class AttributeSeeder extends Seeder
     public function run(): void
     {
         $attributes = [
-            'Color' => ['Black', 'White', 'Red', 'Blue', 'Green', 'Gray'],
-            'Size' => ['S', 'M', 'L', 'XL', 'XXL'],
+            'Portion Size' => ['Regular', 'Large', 'Family'],
+            'Spice Level' => ['Mild', 'Medium', 'Hot'],
         ];
 
         foreach ($attributes as $name => $values) {

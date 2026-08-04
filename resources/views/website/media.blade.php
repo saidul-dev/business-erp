@@ -6,7 +6,7 @@
                 {{ __('Media') }}
             </span>
             <h1 class="mt-6 text-4xl font-extrabold text-white">{{ __('Photos & Press') }}</h1>
-            <p class="mt-4 text-brand-200/90">{{ __('A look at our shop, products and team — updated regularly.') }}</p>
+            <p class="mt-4 text-brand-200/90">{{ __('A look at our restaurant, menu and team — updated regularly.') }}</p>
         </div>
     </section>
 

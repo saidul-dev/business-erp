@@ -13,14 +13,19 @@ class DesignationSeeder extends Seeder
     public function run(): void
     {
         $designations = [
-            'Director',
-            'Manager',
+            'General Manager',
+            'Restaurant Manager',
             'Assistant Manager',
-            'Team Lead',
-            'Senior Executive',
-            'Executive',
-            'Officer',
-            'Intern',
+            'Head Chef',
+            'Sous Chef',
+            'Line Cook',
+            'Kitchen Helper',
+            'Floor Captain',
+            'Waiter',
+            'Bartender',
+            'Cashier',
+            'Steward',
+            'Delivery Rider',
         ];
 
         foreach ($designations as $name) {

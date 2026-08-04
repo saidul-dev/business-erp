@@ -13,7 +13,7 @@ class BrandSeeder extends Seeder
      */
     public function run(): void
     {
-        $brands = ['Walton', 'Pran', 'Square', 'Generic'];
+        $brands = ['Coca-Cola', 'Pran', 'Fresh', 'Generic'];
 
         foreach ($brands as $name) {
             Brand::firstOrCreate(['name' => $name]);

@@ -38,9 +38,9 @@ class LedgerAccountSeeder extends Seeder
             // tied to inventory) so P&L reports this cost on its own line.
             ['code' => 'internal_consumption_expense', 'name' => 'Internal Consumption Expense', 'group' => 'income_expense', 'nature' => 'debit'],
 
-            // Courier fee, deducted from a COD remittance — see
-            // CourierConsignmentController::settleCod().
-            ['code' => 'courier_expense', 'name' => 'Courier & Delivery Expense', 'group' => 'income_expense', 'nature' => 'debit'],
+            // Rider commission/fee for home-delivered orders (own riders or
+            // an aggregator like Pathao/Foodpanda).
+            ['code' => 'courier_expense', 'name' => 'Delivery Expense', 'group' => 'income_expense', 'nature' => 'debit'],
 
             // Manual income categories — see IncomeController. Distinct
             // from sales_revenue above, which only ever gets posted

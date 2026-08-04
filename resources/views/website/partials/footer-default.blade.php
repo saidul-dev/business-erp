@@ -6,7 +6,7 @@
                 <x-application-logo class="h-8 w-8" />
                 <span class="text-base font-bold text-white">{{ $company->name ?? 'Business ERP' }}</span>
             </div>
-            <p class="text-sm">{{ $company->tagline ?: __('Quality products, trusted service.') }}</p>
+            <p class="text-sm">{{ $company->tagline ?: __('Quality food, trusted service.') }}</p>
         </div>
 
         <div>
