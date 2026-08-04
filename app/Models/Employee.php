@@ -150,6 +150,7 @@ class Employee extends Model
         }
 
         $user = User::create([
+            'tenant_id' => $this->branch->tenant_id,
             'name' => $this->name,
             'email' => $email,
             'password' => $password,

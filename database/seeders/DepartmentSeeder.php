@@ -10,7 +10,7 @@ class DepartmentSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
         $departments = [
             'Kitchen',
@@ -23,7 +23,7 @@ class DepartmentSeeder extends Seeder
         ];
 
         foreach ($departments as $name) {
-            Department::firstOrCreate(['name' => $name]);
+            Department::firstOrCreate(['tenant_id' => $tenantId, 'name' => $name]);
         }
     }
 }

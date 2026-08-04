@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'current-branch' => \App\Http\Middleware\SetCurrentBranch::class,
+            'subscription-active' => \App\Http\Middleware\EnsureSubscriptionActive::class,
         ]);
 
         $middleware->web(append: [

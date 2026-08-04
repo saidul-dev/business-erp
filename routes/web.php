@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\ProfitLossController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SalaryStructureController;
+use App\Http\Controllers\Admin\BillingController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\SiteHealthController;
@@ -63,9 +64,14 @@ Route::post('/language/{locale}', [LanguageController::class, 'switch'])->name('
 // can live at the root without colliding with these routes.
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->middleware(['auth', 'verified', 'current-branch'])->name('dashboard');
+        ->middleware(['auth', 'verified', 'subscription-active', 'current-branch'])->name('dashboard');
 
-    Route::middleware(['auth', 'current-branch'])->group(function () {
+    Route::middleware(['auth', 'subscription-active'])->group(function () {
+        Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+        Route::post('/billing', [BillingController::class, 'store'])->name('billing.store');
+    });
+
+    Route::middleware(['auth', 'subscription-active', 'current-branch'])->group(function () {
         Route::get('/select-branch', [CurrentBranchController::class, 'select'])->name('branches.select');
         Route::post('/switch-branch', [CurrentBranchController::class, 'switch'])->name('branches.switch');
 

@@ -10,7 +10,7 @@ class CategorySeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
         $categories = [
             'Appetizers',
@@ -24,7 +24,7 @@ class CategorySeeder extends Seeder
         ];
 
         foreach ($categories as $name) {
-            Category::firstOrCreate(['name' => $name]);
+            Category::firstOrCreate(['tenant_id' => $tenantId, 'name' => $name]);
         }
     }
 }

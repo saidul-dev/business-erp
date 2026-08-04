@@ -10,7 +10,7 @@ class LedgerAccountSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
         $accounts = [
             ['code' => 'cash_in_hand', 'name' => 'Cash in Hand', 'group' => 'cash_bank', 'nature' => 'debit', 'is_cash' => true],
@@ -62,7 +62,7 @@ class LedgerAccountSeeder extends Seeder
 
         foreach ($accounts as $account) {
             LedgerAccount::firstOrCreate(
-                ['code' => $account['code']],
+                ['tenant_id' => $tenantId, 'code' => $account['code']],
                 $account + ['is_system' => true]
             );
         }

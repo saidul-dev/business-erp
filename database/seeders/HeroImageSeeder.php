@@ -20,9 +20,9 @@ class HeroImageSeeder extends Seeder
 
     protected const TARGET_PATH = 'company/default-hero.png';
 
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
-        $company = CompanySetting::current();
+        $company = CompanySetting::current($tenantId);
 
         // Never overwrite a photo a client already uploaded.
         if ($company->hero_image_path) {

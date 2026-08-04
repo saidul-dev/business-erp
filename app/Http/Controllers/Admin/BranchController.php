@@ -33,11 +33,25 @@ class BranchController extends Controller implements HasMiddleware
 
     public function create()
     {
+        $tenant = auth()->user()->tenant;
+
+        if (! $tenant->canCreateAnotherBranch()) {
+            return redirect()->route('branches.index')
+                ->with('error', "You've reached your plan's branch limit — upgrade your package to add another branch.");
+        }
+
         return view('admin.branches.create', ['types' => Branch::TYPES]);
     }
 
     public function store(Request $request)
     {
+        $tenant = auth()->user()->tenant;
+
+        if (! $tenant->canCreateAnotherBranch()) {
+            return redirect()->route('branches.index')
+                ->with('error', "You've reached your plan's branch limit — upgrade your package to add another branch.");
+        }
+
         $validated = $this->validated($request);
 
         $branch = Branch::create($validated);
@@ -81,7 +95,10 @@ class BranchController extends Controller implements HasMiddleware
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:50', Rule::unique('branches', 'code')->ignore($branch?->id)],
+            'code' => [
+                'required', 'string', 'max:50',
+                Rule::unique('branches', 'code')->where('tenant_id', auth()->user()->tenant_id)->ignore($branch?->id),
+            ],
             'type' => ['required', 'string', Rule::in(Branch::TYPES)],
             'address' => ['nullable', 'string', 'max:1000'],
             'phone' => ['nullable', 'string', 'max:30'],

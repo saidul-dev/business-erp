@@ -12,9 +12,9 @@ use Illuminate\Database\Seeder;
  */
 class CompanyProfileSeeder extends Seeder
 {
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
-        $company = CompanySetting::current();
+        $company = CompanySetting::current($tenantId);
 
         // Never overwrite text a client already wrote in Admin > Settings > Website.
         if ($company->about_text || $company->mission_text || $company->vision_text || $company->values_text) {

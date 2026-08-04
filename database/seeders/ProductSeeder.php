@@ -81,13 +81,17 @@ class ProductSeeder extends Seeder
     ];
 
     /**
-     * Run the database seeds.
+     * Run the database seeds. Every lookup below is explicitly filtered by
+     * tenant_id (not just the writes) — this runs from the CLI/registration
+     * flow with no authenticated user, so the model's tenant global scope
+     * never kicks in on its own; an unfiltered pluck() would quietly mix in
+     * every other tenant's rows of the same name.
      */
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
-        $categories = Category::pluck('id', 'name');
-        $brands = Brand::pluck('id', 'name');
-        $units = Unit::pluck('id', 'short_name');
+        $categories = Category::where('tenant_id', $tenantId)->pluck('id', 'name');
+        $brands = Brand::where('tenant_id', $tenantId)->pluck('id', 'name');
+        $units = Unit::where('tenant_id', $tenantId)->pluck('id', 'short_name');
 
         $barcodeSeq = 1;
 
@@ -100,7 +104,7 @@ class ProductSeeder extends Seeder
                 $sku = sprintf('%s-%03d', $code, $index + 1);
 
                 Product::firstOrCreate(
-                    ['sku' => $sku],
+                    ['tenant_id' => $tenantId, 'sku' => $sku],
                     [
                         'name' => $item['name'],
                         'barcode' => sprintf('8801%08d', $barcodeSeq++),
@@ -120,7 +124,7 @@ class ProductSeeder extends Seeder
             }
         }
 
-        $this->seedVariantProducts($categories, $units, $barcodeSeq);
+        $this->seedVariantProducts($tenantId, $categories, $units);
     }
 
     /**
@@ -128,17 +132,17 @@ class ProductSeeder extends Seeder
      * Product Variant feature has real data to show on first login —
      * Chicken Biryani by Portion Size, Chicken Curry by Spice Level.
      */
-    protected function seedVariantProducts(Collection $categories, Collection $units, int $barcodeSeq): void
+    protected function seedVariantProducts(?int $tenantId, Collection $categories, Collection $units): void
     {
-        $portionAttributeId = Attribute::where('name', 'Portion Size')->value('id');
-        $spiceAttributeId = Attribute::where('name', 'Spice Level')->value('id');
+        $portionAttributeId = Attribute::where('tenant_id', $tenantId)->where('name', 'Portion Size')->value('id');
+        $spiceAttributeId = Attribute::where('tenant_id', $tenantId)->where('name', 'Spice Level')->value('id');
         $portionValueIds = AttributeValue::where('attribute_id', $portionAttributeId)->pluck('id', 'value');
         $spiceValueIds = AttributeValue::where('attribute_id', $spiceAttributeId)->pluck('id', 'value');
 
         $plateUnitId = $units['Plate'];
 
         $biryani = Product::firstOrCreate(
-            ['sku' => 'RB-004'],
+            ['tenant_id' => $tenantId, 'sku' => 'RB-004'],
             [
                 'name' => 'Chicken Biryani',
                 'category_id' => $categories['Rice & Biryani'],
@@ -174,7 +178,7 @@ class ProductSeeder extends Seeder
         }
 
         $curry = Product::firstOrCreate(
-            ['sku' => 'MC-004'],
+            ['tenant_id' => $tenantId, 'sku' => 'MC-004'],
             [
                 'name' => 'Chicken Curry',
                 'category_id' => $categories['Main Course'],

@@ -11,7 +11,7 @@ class UnitSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
         $units = [
             ['name' => 'Piece', 'short_name' => 'Pcs'],
@@ -28,7 +28,7 @@ class UnitSeeder extends Seeder
         ];
 
         foreach ($units as $unit) {
-            Unit::firstOrCreate(['short_name' => $unit['short_name']], $unit);
+            Unit::firstOrCreate(['tenant_id' => $tenantId, 'short_name' => $unit['short_name']], $unit);
         }
     }
 }

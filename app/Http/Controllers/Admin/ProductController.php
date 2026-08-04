@@ -276,8 +276,14 @@ class ProductController extends Controller implements HasMiddleware
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'sku' => ['required', 'string', 'max:100', Rule::unique('products', 'sku')->ignore($product?->id)],
-            'barcode' => ['nullable', 'string', 'max:100', Rule::unique('products', 'barcode')->ignore($product?->id)],
+            'sku' => [
+                'required', 'string', 'max:100',
+                Rule::unique('products', 'sku')->where('tenant_id', auth()->user()->tenant_id)->ignore($product?->id),
+            ],
+            'barcode' => [
+                'nullable', 'string', 'max:100',
+                Rule::unique('products', 'barcode')->where('tenant_id', auth()->user()->tenant_id)->ignore($product?->id),
+            ],
             'category_id' => ['required', 'integer', 'exists:categories,id'],
             'brand_id' => ['nullable', 'integer', 'exists:brands,id'],
             'stock_unit_id' => ['required', 'integer', 'exists:units,id'],

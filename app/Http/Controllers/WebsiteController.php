@@ -5,43 +5,26 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\CompanySetting;
 use App\Models\ContactMessage;
+use App\Models\Plan;
 use App\Models\Product;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 
 class WebsiteController extends Controller
 {
+    /**
+     * The root domain is the SaaS product's own marketing page (pricing,
+     * register CTA) — not any one tenant's restaurant site. A per-tenant
+     * public storefront (the old home() behavior, still in
+     * website/home.blade.php) needs its own tenant context to show safely
+     * — Product/Category/Branch have no meaning at the root with no tenant
+     * signed in, and would leak across tenants if queried unscoped here.
+     * Revisit once per-tenant public sites get real subdomain routing.
+     */
     public function home()
     {
-        $company = CompanySetting::current();
-
-        $categories = Category::whereNull('parent_id')->where('status', true)
-            ->withCount('products')
-            ->with(['products' => fn ($q) => $q->where('status', true)->whereNotNull('image_path')->limit(1)])
-            ->having('products_count', '>', 0)
-            ->orderBy('name')
-            ->get();
-
-        $products = Product::with('stockUnit')
-            ->where('status', true)->where('has_variants', false)
-            ->orderByDesc('id')
-            ->limit(20)
-            ->get();
-
-        // Top-of-page highlight row — prefer products with a real photo
-        // (they carry the card visually), topped up with the newest
-        // otherwise so the row still has 3 even with no photos uploaded yet.
-        $featuredProducts = $products->sortByDesc(fn (Product $p) => $p->image_path ? 1 : 0)->take(3)->values();
-
-        $branches = Branch::where('status', true)->orderBy('name')->get();
-
-        return view('website.home', [
-            'company' => $company,
-            'categories' => $categories,
-            'products' => $products,
-            'featuredProducts' => $featuredProducts,
-            'branches' => $branches,
-            'heroStats' => $this->catalogStats(),
+        return view('website.saas-home', [
+            'plans' => Plan::where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 

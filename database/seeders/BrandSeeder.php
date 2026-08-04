@@ -11,12 +11,12 @@ class BrandSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
         $brands = ['Coca-Cola', 'Pran', 'Fresh', 'Generic'];
 
         foreach ($brands as $name) {
-            Brand::firstOrCreate(['name' => $name]);
+            Brand::firstOrCreate(['tenant_id' => $tenantId, 'name' => $name]);
         }
     }
 }

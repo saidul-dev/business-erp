@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Branch extends Model
 {
+    use BelongsToTenant;
+
     /**
      * Branch Types available in the current version. New types can be
      * added here without a migration — `type` is a plain string column.
@@ -21,6 +24,7 @@ class Branch extends Model
     ];
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'code',
         'type',

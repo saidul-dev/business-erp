@@ -50,19 +50,24 @@ Status markers: `[ ]` not started · `[~]` partially there · `[x]` done.
 
 ---
 
-## Tenancy & Billing (new section — build this first)
+## Tenancy & Billing (built 2026-08-05)
 
-Not in the original list at all; everything below depends on it existing.
+- [x] `Tenant`, `Plan`, `Subscription` models — `plans` seeded (Free Trial/Basic/Pro/Enterprise) via `PlanSeeder`
+- [x] Registration flow (`RegisteredUserController`) — creates Tenant + owner User (Admin role) + first Branch (`MAIN`/Outlet) + 30-day trial Subscription + tenant defaults (departments, designations, leave types, chart of accounts, units, categories, brands, attributes, walk-in/supplier parties, hero image, about/mission copy) in one DB transaction. Deliberately skips `ProductSeeder`/`BranchSeeder` — a real tenant builds its own menu and only gets the one auto-created branch.
+- [x] `tenant_id` added directly to: `users`, `branches`, `company_settings`, `categories`, `brands`, `units`, `attributes`, `products`, `parties`, `departments`, `designations`, `leave_types`, `ledger_accounts`, `ledger_transactions`. Everything else (`stock_movements`, `employees`, `payroll_runs`, `projects`, `product_variants`, ...) inherits isolation transitively through its (non-nullable) `branch_id` → `Branch.tenant_id`.
+- [x] `TenantScope` + `BelongsToTenant` trait — mirrors `BranchScope`/`BelongsToBranch`. **Important exception: `User` does NOT use this** — a global scope on the Authenticatable model itself that calls `auth()->check()` inside `apply()` recurses forever (resolving the session user queries User → scope fires → checks auth → needs the user resolved → queries User again). `Admin\UserController` filters `tenant_id` explicitly instead; route-bound `{user}` params are guarded with `guardSameTenant()`.
+- [x] `CompanySetting::current(?int $tenantId = null)` — no longer a hardcoded `id=1` singleton; falls back to `auth()->user()?->tenant_id`, and returns an unsaved default instance (nothing to persist) when there's no tenant context at all (anonymous visitor).
+- [x] Branch-limit enforcement — `BranchController::create()`/`store()` check `Tenant::canCreateAnotherBranch()` against the current plan's `max_branches`.
+- [x] `EnsureSubscriptionActive` middleware (`subscription-active` alias) — redirects to `/admin/billing` once trial/subscription lapses; exempts `billing.*` and `logout` so a locked-out tenant can still reach the page that unlocks them.
+- [x] `Admin\BillingController` + `admin/billing/index` view — shows current package + branch usage, lets the tenant switch plans. **No real payment gateway wired up** — `store()` activates the chosen plan immediately (a month from today) so the rest of the app has something real to check; swap that one method for an actual gateway/webhook flow later.
+- [x] Root `/` now serves a dedicated SaaS marketing page (`website/saas-home.blade.php`) — hero, feature highlights, live Pricing from `Plan`, Register CTA. `WebsiteController::about/media/career/contact` still serve the *old* single-tenant company-site content — see follow-ups below.
 
-- [ ] `Tenant` model — one row per restaurant business that registers
-- [ ] `Plan` model — name, `max_branches`, price, feature flags
-- [ ] `Subscription` model — tenant_id, plan_id, status (trialing/active/expired), `trial_ends_at`
-- [ ] Registration flow: create Tenant + owner User + first Branch (auto) + trial Subscription, in one transaction
-- [ ] `tenant_id` added to `branches`, `users`, `company_settings` (currently a hardcoded singleton — `CompanySetting::current()` assumes `id=1`, has to become per-tenant)
-- [ ] `TenantScope` + `BelongsToTenant` trait — same pattern as existing `BranchScope`/`BelongsToBranch`, one layer up
-- [ ] Branch-limit enforcement on `BranchController::store()` — block + upsell message past `plan.max_branches`
-- [ ] `EnsureSubscriptionActive` middleware — trial/subscription check on the admin route group, same shape as the existing `current-branch` middleware
-- [ ] Billing/upgrade page + at least one Bangladesh payment method (bKash/Nagad manual, or SSLCommerz gateway) for collecting the SaaS's own subscription fee (distinct from the restaurant's own POS payments)
+### Follow-ups this pass surfaced (not yet done)
+
+- [ ] **Cross-tenant ID guessing via `exists:` validation rules.** Laravel's `exists:table,column` rule queries the raw table, bypassing Eloquent global scopes entirely — so e.g. `'branch_id' => ['exists:branches,id']` in `EmployeeController` currently accepts *any* tenant's branch id, not just the acting user's own. This is systemic (every `exists:categories,id` / `exists:brands,id` / `exists:products,id` / etc. across the admin controllers), not a one-file fix — needs its own audit pass before onboarding real competing tenants.
+- [ ] **`product_variants.sku`/`barcode` are still globally unique**, no `tenant_id` on that table. Not an active bug today (only the demo tenant seeds variant products; real registrations start with an empty menu), but two real tenants both picking the same variant SKU suffix convention will collide. Needs either a direct `tenant_id` column or scoping the unique index through `product_id`.
+- [ ] **Per-tenant public website (`WebsiteController::about/media/career/contact`) still queries `Product`/`Category`/`Branch` unscoped** for an anonymous visitor — fine with one tenant in the database, a real cross-tenant data leak once a second one exists. Needs real subdomain-per-tenant routing (or an explicit tenant-by-domain resolver) before launch; `home()` was fixed this pass because it no longer needs any tenant's business data at all.
+- [ ] Payment gateway integration (SSLCommerz/bKash) for `BillingController::store()` — currently trust-activates the plan with no payment collected.
 
 ---
 

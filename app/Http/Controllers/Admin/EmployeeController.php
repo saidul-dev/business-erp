@@ -202,8 +202,14 @@ class EmployeeController extends Controller implements HasMiddleware
                 Rule::notIn([$employee?->id]),
             ],
             'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:30', Rule::unique('employees', 'phone')->ignore($employee?->id)],
-            'email' => ['required', 'email', 'max:255', Rule::unique('employees', 'email')->ignore($employee?->id)],
+            'phone' => [
+                'required', 'string', 'max:30',
+                Rule::unique('employees', 'phone')->where('branch_id', $request->branch_id)->ignore($employee?->id),
+            ],
+            'email' => [
+                'required', 'email', 'max:255',
+                Rule::unique('employees', 'email')->where('branch_id', $request->branch_id)->ignore($employee?->id),
+            ],
             'nid_no' => ['nullable', 'string', 'max:50'],
             'photo' => ['nullable', 'image', 'max:2048'],
             'remove_photo' => ['nullable', 'boolean'],

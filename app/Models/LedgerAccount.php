@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LedgerAccount extends Model
 {
+    use BelongsToTenant;
+
     /**
      * The 5 functional groups every account belongs to.
      */
@@ -45,6 +48,7 @@ class LedgerAccount extends Model
     ];
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'code',
         'group',

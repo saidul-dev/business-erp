@@ -14,6 +14,15 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
+    /**
+     * Deliberately NOT using BelongsToTenant/TenantScope here — a global
+     * scope on User that calls auth()->check() inside apply() recurses
+     * forever: resolving the authenticated user queries User, which runs
+     * the scope, which calls auth()->check(), which needs the authenticated
+     * user resolved... Every place that lists/manages users within a tenant
+     * (Admin\UserController) filters by tenant_id explicitly instead.
+     */
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
 
@@ -23,6 +32,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'tenant_id',
         'name',
         'email',
         'password',
@@ -92,5 +102,10 @@ class User extends Authenticatable
     {
         return $this->branches()->wherePivot('is_default', true)->first()
             ?? $this->branches()->first();
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
     }
 }

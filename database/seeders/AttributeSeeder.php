@@ -12,7 +12,7 @@ class AttributeSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
         $attributes = [
             'Portion Size' => ['Regular', 'Large', 'Family'],
@@ -20,7 +20,7 @@ class AttributeSeeder extends Seeder
         ];
 
         foreach ($attributes as $name => $values) {
-            $attribute = Attribute::firstOrCreate(['name' => $name]);
+            $attribute = Attribute::firstOrCreate(['tenant_id' => $tenantId, 'name' => $name]);
 
             foreach ($values as $sortOrder => $value) {
                 AttributeValue::firstOrCreate(

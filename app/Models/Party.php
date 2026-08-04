@@ -2,15 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Services\LedgerService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Party extends Model
 {
+    use BelongsToTenant;
+
     public const OPENING_BALANCE_TYPES = ['due', 'advance'];
 
     protected $fillable = [
+        'tenant_id',
         'is_customer',
         'is_supplier',
         'is_company',

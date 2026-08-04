@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class LedgerTransaction extends Model
 {
+    use BelongsToTenant;
+
     /**
      * Fixed voucher types. Every module that posts to the ledger (Payment,
      * Expense, ...) uses one of these — never a free-form string — so
@@ -64,6 +67,7 @@ class LedgerTransaction extends Model
     ];
 
     protected $fillable = [
+        'tenant_id',
         'voucher_no',
         'date',
         'type',

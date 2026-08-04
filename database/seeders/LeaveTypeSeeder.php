@@ -10,7 +10,7 @@ class LeaveTypeSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
         $leaveTypes = [
             ['name' => 'Casual Leave', 'default_days_per_year' => 10],
@@ -22,7 +22,7 @@ class LeaveTypeSeeder extends Seeder
         ];
 
         foreach ($leaveTypes as $leaveType) {
-            LeaveType::firstOrCreate(['name' => $leaveType['name']], $leaveType);
+            LeaveType::firstOrCreate(['tenant_id' => $tenantId, 'name' => $leaveType['name']], $leaveType);
         }
     }
 }

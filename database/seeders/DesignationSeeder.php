@@ -10,7 +10,7 @@ class DesignationSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
         $designations = [
             'General Manager',
@@ -29,7 +29,7 @@ class DesignationSeeder extends Seeder
         ];
 
         foreach ($designations as $name) {
-            Designation::firstOrCreate(['name' => $name]);
+            Designation::firstOrCreate(['tenant_id' => $tenantId, 'name' => $name]);
         }
     }
 }

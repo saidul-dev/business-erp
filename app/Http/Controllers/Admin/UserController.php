@@ -35,7 +35,8 @@ class UserController extends Controller implements HasMiddleware
 
     public function index()
     {
-        $users = User::with('roles')->orderBy('name')->paginate(15);
+        $users = User::where('tenant_id', auth()->user()->tenant_id)
+            ->with('roles')->orderBy('name')->paginate(15);
 
         return view('admin.users.index', compact('users'));
     }
@@ -66,6 +67,7 @@ class UserController extends Controller implements HasMiddleware
         ]);
 
         $user = User::create([
+            'tenant_id' => auth()->user()->tenant_id,
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => $validated['password'],
@@ -82,6 +84,7 @@ class UserController extends Controller implements HasMiddleware
 
     public function edit(User $user)
     {
+        $this->guardSameTenant($user);
         $this->guardSuperAdminTarget($user);
 
         return view('admin.users.edit', [
@@ -95,6 +98,7 @@ class UserController extends Controller implements HasMiddleware
 
     public function update(Request $request, User $user)
     {
+        $this->guardSameTenant($user);
         $this->guardSuperAdminTarget($user);
 
         $validated = $request->validate([
@@ -139,6 +143,7 @@ class UserController extends Controller implements HasMiddleware
 
     public function destroy(User $user)
     {
+        $this->guardSameTenant($user);
         $this->guardSuperAdminTarget($user);
 
         if ($user->id === auth()->id()) {
@@ -184,6 +189,17 @@ class UserController extends Controller implements HasMiddleware
     {
         return Role::with('permissions')->get()
             ->mapWithKeys(fn ($role) => [$role->name => $role->permissions->pluck('name')]);
+    }
+
+    /**
+     * User has no global tenant scope (see User model docblock — a scope
+     * that calls auth() on the Authenticatable itself recurses forever), so
+     * route-model-bound {user} params need this explicit check everywhere
+     * a cross-tenant ID could otherwise be guessed.
+     */
+    protected function guardSameTenant(User $user): void
+    {
+        abort_if($user->tenant_id !== auth()->user()->tenant_id, 404);
     }
 
     protected function guardSuperAdminTarget(User $user): void

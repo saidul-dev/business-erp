@@ -379,6 +379,19 @@
                     @endcan
                 </div>
                 @endcanany
+
+                <div>
+                    <x-sidebar-link :href="route('billing.index')" :active="request()->routeIs('billing.*')"
+                        :title="__('Billing & Package')">
+                        <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3M3.75 6h16.5a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H3.75a1.5 1.5 0 0 1-1.5-1.5v-9a1.5 1.5 0 0 1 1.5-1.5Z" />
+                        </svg>
+                        <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Billing & Package')
+                            }}</span>
+                    </x-sidebar-link>
+                </div>
             </nav>
 
             <!-- Sidebar footer -->

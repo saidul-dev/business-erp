@@ -10,10 +10,10 @@ class PartySeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(?int $tenantId = null): void
     {
         Party::firstOrCreate(
-            ['phone' => '01700000001'],
+            ['tenant_id' => $tenantId, 'phone' => '01700000001'],
             [
                 'name' => 'Walk-in Customer',
                 'is_customer' => true,
@@ -23,7 +23,7 @@ class PartySeeder extends Seeder
         );
 
         Party::firstOrCreate(
-            ['phone' => '01700000002'],
+            ['tenant_id' => $tenantId, 'phone' => '01700000002'],
             [
                 'name' => 'Default Supplier',
                 'is_customer' => false,

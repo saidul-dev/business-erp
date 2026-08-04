@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
 class CompanySetting extends Model
 {
+    use BelongsToTenant;
+
     protected $fillable = [
+        'tenant_id',
         'name',
         'legal_name',
         'tagline',
@@ -33,11 +37,23 @@ class CompanySetting extends Model
     ];
 
     /**
-     * There is only ever one row (id 1) — every tenant has exactly one company profile.
+     * Exactly one row per Tenant. Defaults to the authenticated user's own
+     * tenant — pass `$tenantId` explicitly from contexts with no logged-in
+     * user (a seeder provisioning a brand-new tenant's defaults). With no
+     * tenant either way (an anonymous visitor on a page that still renders
+     * <x-website-layout>), returns an unsaved instance with just the app
+     * name — nothing to persist without a tenant_id to attach it to.
      */
-    public static function current(): self
+    public static function current(?int $tenantId = null): self
     {
-        return static::firstOrCreate(['id' => 1], ['name' => config('app.name', 'Business ERP')]);
+        $tenantId ??= auth()->user()?->tenant_id;
+
+        if ($tenantId === null) {
+            return new static(['name' => config('app.name', 'Business ERP')]);
+        }
+
+        return static::withoutGlobalScope(\App\Models\Scopes\TenantScope::class)
+            ->firstOrCreate(['tenant_id' => $tenantId], ['name' => config('app.name', 'Business ERP')]);
     }
 
     /**

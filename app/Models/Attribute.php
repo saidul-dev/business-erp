@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Attribute extends Model
 {
-    protected $fillable = ['name'];
+    use BelongsToTenant;
+
+    protected $fillable = ['tenant_id', 'name'];
 
     public function values(): HasMany
     {
