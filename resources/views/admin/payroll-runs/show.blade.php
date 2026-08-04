@@ -5,7 +5,7 @@
             <div>
                 <h2 class="text-2xl font-bold text-brand-900">{{ __('Payroll Run') }} — {{ $payrollRun->monthLabel() }}</h2>
                 <p class="text-sm text-slate-500 mt-0.5">
-                    {{ $payrollRun->site->name }} · {{ $payrollRun->items->count() }} {{ __('employees') }} ·
+                    {{ $payrollRun->branch->name }} · {{ $payrollRun->items->count() }} {{ __('employees') }} ·
                     {{ __('Total') }}: {{ number_format($payrollRun->total_amount, 2) }}
                 </p>
             </div>

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LedgerTransaction;
-use App\Models\Site;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -28,18 +28,18 @@ class DayBookController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        $sites = Site::where('status', true)->orderBy('name')->get();
+        $branches = Branch::where('status', true)->orderBy('name')->get();
         $type = $request->get('type');
-        $siteId = $request->filled('site_id') ? $request->integer('site_id') : null;
+        $branchId = $request->filled('branch_id') ? $request->integer('branch_id') : null;
         $from = $request->filled('from') ? $request->date('from') : now()->startOfMonth();
         $to = $request->filled('to') ? $request->date('to') : now();
 
-        $transactions = LedgerTransaction::with(['site', 'creator', 'reference'])
+        $transactions = LedgerTransaction::with(['branch', 'creator', 'reference'])
             ->withSum('lines as total_debit', 'debit')
             ->whereDate('date', '>=', $from)
             ->whereDate('date', '<=', $to)
             ->when($type, fn ($q) => $q->where('type', $type))
-            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->orderByDesc('date')
             ->orderByDesc('id')
             ->paginate(30)
@@ -47,9 +47,9 @@ class DayBookController extends Controller implements HasMiddleware
 
         return view('admin.day-book.index', [
             'transactions' => $transactions,
-            'sites' => $sites,
+            'branches' => $branches,
             'type' => $type,
-            'siteId' => $siteId,
+            'branchId' => $branchId,
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
             'types' => LedgerTransaction::TYPES,

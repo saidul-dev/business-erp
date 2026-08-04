@@ -3,19 +3,19 @@
     <x-slot name="header">
         <div>
             <h2 class="text-2xl font-bold text-brand-900">{{ __('Initial Stock') }}</h2>
-            <p class="text-sm text-slate-500 mt-0.5">{{ __('One-time opening balance per Site — enter quantity for as many products as you like and save them together.') }}</p>
+            <p class="text-sm text-slate-500 mt-0.5">{{ __('One-time opening balance per Branch — enter quantity for as many products as you like and save them together.') }}</p>
         </div>
     </x-slot>
 
-    @php $hasItems = $site && ($products->isNotEmpty() || $variantGroups->isNotEmpty()); @endphp
+    @php $hasItems = $branch && ($products->isNotEmpty() || $variantGroups->isNotEmpty()); @endphp
 
     <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-6">
         <div class="flex flex-nowrap items-end gap-4 overflow-x-auto">
             <form method="GET" action="{{ route('stock.initial.index') }}" class="w-64 shrink-0">
-                <x-input-label for="site_id" :value="__('Site')" />
+                <x-input-label for="branch_id" :value="__('Branch')" />
                 <div class="mt-1">
-                    <x-searchable-select name="site_id" :options="$sites" :selected="$site?->id"
-                                          placeholder="{{ __('Select a site…') }}" :auto-submit="true" />
+                    <x-searchable-select name="branch_id" :options="$branches" :selected="$branch?->id"
+                                          placeholder="{{ __('Select a branch…') }}" :auto-submit="true" />
                 </div>
             </form>
 
@@ -30,18 +30,18 @@
         </div>
     </div>
 
-    @if (! $site)
+    @if (! $branch)
         <div class="rounded-2xl bg-white p-10 text-center text-slate-400 shadow-sm ring-1 ring-slate-200">
-            {{ __('Pick a Site above to enter its opening stock.') }}
+            {{ __('Pick a Branch above to enter its opening stock.') }}
         </div>
     @elseif (! $hasItems)
         <div class="rounded-2xl bg-white p-10 text-center text-slate-400 shadow-sm ring-1 ring-slate-200">
-            {{ __('Every active product already has stock movement history at :site (opening stock or otherwise). Use Adjustment to correct a quantity.', ['site' => $site->name]) }}
+            {{ __('Every active product already has stock movement history at :branch (opening stock or otherwise). Use Adjustment to correct a quantity.', ['branch' => $branch->name]) }}
         </div>
     @else
         <form method="POST" action="{{ route('stock.initial.store') }}" id="initial-stock-form">
             @csrf
-            <input type="hidden" name="site_id" value="{{ $site->id }}">
+            <input type="hidden" name="branch_id" value="{{ $branch->id }}">
 
             @if ($products->isNotEmpty())
             <h3 class="mb-2 text-sm font-bold text-brand-900">{{ __('Products') }}</h3>

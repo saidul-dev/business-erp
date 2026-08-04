@@ -81,15 +81,15 @@
                 <x-input-error class="mt-2" :messages="$errors->get('joining_date')" />
             </div>
             <div>
-                <x-input-label for="site_id" :value="__('Site / Branch')" />
-                <select id="site_id" name="site_id" required
+                <x-input-label for="branch_id" :value="__('Branch / Branch')" />
+                <select id="branch_id" name="branch_id" required
                         class="mt-1 block w-full rounded-lg border-slate-300 focus:border-accent-500 focus:ring-accent-500">
                     <option value="">{{ __('Select…') }}</option>
-                    @foreach ($sites as $site)
-                        <option value="{{ $site->id }}" @selected(old('site_id', $employee->site_id ?? '') == $site->id)>{{ $site->name }}</option>
+                    @foreach ($branches as $branch)
+                        <option value="{{ $branch->id }}" @selected(old('branch_id', $employee->branch_id ?? '') == $branch->id)>{{ $branch->name }}</option>
                     @endforeach
                 </select>
-                <x-input-error class="mt-2" :messages="$errors->get('site_id')" />
+                <x-input-error class="mt-2" :messages="$errors->get('branch_id')" />
             </div>
         </div>
 

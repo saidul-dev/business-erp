@@ -31,8 +31,8 @@ use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SalaryStructureController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\SiteHealthController;
-use App\Http\Controllers\Admin\SiteController;
 use App\Http\Controllers\Admin\StockAdjustmentController;
 use App\Http\Controllers\Admin\StockReportController;
 use App\Http\Controllers\Admin\StockTransferController;
@@ -40,7 +40,7 @@ use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\TrialBalanceController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\CurrentSiteController;
+use App\Http\Controllers\CurrentBranchController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebsiteController;
@@ -63,11 +63,11 @@ Route::post('/language/{locale}', [LanguageController::class, 'switch'])->name('
 // can live at the root without colliding with these routes.
 Route::prefix('admin')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->middleware(['auth', 'verified', 'current-site'])->name('dashboard');
+        ->middleware(['auth', 'verified', 'current-branch'])->name('dashboard');
 
-    Route::middleware(['auth', 'current-site'])->group(function () {
-        Route::get('/select-site', [CurrentSiteController::class, 'select'])->name('sites.select');
-        Route::post('/switch-site', [CurrentSiteController::class, 'switch'])->name('sites.switch');
+    Route::middleware(['auth', 'current-branch'])->group(function () {
+        Route::get('/select-branch', [CurrentBranchController::class, 'select'])->name('branches.select');
+        Route::post('/switch-branch', [CurrentBranchController::class, 'switch'])->name('branches.switch');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -76,10 +76,10 @@ Route::prefix('admin')->group(function () {
         // Per-action permission checks live in each controller's middleware() method
         Route::resource('users', UserController::class)->except('show');
         Route::resource('roles', RoleController::class)->except('show');
-        Route::resource('sites', SiteController::class)->except('show');
-        Route::patch('/sites/{site}/toggle-status', [SiteController::class, 'toggleStatus'])->name('sites.toggle-status');
+        Route::resource('branches', BranchController::class)->except('show');
+        Route::patch('/branches/{branch}/toggle-status', [BranchController::class, 'toggleStatus'])->name('branches.toggle-status');
 
-        // Inventory master data (global — not site-scoped; stock levels per Site come later)
+        // Inventory master data (global — not branch-scoped; stock levels per Branch come later)
         Route::resource('categories', CategoryController::class)->except('show');
         Route::patch('/categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
         Route::resource('brands', BrandController::class)->except('show');

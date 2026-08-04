@@ -8,7 +8,7 @@ use App\Models\Attachment;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
-use App\Models\Site;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -32,7 +32,7 @@ class EmployeeController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        $employees = Employee::with(['department', 'designation', 'site'])
+        $employees = Employee::with(['department', 'designation', 'branch'])
             ->when($request->filled('department_id'), fn ($q) => $q->where('department_id', $request->department_id))
             ->when($request->filled('designation_id'), fn ($q) => $q->where('designation_id', $request->designation_id))
             ->when($request->filled('employment_status'), fn ($q) => $q->where('employment_status', $request->employment_status))
@@ -182,7 +182,7 @@ class EmployeeController extends Controller implements HasMiddleware
     protected function formData(?Employee $employee = null): array
     {
         return [
-            'sites' => Site::orderBy('name')->get(),
+            'branches' => Branch::orderBy('name')->get(),
             'departments' => Department::where('status', true)->orderBy('name')->get(),
             'designations' => Designation::where('status', true)->orderBy('name')->get(),
             'managers' => Employee::where('id', '!=', $employee?->id)->orderBy('name')->get(),
@@ -194,7 +194,7 @@ class EmployeeController extends Controller implements HasMiddleware
     protected function validated(Request $request, ?Employee $employee = null): array
     {
         return $request->validate([
-            'site_id' => ['required', 'integer', 'exists:sites,id'],
+            'branch_id' => ['required', 'integer', 'exists:branches,id'],
             'department_id' => ['nullable', 'integer', 'exists:departments,id'],
             'designation_id' => ['nullable', 'integer', 'exists:designations,id'],
             'reporting_manager_id' => [

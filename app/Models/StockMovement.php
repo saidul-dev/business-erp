@@ -47,7 +47,7 @@ class StockMovement extends Model
     protected $fillable = [
         'product_id',
         'product_variant_id',
-        'site_id',
+        'branch_id',
         'type',
         'reason',
         'quantity',
@@ -93,7 +93,7 @@ class StockMovement extends Model
     }
 
     /**
-     * Global (all-Sites), all-time weighted-average cost: SUM(qty × cost)
+     * Global (all-Branches), all-time weighted-average cost: SUM(qty × cost)
      * over every "in" movement that recorded a unit_cost, ÷ their total
      * qty — stored back onto the Product/ProductVariant so every screen
      * (Product page, Stock Report, Stock Adjustment) reads one trustworthy
@@ -137,9 +137,9 @@ class StockMovement extends Model
         return $this->belongsTo(ProductVariant::class);
     }
 
-    public function site(): BelongsTo
+    public function branch(): BelongsTo
     {
-        return $this->belongsTo(Site::class);
+        return $this->belongsTo(Branch::class);
     }
 
     public function createdBy(): BelongsTo
@@ -163,14 +163,14 @@ class StockMovement extends Model
 
     /**
      * Current on-hand quantity of a product (or one of its variants) at a
-     * given site: SUM(qty) over "in" movements minus SUM(qty) over "out"
+     * given branch: SUM(qty) over "in" movements minus SUM(qty) over "out"
      * movements. Used by the POS terminal to block selling more than is
      * actually in stock.
      */
-    public static function balanceFor(int $productId, ?int $productVariantId, int $siteId): float
+    public static function balanceFor(int $productId, ?int $productVariantId, int $branchId): float
     {
         $query = static::query()
-            ->where('site_id', $siteId)
+            ->where('branch_id', $branchId)
             ->where('product_id', $productId);
 
         $productVariantId

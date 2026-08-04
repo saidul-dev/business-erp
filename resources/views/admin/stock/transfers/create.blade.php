@@ -3,42 +3,42 @@
     <x-slot name="header">
         <div>
             <h2 class="text-2xl font-bold text-brand-900">{{ __('New Stock Transfer') }}</h2>
-            <p class="text-sm text-slate-500 mt-0.5">{{ __('Send stock from one Site to another — it stays in transit until the destination confirms receipt.') }}</p>
+            <p class="text-sm text-slate-500 mt-0.5">{{ __('Send stock from one Branch to another — it stays in transit until the destination confirms receipt.') }}</p>
         </div>
     </x-slot>
 
     <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-6">
         <form method="GET" action="{{ route('stock.transfers.create') }}" class="flex flex-nowrap items-end gap-4 overflow-x-auto">
             <div class="w-56 shrink-0">
-                <x-input-label for="from_site_id" :value="__('From Site')" />
+                <x-input-label for="from_branch_id" :value="__('From Branch')" />
                 <div class="mt-1">
-                    <x-searchable-select name="from_site_id" :options="$sites" :selected="$fromSite?->id"
-                                          placeholder="{{ __('Select a site…') }}" :auto-submit="true" />
+                    <x-searchable-select name="from_branch_id" :options="$branches" :selected="$fromBranch?->id"
+                                          placeholder="{{ __('Select a branch…') }}" :auto-submit="true" />
                 </div>
             </div>
             <div class="w-56 shrink-0">
-                <x-input-label for="to_site_id" :value="__('To Site')" />
+                <x-input-label for="to_branch_id" :value="__('To Branch')" />
                 <div class="mt-1">
-                    <x-searchable-select name="to_site_id" :options="$sites" :selected="$toSite?->id"
-                                          placeholder="{{ __('Select a site…') }}" :auto-submit="true" />
+                    <x-searchable-select name="to_branch_id" :options="$branches" :selected="$toBranch?->id"
+                                          placeholder="{{ __('Select a branch…') }}" :auto-submit="true" />
                 </div>
             </div>
         </form>
-        @if ($fromSite && $toSite && $fromSite->id === $toSite->id)
-        <p class="mt-3 text-sm font-medium text-rose-600">{{ __('From Site and To Site must be different.') }}</p>
+        @if ($fromBranch && $toBranch && $fromBranch->id === $toBranch->id)
+        <p class="mt-3 text-sm font-medium text-rose-600">{{ __('From Branch and To Branch must be different.') }}</p>
         @endif
     </div>
 
-    @if (! $fromSite)
+    @if (! $fromBranch)
         <div class="rounded-2xl bg-white p-10 text-center text-slate-400 shadow-sm ring-1 ring-slate-200">
-            {{ __('Pick a From Site above to see what\'s available to transfer.') }}
+            {{ __('Pick a From Branch above to see what\'s available to transfer.') }}
         </div>
     @else
         <div x-data="transferCart(@js(['itemOptions' => $itemOptions]))">
             <form method="POST" action="{{ route('stock.transfers.store') }}" x-ref="form">
                 @csrf
-                <input type="hidden" name="from_site_id" value="{{ $fromSite->id }}">
-                <input type="hidden" name="to_site_id" value="{{ $toSite?->id }}">
+                <input type="hidden" name="from_branch_id" value="{{ $fromBranch->id }}">
+                <input type="hidden" name="to_branch_id" value="{{ $toBranch?->id }}">
 
                 <!-- Item picker -->
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-4">
@@ -60,7 +60,7 @@
                         </div>
                     </div>
                     @if ($itemOptions->isEmpty())
-                    <p class="mt-2 text-xs text-amber-600">{{ __('Nothing at :site currently has stock to transfer.', ['site' => $fromSite->name]) }}</p>
+                    <p class="mt-2 text-xs text-amber-600">{{ __('Nothing at :branch currently has stock to transfer.', ['branch' => $fromBranch->name]) }}</p>
                     @endif
                 </div>
 
@@ -140,13 +140,13 @@
                         <x-input-error class="mt-2" :messages="$errors->get('note')" />
                     </div>
 
-                    <button type="submit" :disabled="{{ $toSite ? 'false' : 'true' }} || items.length === 0"
+                    <button type="submit" :disabled="{{ $toBranch ? 'false' : 'true' }} || items.length === 0"
                             class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
                         {{ __('Dispatch Transfer') }}
                     </button>
-                    @unless ($toSite)
-                    <p class="mt-2 text-xs text-amber-600">{{ __('Pick a To Site above before dispatching.') }}</p>
+                    @unless ($toBranch)
+                    <p class="mt-2 text-xs text-amber-600">{{ __('Pick a To Branch above before dispatching.') }}</p>
                     @endunless
                 </div>
             </form>

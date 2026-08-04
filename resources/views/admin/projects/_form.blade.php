@@ -9,10 +9,10 @@
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
         <div>
-            <x-input-label :value="__('Site')" />
-            <x-searchable-select name="site_id" :options="$sites" :selected="old('site_id', $project->site_id ?? auth()->user()->current_site_id)"
-                                  placeholder="{{ __('Select site…') }}" />
-            <x-input-error class="mt-2" :messages="$errors->get('site_id')" />
+            <x-input-label :value="__('Branch')" />
+            <x-searchable-select name="branch_id" :options="$branches" :selected="old('branch_id', $project->branch_id ?? auth()->user()->current_branch_id)"
+                                  placeholder="{{ __('Select branch…') }}" />
+            <x-input-error class="mt-2" :messages="$errors->get('branch_id')" />
         </div>
         <div>
             <x-input-label :value="__('Project Manager')" />

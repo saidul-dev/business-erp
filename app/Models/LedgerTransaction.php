@@ -70,7 +70,7 @@ class LedgerTransaction extends Model
         'reference_type',
         'reference_id',
         'narration',
-        'site_id',
+        'branch_id',
         'created_by',
     ];
 
@@ -88,9 +88,9 @@ class LedgerTransaction extends Model
         return $this->morphTo();
     }
 
-    public function site(): BelongsTo
+    public function branch(): BelongsTo
     {
-        return $this->belongsTo(Site::class);
+        return $this->belongsTo(Branch::class);
     }
 
     public function creator(): BelongsTo

@@ -10,14 +10,14 @@
     <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-6">
         <form method="GET" action="{{ route('stock.internal-consumption.index') }}" class="flex flex-nowrap items-end gap-4 overflow-x-auto">
             <div class="w-64 shrink-0">
-                <x-input-label for="site_id" :value="__('Site')" />
+                <x-input-label for="branch_id" :value="__('Branch')" />
                 <div class="mt-1">
-                    <x-searchable-select name="site_id" :options="$sites" :selected="$site?->id"
-                                          placeholder="{{ __('Select a site…') }}" :auto-submit="true" />
+                    <x-searchable-select name="branch_id" :options="$branches" :selected="$branch?->id"
+                                          placeholder="{{ __('Select a branch…') }}" :auto-submit="true" />
                 </div>
             </div>
 
-            @if ($site)
+            @if ($branch)
             <div class="flex-1 min-w-[260px]">
                 <x-input-label for="item" :value="__('Product / Variant')" />
                 <div class="mt-1">
@@ -29,9 +29,9 @@
         </form>
     </div>
 
-    @if (! $site)
+    @if (! $branch)
         <div class="rounded-2xl bg-white p-10 text-center text-slate-400 shadow-sm ring-1 ring-slate-200">
-            {{ __('Pick a Site above to record internal consumption.') }}
+            {{ __('Pick a Branch above to record internal consumption.') }}
         </div>
     @elseif (! $product)
         <div class="rounded-2xl bg-white p-10 text-center text-slate-400 shadow-sm ring-1 ring-slate-200">
@@ -54,7 +54,7 @@
 
                 <form method="POST" action="{{ route('stock.internal-consumption.store') }}" id="internal-consumption-form">
                     @csrf
-                    <input type="hidden" name="site_id" value="{{ $site->id }}">
+                    <input type="hidden" name="branch_id" value="{{ $branch->id }}">
                     <input type="hidden" name="item" value="{{ $selectedItem }}">
 
                     <div class="mb-5 grid grid-cols-2 gap-4">
@@ -112,7 +112,7 @@
             <div class="lg:sticky lg:top-6 h-fit rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
                 <div class="mb-4">
                     <h3 class="font-bold text-brand-900">{{ __('Stock Summary') }}</h3>
-                    <p class="text-xs text-slate-400">{{ $site->name }}</p>
+                    <p class="text-xs text-slate-400">{{ $branch->name }}</p>
                 </div>
 
                 <div class="mb-4 border-b border-slate-100 pb-4">

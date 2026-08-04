@@ -13,23 +13,23 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * Owner's Daily Digest (README M9) — every stat here is scoped to the
- * user's Current Site (see SetCurrentSite middleware), except Collections
- * and Expenses: they carry no site_id (pure accounting entries, not tied
+ * user's Current Branch (see SetCurrentBranch middleware), except Collections
+ * and Expenses: they carry no branch_id (pure accounting entries, not tied
  * to a warehouse), so that side of the picture is always company-wide
- * regardless of the site selector.
+ * regardless of the branch selector.
  */
 class DashboardController extends Controller
 {
     public function index()
     {
-        $siteId = Auth::user()->current_site_id;
+        $branchId = Auth::user()->current_branch_id;
 
         $todayCollection = (float) CollectionModel::whereDate('collection_date', today())->sum('amount');
         $todayExpense = (float) Expense::whereDate('expense_date', today())->sum('amount');
 
-        $totalReceivable = $this->accountBalance('accounts_receivable', $siteId);
+        $totalReceivable = $this->accountBalance('accounts_receivable', $branchId);
 
-        [$lowStockItems, $lowStockCount, $criticalCount] = $this->lowStock($siteId);
+        [$lowStockItems, $lowStockCount, $criticalCount] = $this->lowStock($branchId);
 
         [$chartLabels, $collectionSeries, $expenseSeries] = $this->weeklyChart();
 
@@ -56,13 +56,13 @@ class DashboardController extends Controller
 
     /**
      * Signed balance of a system ledger account, optionally restricted to
-     * one Site via the parent ledger_transactions row — mirrors
-     * LedgerAccount::balance() but adds the site filter that method doesn't
-     * have. Opening-balance postings carry no site_id, so they naturally
-     * drop out once a specific Site is selected — acceptable since an
-     * opening balance predates any site-level activity anyway.
+     * one Branch via the parent ledger_transactions row — mirrors
+     * LedgerAccount::balance() but adds the branch filter that method doesn't
+     * have. Opening-balance postings carry no branch_id, so they naturally
+     * drop out once a specific Branch is selected — acceptable since an
+     * opening balance predates any branch-level activity anyway.
      */
-    protected function accountBalance(string $code, ?int $siteId): float
+    protected function accountBalance(string $code, ?int $branchId): float
     {
         $account = LedgerAccount::where('code', $code)->first();
 
@@ -71,7 +71,7 @@ class DashboardController extends Controller
         }
 
         $raw = (float) $account->lines()
-            ->when($siteId, fn ($q) => $q->whereHas('transaction', fn ($qt) => $qt->where('site_id', $siteId)))
+            ->when($branchId, fn ($q) => $q->whereHas('transaction', fn ($qt) => $qt->where('branch_id', $branchId)))
             ->selectRaw('COALESCE(SUM(debit) - SUM(credit), 0) as bal')
             ->value('bal');
 
@@ -80,14 +80,14 @@ class DashboardController extends Controller
 
     /**
      * Every simple product / variant tracked for reorder (reorder_level > 0)
-     * whose current Site balance has dropped to or below that level — same
+     * whose current Branch balance has dropped to or below that level — same
      * "balance <= reorder_level" convention as StockReportController. A
      * variant has no reorder_level of its own; it inherits its parent
      * product's.
      *
      * @return array{0: \Illuminate\Support\Collection, 1: int, 2: int} [rows to display, total low-stock count, out-of-stock count within it]
      */
-    protected function lowStock(?int $siteId): array
+    protected function lowStock(?int $branchId): array
     {
         $products = Product::with('stockUnit')
             ->where('status', true)->where('has_variants', false)->where('reorder_level', '>', 0)->get();
@@ -101,12 +101,12 @@ class DashboardController extends Controller
         $variantIds = $variantProducts->flatMap(fn (Product $p) => $p->variants->pluck('id'));
 
         $productBalances = StockMovement::whereIn('product_id', $productIds)->whereNull('product_variant_id')
-            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->selectRaw("product_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
             ->groupBy('product_id')->pluck('balance', 'product_id');
 
         $variantBalances = StockMovement::whereIn('product_variant_id', $variantIds)
-            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->selectRaw("product_variant_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
             ->groupBy('product_variant_id')->pluck('balance', 'product_variant_id');
 
@@ -148,7 +148,7 @@ class DashboardController extends Controller
     /**
      * Last 7 days (today inclusive) of Collections received vs Expenses
      * paid, for the "Collection vs Expense" chart. Both are company-wide
-     * (no site_id), so there's no site filter to apply here.
+     * (no branch_id), so there's no branch filter to apply here.
      *
      * @return array{0: array<string>, 1: array<float>, 2: array<float>}
      */

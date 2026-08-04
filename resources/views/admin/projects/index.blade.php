@@ -23,8 +23,8 @@
                 <x-searchable-select name="status" :options="$statuses" :selected="request('status')" placeholder="{{ __('All statuses') }}" auto-submit />
             </div>
             <div class="w-52">
-                <x-input-label :value="__('Site')" />
-                <x-searchable-select name="site_id" :options="$sites" :selected="request('site_id')" placeholder="{{ __('All sites') }}" auto-submit />
+                <x-input-label :value="__('Branch')" />
+                <x-searchable-select name="branch_id" :options="$branches" :selected="request('branch_id')" placeholder="{{ __('All branches') }}" auto-submit />
             </div>
             <div class="w-52">
                 <x-input-label :value="__('Client')" />
@@ -34,7 +34,7 @@
                 <x-input-label :value="__('Project Manager')" />
                 <x-searchable-select name="project_manager_id" :options="$managers" :selected="request('project_manager_id')" placeholder="{{ __('All managers') }}" auto-submit />
             </div>
-            @if (request('status') || request('site_id') || request('party_id') || request('project_manager_id'))
+            @if (request('status') || request('branch_id') || request('party_id') || request('project_manager_id'))
             <a href="{{ route('projects.index') }}" class="shrink-0 text-sm font-semibold text-slate-500 hover:text-slate-700">{{ __('Clear') }}</a>
             @endif
         </form>

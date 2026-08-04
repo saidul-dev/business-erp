@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Site;
+use App\Models\Branch;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -25,13 +25,13 @@ class StockAdjustmentController extends Controller implements HasMiddleware
 
     /**
      * Single-item correction against the stock_movements ledger: pick a
-     * Site, then a product or variant, see its current balance, and post
+     * Branch, then a product or variant, see its current balance, and post
      * one adjustment_in/adjustment_out movement for the difference.
      */
     public function index(Request $request)
     {
-        $sites = Site::where('status', true)->orderBy('name')->get();
-        $site = $request->filled('site_id') ? Site::findOrFail($request->integer('site_id')) : null;
+        $branches = Branch::where('status', true)->orderBy('name')->get();
+        $branch = $request->filled('branch_id') ? Branch::findOrFail($request->integer('branch_id')) : null;
 
         $items = collect();
         $product = null;
@@ -39,13 +39,13 @@ class StockAdjustmentController extends Controller implements HasMiddleware
         $balance = 0;
         $avgCost = 0;
 
-        if ($site) {
+        if ($branch) {
             $items = $this->itemOptions();
 
             [$product, $variant] = $this->resolveItem($request->string('item'));
 
             if ($product) {
-                $balance = $this->currentBalance($site->id, $product->id, $variant?->id);
+                $balance = $this->currentBalance($branch->id, $product->id, $variant?->id);
                 // Global, all-time weighted-average cost — kept in sync by
                 // StockMovement::recalculateAverageCost() on every costed
                 // "in" movement, so this is always the current figure.
@@ -54,8 +54,8 @@ class StockAdjustmentController extends Controller implements HasMiddleware
         }
 
         return view('admin.stock.adjustment', [
-            'sites' => $sites,
-            'site' => $site,
+            'branches' => $branches,
+            'branch' => $branch,
             'items' => $items,
             'selectedItem' => $request->string('item')->toString(),
             'product' => $product,
@@ -69,7 +69,7 @@ class StockAdjustmentController extends Controller implements HasMiddleware
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'site_id' => ['required', 'integer', 'exists:sites,id'],
+            'branch_id' => ['required', 'integer', 'exists:branches,id'],
             'item' => ['required', 'string'],
             'direction' => ['required', 'in:in,out'],
             'quantity' => ['required', 'numeric', 'min:0.0001'],
@@ -91,7 +91,7 @@ class StockAdjustmentController extends Controller implements HasMiddleware
             throw ValidationException::withMessages(['item' => 'Pick a valid product or variant.']);
         }
 
-        $balance = $this->currentBalance($validated['site_id'], $product->id, $variant?->id);
+        $balance = $this->currentBalance($validated['branch_id'], $product->id, $variant?->id);
 
         if ($validated['direction'] === 'out' && $validated['quantity'] > $balance) {
             throw ValidationException::withMessages([
@@ -102,7 +102,7 @@ class StockAdjustmentController extends Controller implements HasMiddleware
         StockMovement::create([
             'product_id' => $product->id,
             'product_variant_id' => $variant?->id,
-            'site_id' => $validated['site_id'],
+            'branch_id' => $validated['branch_id'],
             'type' => $validated['direction'] === 'in' ? 'adjustment_in' : 'adjustment_out',
             'reason' => $validated['reason'],
             'quantity' => $validated['quantity'],
@@ -117,12 +117,12 @@ class StockAdjustmentController extends Controller implements HasMiddleware
 
         $label = $variant ? "{$product->name} — {$variant->label}" : $product->name;
 
-        return redirect()->route('stock.adjustment.index', ['site_id' => $validated['site_id']])
+        return redirect()->route('stock.adjustment.index', ['branch_id' => $validated['branch_id']])
             ->with('success', "Stock adjustment saved for {$label}.");
     }
 
     /**
-     * Every active simple product and active variant at a site, as
+     * Every active simple product and active variant at a branch, as
      * {value, name} options for the item picker — value is "product-{id}"
      * or "variant-{id}" so a single select can carry either kind.
      */
@@ -176,9 +176,9 @@ class StockAdjustmentController extends Controller implements HasMiddleware
         return [null, null];
     }
 
-    protected function currentBalance(int $siteId, int $productId, ?int $variantId): float
+    protected function currentBalance(int $branchId, int $productId, ?int $variantId): float
     {
-        $query = StockMovement::where('site_id', $siteId)->where('product_id', $productId);
+        $query = StockMovement::where('branch_id', $branchId)->where('product_id', $productId);
         $variantId ? $query->where('product_variant_id', $variantId) : $query->whereNull('product_variant_id');
 
         return (float) $query->selectRaw("SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")

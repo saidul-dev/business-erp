@@ -21,7 +21,7 @@ class Employee extends Model
     public const EMPLOYMENT_STATUSES = ['active', 'resigned', 'terminated', 'on_leave'];
 
     protected $fillable = [
-        'site_id',
+        'branch_id',
         'department_id',
         'designation_id',
         'reporting_manager_id',
@@ -40,9 +40,9 @@ class Employee extends Model
         'joining_date' => 'date',
     ];
 
-    public function site(): BelongsTo
+    public function branch(): BelongsTo
     {
-        return $this->belongsTo(Site::class);
+        return $this->belongsTo(Branch::class);
     }
 
     public function department(): BelongsTo
@@ -154,11 +154,11 @@ class Employee extends Model
             'email' => $email,
             'password' => $password,
             'is_active' => true,
-            'current_site_id' => $this->site_id,
+            'current_branch_id' => $this->branch_id,
         ]);
 
         $user->assignRole($roleName);
-        $user->sites()->attach($this->site_id, ['is_default' => true]);
+        $user->branches()->attach($this->branch_id, ['is_default' => true]);
 
         // user_id is deliberately not mass-assignable (never exposed to the
         // Employee create/update form), so it's set directly here.

@@ -108,12 +108,12 @@ class CollectionController extends Controller implements HasMiddleware
             LedgerService::post([
                 'type' => 'payment_in',
                 'date' => $validated['collection_date'],
-                // The receiving account's own site wins when it's tied to
+                // The receiving account's own branch wins when it's tied to
                 // one (e.g. "Warehouse A Cash"); a company-wide account
-                // (site_id null) falls back to the linked project's site,
+                // (branch_id null) falls back to the linked project's branch,
                 // so Day Book still shows something meaningful instead of
                 // a blank dash.
-                'site_id' => $account->site_id ?? $project?->site_id,
+                'branch_id' => $account->branch_id ?? $project?->branch_id,
                 'narration' => "Collection from {$party->name} ({$collection->collection_no})",
                 'reference' => $collection,
                 'created_by' => Auth::id(),

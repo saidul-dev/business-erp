@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Concerns\RestrictsPermissionGrants;
 use App\Http\Controllers\Controller;
-use App\Models\Site;
+use App\Models\Branch;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -44,7 +44,7 @@ class UserController extends Controller implements HasMiddleware
     {
         return view('admin.users.create', [
             'roles' => $this->assignableRoles(),
-            'sites' => Site::orderBy('name')->get(),
+            'branches' => Branch::orderBy('name')->get(),
             'permissions' => $this->permissionsByModule(),
             'rolePermissionsMap' => $this->rolePermissionsMap(),
         ]);
@@ -58,9 +58,9 @@ class UserController extends Controller implements HasMiddleware
             'password' => ['required', 'confirmed', Password::defaults()],
             'roles' => ['array'],
             'roles.*' => [Rule::in($this->assignableRoles()->pluck('name'))],
-            'sites' => ['array'],
-            'sites.*' => ['exists:sites,id'],
-            'default_site' => ['nullable', 'integer'],
+            'branches' => ['array'],
+            'branches.*' => ['exists:branches,id'],
+            'default_branch' => ['nullable', 'integer'],
             'permissions' => ['array'],
             'permissions.*' => [Rule::in($this->grantablePermissionNames())],
         ]);
@@ -75,7 +75,7 @@ class UserController extends Controller implements HasMiddleware
         // the submission is already validated against the acting user's own grant scope.
         $user->syncRoles($validated['roles'] ?? []);
         $user->syncPermissions($validated['permissions'] ?? []);
-        $this->syncSites($user, $validated['sites'] ?? [], $validated['default_site'] ?? null);
+        $this->syncBranches($user, $validated['branches'] ?? [], $validated['default_branch'] ?? null);
 
         return redirect()->route('users.index')->with('success', "User \"{$user->name}\" created.");
     }
@@ -87,7 +87,7 @@ class UserController extends Controller implements HasMiddleware
         return view('admin.users.edit', [
             'user' => $user,
             'roles' => $this->assignableRoles(),
-            'sites' => Site::orderBy('name')->get(),
+            'branches' => Branch::orderBy('name')->get(),
             'permissions' => $this->permissionsByModule(),
             'rolePermissionsMap' => $this->rolePermissionsMap(),
         ]);
@@ -103,9 +103,9 @@ class UserController extends Controller implements HasMiddleware
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'roles' => ['array'],
             'roles.*' => [Rule::in($this->assignableRoles()->pluck('name'))],
-            'sites' => ['array'],
-            'sites.*' => ['exists:sites,id'],
-            'default_site' => ['nullable', 'integer'],
+            'branches' => ['array'],
+            'branches.*' => ['exists:branches,id'],
+            'default_branch' => ['nullable', 'integer'],
             'permissions' => ['array'],
             'permissions.*' => [Rule::in($this->grantablePermissionNames())],
         ]);
@@ -132,7 +132,7 @@ class UserController extends Controller implements HasMiddleware
         $user->save();
         $user->syncRoles($finalRoles);
         $user->syncPermissions($finalPermissions);
-        $this->syncSites($user, $validated['sites'] ?? [], $validated['default_site'] ?? null);
+        $this->syncBranches($user, $validated['branches'] ?? [], $validated['default_branch'] ?? null);
 
         return redirect()->route('users.index')->with('success', "User \"{$user->name}\" updated.");
     }
@@ -196,26 +196,26 @@ class UserController extends Controller implements HasMiddleware
     }
 
     /**
-     * Sync a user's Site assignments. If exactly one site is assigned it is
-     * always the default; otherwise the submitted default_site wins (falling
-     * back to the first assigned site so there's always one selected).
+     * Sync a user's Branch assignments. If exactly one branch is assigned it is
+     * always the default; otherwise the submitted default_branch wins (falling
+     * back to the first assigned branch so there's always one selected).
      */
-    protected function syncSites(User $user, array $siteIds, ?int $defaultSiteId): void
+    protected function syncBranches(User $user, array $branchIds, ?int $defaultBranchId): void
     {
-        $siteIds = array_map('intval', $siteIds);
+        $branchIds = array_map('intval', $branchIds);
 
-        if (count($siteIds) === 1) {
-            $defaultSiteId = $siteIds[0];
-        } elseif (! in_array($defaultSiteId, $siteIds)) {
-            $defaultSiteId = $siteIds[0] ?? null;
+        if (count($branchIds) === 1) {
+            $defaultBranchId = $branchIds[0];
+        } elseif (! in_array($defaultBranchId, $branchIds)) {
+            $defaultBranchId = $branchIds[0] ?? null;
         }
 
-        $user->sites()->sync(collect($siteIds)->mapWithKeys(fn ($id) => [
-            $id => ['is_default' => $id === $defaultSiteId],
+        $user->branches()->sync(collect($branchIds)->mapWithKeys(fn ($id) => [
+            $id => ['is_default' => $id === $defaultBranchId],
         ]));
 
-        if (! in_array($user->current_site_id, $siteIds)) {
-            $user->update(['current_site_id' => $defaultSiteId]);
+        if (! in_array($user->current_branch_id, $branchIds)) {
+            $user->update(['current_branch_id' => $defaultBranchId]);
         }
     }
 }

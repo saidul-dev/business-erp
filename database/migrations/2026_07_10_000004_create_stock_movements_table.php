@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_variant_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->foreignId('site_id')->constrained()->restrictOnDelete();
+            $table->foreignId('branch_id')->constrained()->restrictOnDelete();
 
             // See App\Models\StockMovement::TYPES for the fixed list of
             // movement types and their in/out direction mapping.
@@ -36,8 +36,8 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->restrictOnDelete();
             $table->timestamps();
 
-            $table->index(['product_id', 'site_id']);
-            $table->index(['site_id', 'type']);
+            $table->index(['product_id', 'branch_id']);
+            $table->index(['branch_id', 'type']);
         });
     }
 

@@ -26,7 +26,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'current_site_id',
+        'current_branch_id',
         'is_active',
     ];
 
@@ -55,18 +55,18 @@ class User extends Authenticatable
     }
 
     /**
-     * Every Site this user has been assigned to.
+     * Every Branch this user has been assigned to.
      */
-    public function sites(): BelongsToMany
+    public function branches(): BelongsToMany
     {
-        return $this->belongsToMany(Site::class, 'user_sites')
+        return $this->belongsToMany(Branch::class, 'user_branches')
             ->withPivot('is_default')
             ->withTimestamps();
     }
 
-    public function currentSite(): BelongsTo
+    public function currentBranch(): BelongsTo
     {
-        return $this->belongsTo(Site::class, 'current_site_id');
+        return $this->belongsTo(Branch::class, 'current_branch_id');
     }
 
     /**
@@ -80,17 +80,17 @@ class User extends Authenticatable
     }
 
     /**
-     * Super Admin and Admin see every site by default ("All Sites") — they
-     * are not restricted to the sites they happen to be individually assigned to.
+     * Super Admin and Admin see every branch by default ("All Branches") — they
+     * are not restricted to the branches they happen to be individually assigned to.
      */
-    public function seesAllSites(): bool
+    public function seesAllBranches(): bool
     {
         return $this->hasRole(['Super Admin', 'Admin']);
     }
 
-    public function defaultSite(): ?Site
+    public function defaultBranch(): ?Branch
     {
-        return $this->sites()->wherePivot('is_default', true)->first()
-            ?? $this->sites()->first();
+        return $this->branches()->wherePivot('is_default', true)->first()
+            ?? $this->branches()->first();
     }
 }

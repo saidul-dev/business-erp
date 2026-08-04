@@ -18,7 +18,7 @@ class PayrollRun extends Model
     public const STATUSES = ['draft', 'approved'];
 
     protected $fillable = [
-        'site_id',
+        'branch_id',
         'month',
         'year',
         'status',
@@ -35,9 +35,9 @@ class PayrollRun extends Model
         'total_amount' => 'decimal:2',
     ];
 
-    public function site(): BelongsTo
+    public function branch(): BelongsTo
     {
-        return $this->belongsTo(Site::class);
+        return $this->belongsTo(Branch::class);
     }
 
     public function items(): HasMany
@@ -61,7 +61,7 @@ class PayrollRun extends Model
     }
 
     /**
-     * One item per active employee at this run's site who has a
+     * One item per active employee at this run's branch who has a
      * SalaryStructure. Absence days are pre-filled from AttendanceLog as
      * a convenience default only — the doc explicitly keeps this
      * "entered, not rule-engine yet", so HR can edit every figure before
@@ -72,7 +72,7 @@ class PayrollRun extends Model
     {
         $daysInMonth = Carbon::create($this->year, $this->month, 1)->daysInMonth;
 
-        $employees = Employee::where('site_id', $this->site_id)
+        $employees = Employee::where('branch_id', $this->branch_id)
             ->where('employment_status', 'active')
             ->with('salaryStructure')
             ->get();
@@ -143,7 +143,7 @@ class PayrollRun extends Model
                 $transaction = LedgerService::post([
                     'type' => 'salary',
                     'date' => now(),
-                    'site_id' => $this->site_id,
+                    'branch_id' => $this->branch_id,
                     'narration' => "Salary for {$item->employee->name} — {$this->monthLabel()}",
                     'reference' => $item,
                     'created_by' => $actor->id,

@@ -51,7 +51,7 @@ class LedgerAccount extends Model
         'nature',
         'is_system',
         'is_cash',
-        'site_id',
+        'branch_id',
         'status',
     ];
 
@@ -63,18 +63,18 @@ class LedgerAccount extends Model
 
     protected static function booted(): void
     {
-        // Only the cash_bank group is ever site-specific (a branch's own
+        // Only the cash_bank group is ever branch-specific (a branch's own
         // cash drawer/bank account) — every other group is company-wide.
         static::saving(function (LedgerAccount $account) {
             if ($account->group !== 'cash_bank') {
-                $account->site_id = null;
+                $account->branch_id = null;
             }
         });
     }
 
-    public function site(): BelongsTo
+    public function branch(): BelongsTo
     {
-        return $this->belongsTo(Site::class);
+        return $this->belongsTo(Branch::class);
     }
 
     public function lines(): HasMany

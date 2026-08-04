@@ -4,7 +4,7 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-brand-900">{{ __('Products') }}</h2>
-                <p class="text-sm text-slate-500 mt-0.5">{{ __('Product catalogue — global master data, not tied to a specific site') }}</p>
+                <p class="text-sm text-slate-500 mt-0.5">{{ __('Product catalogue — global master data, not tied to a specific branch') }}</p>
             </div>
             @can('inventory.create')
             <a href="{{ route('products.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2">

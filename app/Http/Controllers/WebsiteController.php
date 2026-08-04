@@ -6,7 +6,7 @@ use App\Models\Category;
 use App\Models\CompanySetting;
 use App\Models\ContactMessage;
 use App\Models\Product;
-use App\Models\Site;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 
 class WebsiteController extends Controller
@@ -33,7 +33,7 @@ class WebsiteController extends Controller
         // otherwise so the row still has 3 even with no photos uploaded yet.
         $featuredProducts = $products->sortByDesc(fn (Product $p) => $p->image_path ? 1 : 0)->take(3)->values();
 
-        $branches = Site::where('status', true)->orderBy('name')->get();
+        $branches = Branch::where('status', true)->orderBy('name')->get();
 
         return view('website.home', [
             'company' => $company,
@@ -49,7 +49,7 @@ class WebsiteController extends Controller
     {
         return view('website.about', [
             'company' => CompanySetting::current(),
-            'branches' => Site::where('status', true)->orderBy('name')->get(),
+            'branches' => Branch::where('status', true)->orderBy('name')->get(),
             'stats' => $this->catalogStats(),
         ]);
     }
@@ -66,7 +66,7 @@ class WebsiteController extends Controller
             'categories' => Category::whereNull('parent_id')->where('status', true)
                 ->whereHas('products', fn ($q) => $q->where('status', true))
                 ->count(),
-            'branches' => Site::where('status', true)->count(),
+            'branches' => Branch::where('status', true)->count(),
         ];
     }
 
@@ -94,7 +94,7 @@ class WebsiteController extends Controller
     {
         return view('website.contact', [
             'company' => CompanySetting::current(),
-            'branches' => Site::where('status', true)->orderBy('name')->get(),
+            'branches' => Branch::where('status', true)->orderBy('name')->get(),
         ]);
     }
 

@@ -10,9 +10,9 @@
     <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-6 mb-4">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3 text-sm">
-                <span class="font-semibold text-slate-800">{{ $transfer->fromSite->name }}</span>
+                <span class="font-semibold text-slate-800">{{ $transfer->fromBranch->name }}</span>
                 <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
-                <span class="font-semibold text-slate-800">{{ $transfer->toSite->name }}</span>
+                <span class="font-semibold text-slate-800">{{ $transfer->toBranch->name }}</span>
             </div>
 
             @if ($transfer->status === 'in_transit')
@@ -51,7 +51,7 @@
         <div class="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-5">
             @can('inventory.approve')
             <form method="POST" action="{{ route('stock.transfers.receive', $transfer) }}"
-                  onsubmit="return confirm('{{ __('Confirm receipt of :no at :site?', ['no' => $transfer->transfer_no, 'site' => $transfer->toSite->name]) }}');">
+                  onsubmit="return confirm('{{ __('Confirm receipt of :no at :branch?', ['no' => $transfer->transfer_no, 'branch' => $transfer->toBranch->name]) }}');">
                 @csrf
                 <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
@@ -61,7 +61,7 @@
             @endcan
             @can('inventory.edit')
             <form method="POST" action="{{ route('stock.transfers.cancel', $transfer) }}"
-                  onsubmit="return confirm('{{ __('Cancel :no? Stock will be reversed back at :site.', ['no' => $transfer->transfer_no, 'site' => $transfer->fromSite->name]) }}');">
+                  onsubmit="return confirm('{{ __('Cancel :no? Stock will be reversed back at :branch.', ['no' => $transfer->transfer_no, 'branch' => $transfer->fromBranch->name]) }}');">
                 @csrf
                 <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-100">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>

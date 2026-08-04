@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Site;
+use App\Models\Branch;
 use App\Models\StockMovement;
 use App\Services\LedgerService;
 use Illuminate\Http\Request;
@@ -33,8 +33,8 @@ class InternalConsumptionController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
-        $sites = Site::where('status', true)->orderBy('name')->get();
-        $site = $request->filled('site_id') ? Site::findOrFail($request->integer('site_id')) : null;
+        $branches = Branch::where('status', true)->orderBy('name')->get();
+        $branch = $request->filled('branch_id') ? Branch::findOrFail($request->integer('branch_id')) : null;
 
         $items = collect();
         $product = null;
@@ -42,20 +42,20 @@ class InternalConsumptionController extends Controller implements HasMiddleware
         $balance = 0;
         $avgCost = 0;
 
-        if ($site) {
+        if ($branch) {
             $items = $this->itemOptions();
 
             [$product, $variant] = $this->resolveItem($request->string('item'));
 
             if ($product) {
-                $balance = $this->currentBalance($site->id, $product->id, $variant?->id);
+                $balance = $this->currentBalance($branch->id, $product->id, $variant?->id);
                 $avgCost = (float) ($variant->estimated_cost ?? $product->estimated_cost);
             }
         }
 
         return view('admin.stock.internal-consumption', [
-            'sites' => $sites,
-            'site' => $site,
+            'branches' => $branches,
+            'branch' => $branch,
             'items' => $items,
             'selectedItem' => $request->string('item')->toString(),
             'product' => $product,
@@ -68,7 +68,7 @@ class InternalConsumptionController extends Controller implements HasMiddleware
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'site_id' => ['required', 'integer', 'exists:sites,id'],
+            'branch_id' => ['required', 'integer', 'exists:branches,id'],
             'item' => ['required', 'string'],
             'quantity' => ['required', 'numeric', 'min:0.0001'],
             'note' => ['required', 'string', 'max:1000'],
@@ -84,7 +84,7 @@ class InternalConsumptionController extends Controller implements HasMiddleware
             throw ValidationException::withMessages(['item' => 'Pick a valid product or variant.']);
         }
 
-        $balance = $this->currentBalance($validated['site_id'], $product->id, $variant?->id);
+        $balance = $this->currentBalance($validated['branch_id'], $product->id, $variant?->id);
 
         if ($validated['quantity'] > $balance) {
             throw ValidationException::withMessages([
@@ -99,7 +99,7 @@ class InternalConsumptionController extends Controller implements HasMiddleware
         $movement = StockMovement::create([
             'product_id' => $product->id,
             'product_variant_id' => $variant?->id,
-            'site_id' => $validated['site_id'],
+            'branch_id' => $validated['branch_id'],
             'type' => 'internal_consumption',
             'quantity' => $validated['quantity'],
             'unit_cost' => $unitCost,
@@ -120,7 +120,7 @@ class InternalConsumptionController extends Controller implements HasMiddleware
             LedgerService::post([
                 'type' => 'internal_consumption',
                 'date' => $validated['moved_at'],
-                'site_id' => $validated['site_id'],
+                'branch_id' => $validated['branch_id'],
                 'narration' => "Internal consumption — {$label}",
                 'reference' => $movement,
                 'created_by' => Auth::id(),
@@ -131,7 +131,7 @@ class InternalConsumptionController extends Controller implements HasMiddleware
             ]);
         }
 
-        return redirect()->route('stock.internal-consumption.index', ['site_id' => $validated['site_id']])
+        return redirect()->route('stock.internal-consumption.index', ['branch_id' => $validated['branch_id']])
             ->with('success', "Internal consumption recorded for {$label}.");
     }
 
@@ -190,9 +190,9 @@ class InternalConsumptionController extends Controller implements HasMiddleware
         return [null, null];
     }
 
-    protected function currentBalance(int $siteId, int $productId, ?int $variantId): float
+    protected function currentBalance(int $branchId, int $productId, ?int $variantId): float
     {
-        $query = StockMovement::where('site_id', $siteId)->where('product_id', $productId);
+        $query = StockMovement::where('branch_id', $branchId)->where('product_id', $productId);
         $variantId ? $query->where('product_variant_id', $variantId) : $query->whereNull('product_variant_id');
 
         return (float) $query->selectRaw("SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('payroll_runs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('site_id')->constrained()->restrictOnDelete();
+            $table->foreignId('branch_id')->constrained()->restrictOnDelete();
             $table->unsignedTinyInteger('month');
             $table->unsignedSmallInteger('year');
             $table->string('status')->default('draft');
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->decimal('total_amount', 14, 2)->default(0);
             $table->timestamps();
 
-            $table->unique(['site_id', 'month', 'year']);
+            $table->unique(['branch_id', 'month', 'year']);
         });
     }
 

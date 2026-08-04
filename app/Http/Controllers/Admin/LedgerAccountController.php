@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LedgerAccount;
-use App\Models\Site;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -30,7 +30,7 @@ class LedgerAccountController extends Controller implements HasMiddleware
     public function index()
     {
         $bankAccounts = LedgerAccount::where('group', 'cash_bank')
-            ->with('site:id,name')
+            ->with('branch:id,name')
             ->orderBy('name')
             ->paginate(15);
 
@@ -71,7 +71,7 @@ class LedgerAccountController extends Controller implements HasMiddleware
 
     public function create()
     {
-        return view('admin.bank-accounts.create', ['sites' => Site::orderBy('name')->get(['id', 'name'])]);
+        return view('admin.bank-accounts.create', ['branches' => Branch::orderBy('name')->get(['id', 'name'])]);
     }
 
     public function store(Request $request)
@@ -88,7 +88,7 @@ class LedgerAccountController extends Controller implements HasMiddleware
     {
         return view('admin.bank-accounts.edit', [
             'bankAccount' => $bankAccount,
-            'sites' => Site::orderBy('name')->get(['id', 'name']),
+            'branches' => Branch::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -128,7 +128,7 @@ class LedgerAccountController extends Controller implements HasMiddleware
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'site_id' => ['nullable', 'exists:sites,id'],
+            'branch_id' => ['nullable', 'exists:branches,id'],
         ]);
     }
 }

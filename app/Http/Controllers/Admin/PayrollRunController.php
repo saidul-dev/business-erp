@@ -7,7 +7,7 @@ use App\Models\CompanySetting;
 use App\Models\LedgerAccount;
 use App\Models\PayrollRun;
 use App\Models\PayrollRunItem;
-use App\Models\Site;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -29,8 +29,8 @@ class PayrollRunController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        $runs = PayrollRun::with('site')
-            ->when($request->filled('site_id'), fn ($q) => $q->where('site_id', $request->site_id))
+        $runs = PayrollRun::with('branch')
+            ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->branch_id))
             ->orderByDesc('year')
             ->orderByDesc('month')
             ->paginate(15)
@@ -38,36 +38,36 @@ class PayrollRunController extends Controller implements HasMiddleware
 
         return view('admin.payroll-runs.index', [
             'runs' => $runs,
-            'sites' => Site::orderBy('name')->get(),
+            'branches' => Branch::orderBy('name')->get(),
         ]);
     }
 
     public function create()
     {
         return view('admin.payroll-runs.create', [
-            'sites' => Site::orderBy('name')->get(),
+            'branches' => Branch::orderBy('name')->get(),
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'site_id' => ['required', 'integer', 'exists:sites,id'],
+            'branch_id' => ['required', 'integer', 'exists:branches,id'],
             'month' => ['required', 'integer', 'between:1,12'],
             'year' => ['required', 'integer', 'min:2000'],
         ]);
 
-        $exists = PayrollRun::where('site_id', $validated['site_id'])
+        $exists = PayrollRun::where('branch_id', $validated['branch_id'])
             ->where('month', $validated['month'])
             ->where('year', $validated['year'])
             ->exists();
 
         if ($exists) {
-            return back()->withInput()->with('error', 'A payroll run already exists for this site and month.');
+            return back()->withInput()->with('error', 'A payroll run already exists for this branch and month.');
         }
 
         $run = PayrollRun::create([
-            'site_id' => $validated['site_id'],
+            'branch_id' => $validated['branch_id'],
             'month' => $validated['month'],
             'year' => $validated['year'],
             'status' => 'draft',
@@ -86,7 +86,7 @@ class PayrollRunController extends Controller implements HasMiddleware
 
     public function show(PayrollRun $payrollRun)
     {
-        $payrollRun->load(['items.employee', 'items.paidFromAccount', 'site']);
+        $payrollRun->load(['items.employee', 'items.paidFromAccount', 'branch']);
 
         return view('admin.payroll-runs.show', [
             'payrollRun' => $payrollRun,
@@ -141,7 +141,7 @@ class PayrollRunController extends Controller implements HasMiddleware
         $user = Auth::user();
         abort_unless($user->can('hrm.view') || $item->employee_id === $user->employee?->id, 403);
 
-        $item->load(['employee', 'payrollRun.site', 'paidFromAccount']);
+        $item->load(['employee', 'payrollRun.branch', 'paidFromAccount']);
         $company = CompanySetting::current();
 
         return view('admin.payroll-runs.payslip', compact('item', 'company'));

@@ -9,7 +9,7 @@ use App\Models\Category;
 use App\Models\CompanySetting;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Site;
+use App\Models\Branch;
 use App\Models\StockMovement;
 use App\Models\StockTransfer;
 use App\Models\Unit;
@@ -159,12 +159,12 @@ class ProductController extends Controller implements HasMiddleware
     public function history(Request $request, Product $product)
     {
         $product->load(['stockUnit', 'variants.attributeValues']);
-        $sites = Site::where('status', true)->orderBy('name')->get(['id', 'name']);
-        $siteId = $request->filled('site_id') ? $request->integer('site_id') : null;
+        $branches = Branch::where('status', true)->orderBy('name')->get(['id', 'name']);
+        $branchId = $request->filled('branch_id') ? $request->integer('branch_id') : null;
 
-        $movements = StockMovement::with(['productVariant.attributeValues', 'site', 'createdBy'])
+        $movements = StockMovement::with(['productVariant.attributeValues', 'branch', 'createdBy'])
             ->where('product_id', $product->id)
-            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->orderByDesc('moved_at')
             ->orderByDesc('id')
             ->paginate(30)
@@ -172,46 +172,46 @@ class ProductController extends Controller implements HasMiddleware
 
         $this->attachReferenceLabels($movements->getCollection());
 
-        $currentStock = $this->currentStockBreakdown($product, $siteId);
+        $currentStock = $this->currentStockBreakdown($product, $branchId);
         $totalStock = $currentStock->sum('balance');
         $totalCostValuation = $currentStock->sum('cost_valuation');
         $totalSaleValuation = $currentStock->sum('sale_valuation');
 
         return view('admin.products.history', compact(
-            'product', 'movements', 'sites', 'siteId',
+            'product', 'movements', 'branches', 'branchId',
             'currentStock', 'totalStock', 'totalCostValuation', 'totalSaleValuation'
         ));
     }
 
     /**
-     * On-hand balance per Site (and per Variant, for variable products),
+     * On-hand balance per Branch (and per Variant, for variable products),
      * so the ledger page answers "how much is there right now?" alongside
      * "how did it get there?" — not just aggregate movement rows. Rows
-     * that have netted to zero are dropped; a site/variant combo with no
+     * that have netted to zero are dropped; a branch/variant combo with no
      * stock left isn't "current stock." Valuations use each variant's own
      * cost/selling price (falling back to the parent product's), same as
      * the Stock Report's group-row valuation.
      */
-    protected function currentStockBreakdown(Product $product, ?int $siteId)
+    protected function currentStockBreakdown(Product $product, ?int $branchId)
     {
         $rows = StockMovement::where('product_id', $product->id)
-            ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
-            ->selectRaw("site_id, product_variant_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
-            ->groupBy('site_id', 'product_variant_id')
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->selectRaw("branch_id, product_variant_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
+            ->groupBy('branch_id', 'product_variant_id')
             ->having('balance', '!=', 0)
             ->get();
 
-        $siteNames = Site::whereIn('id', $rows->pluck('site_id')->unique())->pluck('name', 'id');
+        $branchNames = Branch::whereIn('id', $rows->pluck('branch_id')->unique())->pluck('name', 'id');
         $variants = $product->variants->keyBy('id');
 
-        return $rows->map(function ($row) use ($siteNames, $variants, $product) {
+        return $rows->map(function ($row) use ($branchNames, $variants, $product) {
             $variant = $row->product_variant_id ? $variants[$row->product_variant_id] : null;
             $balance = (float) $row->balance;
             $costPrice = (float) ($variant?->estimated_cost ?? $product->estimated_cost);
             $salePrice = (float) ($variant?->selling_price ?? $product->selling_price);
 
             return (object) [
-                'site' => $siteNames[$row->site_id] ?? '—',
+                'branch' => $branchNames[$row->branch_id] ?? '—',
                 'variant' => $variant?->label,
                 'balance' => $balance,
                 'cost_price' => $costPrice,
@@ -219,7 +219,7 @@ class ProductController extends Controller implements HasMiddleware
                 'cost_valuation' => $balance * $costPrice,
                 'sale_valuation' => $balance * $salePrice,
             ];
-        })->sortBy(['site', 'variant'])->values();
+        })->sortBy(['branch', 'variant'])->values();
     }
 
     /**

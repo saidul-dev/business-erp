@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\LedgerAccount;
 use App\Models\LedgerTransactionLine;
-use App\Models\Site;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -42,8 +42,8 @@ class ProfitLossController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        $sites = Site::where('status', true)->orderBy('name')->get();
-        $siteId = $request->filled('site_id') ? $request->integer('site_id') : null;
+        $branches = Branch::where('status', true)->orderBy('name')->get();
+        $branchId = $request->filled('branch_id') ? $request->integer('branch_id') : null;
         $from = $request->filled('from') ? $request->date('from') : now()->startOfMonth();
         $to = $request->filled('to') ? $request->date('to') : now();
 
@@ -51,7 +51,7 @@ class ProfitLossController extends Controller implements HasMiddleware
             ->join('ledger_transactions', 'ledger_transactions.id', '=', 'ledger_transaction_lines.ledger_transaction_id')
             ->whereDate('ledger_transactions.date', '>=', $from)
             ->whereDate('ledger_transactions.date', '<=', $to)
-            ->when($siteId, fn ($q) => $q->where('ledger_transactions.site_id', $siteId))
+            ->when($branchId, fn ($q) => $q->where('ledger_transactions.branch_id', $branchId))
             ->selectRaw('ledger_transaction_lines.ledger_account_id, SUM(ledger_transaction_lines.debit) as total_debit, SUM(ledger_transaction_lines.credit) as total_credit')
             ->groupBy('ledger_transaction_lines.ledger_account_id')
             ->get()
@@ -102,8 +102,8 @@ class ProfitLossController extends Controller implements HasMiddleware
         $netProfit = round($grossProfit - $totalOperatingExpenses + $totalOtherIncome, 2);
 
         return view('admin.profit-loss.index', [
-            'sites' => $sites,
-            'siteId' => $siteId,
+            'branches' => $branches,
+            'branchId' => $branchId,
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
             'revenue' => $revenue,

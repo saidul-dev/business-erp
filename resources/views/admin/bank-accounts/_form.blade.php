@@ -10,11 +10,11 @@
     </div>
 
     <div>
-        <x-input-label for="site_id" :value="__('Site (optional)')" />
-        <x-searchable-select name="site_id" :options="$sites" :selected="old('site_id', $bankAccount->site_id ?? null)"
-                              placeholder="{{ __('Company-wide — shared across all sites') }}" />
-        <p class="mt-1 text-xs text-slate-400">{{ __('Leave blank for a shared account (e.g. the main bank account); pick a Site for a branch-specific cash drawer.') }}</p>
-        <x-input-error class="mt-2" :messages="$errors->get('site_id')" />
+        <x-input-label for="branch_id" :value="__('Branch (optional)')" />
+        <x-searchable-select name="branch_id" :options="$branches" :selected="old('branch_id', $bankAccount->branch_id ?? null)"
+                              placeholder="{{ __('Company-wide — shared across all branches') }}" />
+        <p class="mt-1 text-xs text-slate-400">{{ __('Leave blank for a shared account (e.g. the main bank account); pick a Branch for a branch-specific cash drawer.') }}</p>
+        <x-input-error class="mt-2" :messages="$errors->get('branch_id')" />
     </div>
 
     <label class="flex items-start gap-4 rounded-xl bg-slate-50 px-5 py-4 cursor-pointer">

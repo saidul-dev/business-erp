@@ -27,15 +27,15 @@
                 </select>
             </div>
             <div class="w-56 shrink-0">
-                <x-input-label for="site_id" :value="__('Site')" />
+                <x-input-label for="branch_id" :value="__('Branch')" />
                 <div class="mt-1">
-                    <x-searchable-select name="site_id" :options="$sites" :selected="$siteId" placeholder="{{ __('All sites') }}" />
+                    <x-searchable-select name="branch_id" :options="$branches" :selected="$branchId" placeholder="{{ __('All branches') }}" />
                 </div>
             </div>
             <button type="submit" class="rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
                 {{ __('Filter') }}
             </button>
-            @if ($type || $siteId)
+            @if ($type || $branchId)
             <a href="{{ route('day-book.index') }}" class="text-sm font-semibold text-slate-500 hover:text-slate-700">{{ __('Clear') }}</a>
             @endif
         </form>
@@ -50,7 +50,7 @@
                     <th class="px-5 py-3 font-semibold">{{ __('Voucher') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Type') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Narration') }}</th>
-                    <th class="px-5 py-3 font-semibold">{{ __('Site') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Branch') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Amount') }}</th>
                     <th class="px-5 py-3 font-semibold"></th>
                 </tr>
@@ -84,7 +84,7 @@
                         </span>
                     </td>
                     <td class="px-5 py-3 text-slate-600">{{ $txn->narration }}</td>
-                    <td class="px-5 py-3 text-slate-500">{{ $txn->site->name ?? '—' }}</td>
+                    <td class="px-5 py-3 text-slate-500">{{ $txn->branch->name ?? '—' }}</td>
                     <td class="px-5 py-3 text-right font-semibold text-slate-800">{{ number_format($txn->total_debit, 2) }}</td>
                     <td class="px-5 py-3 text-right">
                         @if ($referenceUrl)

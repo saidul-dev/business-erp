@@ -12,15 +12,15 @@ class StockTransfer extends Model
     /**
      * Dispatch → Receive, with Cancel as the only other exit from
      * in_transit. Never moves back to in_transit once left — corrections
-     * happen by cancelling (which reverses stock at from_site), not by
+     * happen by cancelling (which reverses stock at from_branch), not by
      * mutating a transfer in place.
      */
     public const STATUSES = ['in_transit', 'received', 'cancelled'];
 
     protected $fillable = [
         'transfer_no',
-        'from_site_id',
-        'to_site_id',
+        'from_branch_id',
+        'to_branch_id',
         'status',
         'note',
         'dispatched_at',
@@ -34,14 +34,14 @@ class StockTransfer extends Model
         'received_at' => 'date',
     ];
 
-    public function fromSite(): BelongsTo
+    public function fromBranch(): BelongsTo
     {
-        return $this->belongsTo(Site::class, 'from_site_id');
+        return $this->belongsTo(Branch::class, 'from_branch_id');
     }
 
-    public function toSite(): BelongsTo
+    public function toBranch(): BelongsTo
     {
-        return $this->belongsTo(Site::class, 'to_site_id');
+        return $this->belongsTo(Branch::class, 'to_branch_id');
     }
 
     public function items(): HasMany

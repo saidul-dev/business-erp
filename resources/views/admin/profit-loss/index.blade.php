@@ -18,16 +18,16 @@
                 <x-text-input id="to" name="to" type="date" class="mt-1 block w-full" :value="$to" />
             </div>
             <div class="w-56 shrink-0">
-                <x-input-label for="site_id" :value="__('Site')" />
+                <x-input-label for="branch_id" :value="__('Branch')" />
                 <div class="mt-1">
-                    <x-searchable-select name="site_id" :options="$sites" :selected="$siteId" placeholder="{{ __('All sites') }}" />
+                    <x-searchable-select name="branch_id" :options="$branches" :selected="$branchId" placeholder="{{ __('All branches') }}" />
                 </div>
             </div>
             <button type="submit" class="rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
                 {{ __('Apply') }}
             </button>
-            @if ($siteId)
-            <a href="{{ route('profit-loss.index', ['from' => $from, 'to' => $to]) }}" class="text-sm font-semibold text-slate-500 hover:text-slate-700">{{ __('Clear site') }}</a>
+            @if ($branchId)
+            <a href="{{ route('profit-loss.index', ['from' => $from, 'to' => $to]) }}" class="text-sm font-semibold text-slate-500 hover:text-slate-700">{{ __('Clear branch') }}</a>
             @endif
         </form>
     </div>

@@ -4,7 +4,7 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-brand-900">{{ __('Payroll Runs') }}</h2>
-                <p class="text-sm text-slate-500 mt-0.5">{{ __('Monthly salary runs, per site') }}</p>
+                <p class="text-sm text-slate-500 mt-0.5">{{ __('Monthly salary runs, per branch') }}</p>
             </div>
             @can('hrm.create')
             <a href="{{ route('payroll-runs.create') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 focus:ring-2 focus:ring-accent-500 focus:ring-offset-2">
@@ -21,7 +21,7 @@
             <thead>
                 <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                     <th class="px-5 py-3 font-semibold">{{ __('Period') }}</th>
-                    <th class="px-5 py-3 font-semibold">{{ __('Site') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Branch') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Total') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Status') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Actions') }}</th>
@@ -31,7 +31,7 @@
                 @forelse ($runs as $run)
                 <tr class="hover:bg-slate-50">
                     <td class="px-5 py-3 font-semibold text-slate-800">{{ $run->monthLabel() }}</td>
-                    <td class="px-5 py-3 text-slate-600">{{ $run->site->name }}</td>
+                    <td class="px-5 py-3 text-slate-600">{{ $run->branch->name }}</td>
                     <td class="px-5 py-3 text-right text-slate-600">{{ number_format($run->total_amount, 2) }}</td>
                     <td class="px-5 py-3">
                         <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1

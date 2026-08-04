@@ -16,10 +16,10 @@
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
             <form method="GET" action="{{ route('products.history', $product) }}" class="flex flex-nowrap items-end gap-4">
                 <div class="w-56 shrink-0">
-                    <x-input-label for="site_id" :value="__('Site')" />
+                    <x-input-label for="branch_id" :value="__('Branch')" />
                     <div class="mt-1">
-                        <x-searchable-select name="site_id" :options="$sites" :selected="$siteId"
-                                              placeholder="{{ __('All sites') }}" :auto-submit="true" />
+                        <x-searchable-select name="branch_id" :options="$branches" :selected="$branchId"
+                                              placeholder="{{ __('All branches') }}" :auto-submit="true" />
                     </div>
                 </div>
             </form>
@@ -56,7 +56,7 @@
         <table class="w-full min-w-[760px] text-sm">
             <thead>
                 <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
-                    <th class="px-5 py-3 font-semibold">{{ __('Site') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Branch') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Variant') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Qty') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Unit Cost') }}</th>
@@ -68,7 +68,7 @@
             <tbody class="divide-y divide-slate-100">
                 @foreach ($currentStock as $row)
                 <tr class="hover:bg-slate-50">
-                    <td class="px-5 py-3 text-slate-600">{{ $row->site }}</td>
+                    <td class="px-5 py-3 text-slate-600">{{ $row->branch }}</td>
                     <td class="px-5 py-3 text-slate-600">{{ $row->variant ?? '—' }}</td>
                     <td class="px-5 py-3 text-right tabular-nums font-semibold text-slate-800">{{ rtrim(rtrim(number_format($row->balance, 4), '0'), '.') }}</td>
                     <td class="px-5 py-3 text-right tabular-nums text-slate-600">{{ number_format($row->cost_price, 2) }}</td>
@@ -91,7 +91,7 @@
                     <th class="px-5 py-3 font-semibold">{{ __('Date') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Type') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Variant') }}</th>
-                    <th class="px-5 py-3 font-semibold">{{ __('Site') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Branch') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Quantity') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Cost / Price') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Reference') }}</th>
@@ -109,7 +109,7 @@
                         </span>
                     </td>
                     <td class="px-5 py-3 text-slate-600">{{ $movement->productVariant?->label ?? '—' }}</td>
-                    <td class="px-5 py-3 text-slate-600">{{ $movement->site->name }}</td>
+                    <td class="px-5 py-3 text-slate-600">{{ $movement->branch->name }}</td>
                     <td class="px-5 py-3 text-right tabular-nums font-semibold {{ $movement->direction === 'in' ? 'text-emerald-600' : 'text-rose-600' }}">
                         {{ $movement->direction === 'in' ? '+' : '-' }}{{ rtrim(rtrim(number_format($movement->quantity, 4), '0'), '.') }}
                     </td>

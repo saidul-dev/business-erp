@@ -38,7 +38,7 @@ return new class extends Migration
             // Only meaningful for the cash_bank group — a branch's own cash
             // drawer or bank account. Null = company-wide. Every other group
             // is always company-wide (enforced in LedgerAccount::booted()).
-            $table->foreignId('site_id')->nullable()->constrained()->restrictOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->restrictOnDelete();
 
             $table->boolean('status')->default(true);
             $table->timestamps();

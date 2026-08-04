@@ -287,20 +287,20 @@
                     @endcan
                 </div>
 
-                @canany(['users.view', 'roles.view', 'settings.view', 'sites.view', 'website.view'])
+                @canany(['users.view', 'roles.view', 'settings.view', 'branches.view', 'website.view'])
                 <div>
                     <p class="nav-label px-3 mb-2 text-[11px] font-semibold uppercase tracking-wider text-brand-300/70"
                         :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Administration') }}</p>
 
-                    @can('sites.view')
-                    <x-sidebar-link :href="route('sites.index')" :active="request()->routeIs('sites.*')"
-                        :title="__('Sites')">
+                    @can('branches.view')
+                    <x-sidebar-link :href="route('branches.index')" :active="request()->routeIs('branches.*')"
+                        :title="__('Branches')">
                         <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6 21v-3.375c0-.621.504-1.125 1.125-1.125h1.75c.621 0 1.125.504 1.125 1.125V21" />
                         </svg>
-                        <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Sites')
+                        <span class="nav-label" :class="$store.sidebar.collapsed && 'lg:hidden'">{{ __('Branches')
                             }}</span>
                     </x-sidebar-link>
                     @endcan
@@ -468,12 +468,12 @@
                     </div>
 
                     @php
-                    $siteSwitcherOptions = Auth::user()->seesAllSites()
-                    ? \App\Models\Site::where('status', true)->orderBy('name')->get()
-                    : Auth::user()->sites()->where('status', true)->orderBy('name')->get();
+                    $branchSwitcherOptions = Auth::user()->seesAllBranches()
+                    ? \App\Models\Branch::where('status', true)->orderBy('name')->get()
+                    : Auth::user()->branches()->where('status', true)->orderBy('name')->get();
                     @endphp
-                    @if ($siteSwitcherOptions->count() > 1 || Auth::user()->seesAllSites())
-                    <!-- Site selector -->
+                    @if ($branchSwitcherOptions->count() > 1 || Auth::user()->seesAllBranches())
+                    <!-- Branch selector -->
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open"
                             class="hidden sm:flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-brand-800 ring-1 ring-slate-200 hover:bg-slate-50">
@@ -484,7 +484,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                             </svg>
-                            <span>{{ Auth::user()->currentSite->name ?? __('All Sites') }}</span>
+                            <span>{{ Auth::user()->currentBranch->name ?? __('All Branches') }}</span>
                             <svg class="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
@@ -495,16 +495,16 @@
                             class="absolute right-0 mt-2 w-56 rounded-xl bg-white py-1.5 shadow-lg ring-1 ring-slate-200"
                             style="display: none;">
                             <p class="px-4 pt-1 pb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                                {{ __('Current Site') }}</p>
-                            @foreach ($siteSwitcherOptions as $site)
-                            <form method="POST" action="{{ route('sites.switch') }}">
+                                {{ __('Current Branch') }}</p>
+                            @foreach ($branchSwitcherOptions as $branch)
+                            <form method="POST" action="{{ route('branches.switch') }}">
                                 @csrf
-                                <input type="hidden" name="site_id" value="{{ $site->id }}">
+                                <input type="hidden" name="branch_id" value="{{ $branch->id }}">
                                 <button type="submit"
                                     class="flex w-full items-center justify-between px-4 py-2 text-sm hover:bg-slate-50
-                                            {{ Auth::user()->current_site_id === $site->id ? 'text-accent-600 font-semibold' : 'text-slate-700' }}">
-                                    {{ $site->name }}
-                                    @if (Auth::user()->current_site_id === $site->id)
+                                            {{ Auth::user()->current_branch_id === $branch->id ? 'text-accent-600 font-semibold' : 'text-slate-700' }}">
+                                    {{ $branch->name }}
+                                    @if (Auth::user()->current_branch_id === $branch->id)
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -515,15 +515,15 @@
                             </form>
                             @endforeach
 
-                            @if (Auth::user()->seesAllSites())
+                            @if (Auth::user()->seesAllBranches())
                             <div class="my-1.5 border-t border-slate-100"></div>
-                            <form method="POST" action="{{ route('sites.switch') }}">
+                            <form method="POST" action="{{ route('branches.switch') }}">
                                 @csrf
                                 <button type="submit"
                                     class="flex w-full items-center justify-between px-4 py-2 text-sm hover:bg-slate-50
-                                            {{ Auth::user()->current_site_id === null ? 'text-accent-600 font-semibold' : 'text-slate-700' }}">
-                                    {{ __('All Sites') }}
-                                    @if (Auth::user()->current_site_id === null)
+                                            {{ Auth::user()->current_branch_id === null ? 'text-accent-600 font-semibold' : 'text-slate-700' }}">
+                                    {{ __('All Branches') }}
+                                    @if (Auth::user()->current_branch_id === null)
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                         stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round"

@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('stock_transfers', function (Blueprint $table) {
             $table->id();
             $table->string('transfer_no')->unique();
-            $table->foreignId('from_site_id')->constrained('sites')->restrictOnDelete();
-            $table->foreignId('to_site_id')->constrained('sites')->restrictOnDelete();
+            $table->foreignId('from_branch_id')->constrained('branches')->restrictOnDelete();
+            $table->foreignId('to_branch_id')->constrained('branches')->restrictOnDelete();
 
             // See App\Models\StockTransfer::STATUSES. in_transit (dispatched,
-            // stock already left from_site) -> received (arrived at to_site)
-            // or cancelled (reversed back at from_site). Never mutated back
+            // stock already left from_branch) -> received (arrived at to_branch)
+            // or cancelled (reversed back at from_branch). Never mutated back
             // to in_transit once it leaves that state.
             $table->string('status')->default('in_transit');
 
@@ -30,8 +30,8 @@ return new class extends Migration
             $table->foreignId('received_by')->nullable()->constrained('users')->restrictOnDelete();
             $table->timestamps();
 
-            $table->index(['from_site_id', 'status']);
-            $table->index(['to_site_id', 'status']);
+            $table->index(['from_branch_id', 'status']);
+            $table->index(['to_branch_id', 'status']);
         });
     }
 

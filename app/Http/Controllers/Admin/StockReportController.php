@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Site;
+use App\Models\Branch;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -23,7 +23,7 @@ class StockReportController extends Controller implements HasMiddleware
     }
 
     /**
-     * Current stock per SKU at a Site — SUM(in) - SUM(out) from the
+     * Current stock per SKU at a Branch — SUM(in) - SUM(out) from the
      * stock_movements ledger, never a stored counter.
      *
      * `view=detail` (default): variable products contribute one row per
@@ -33,14 +33,14 @@ class StockReportController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
-        $sites = Site::where('status', true)->orderBy('name')->get();
+        $branches = Branch::where('status', true)->orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
-        $site = $request->filled('site_id') ? Site::findOrFail($request->integer('site_id')) : null;
+        $branch = $request->filled('branch_id') ? Branch::findOrFail($request->integer('branch_id')) : null;
         $availability = $request->get('availability') === 'out' ? 'out' : 'in';
 
         $products = null;
 
-        if ($site) {
+        if ($branch) {
             $q = $request->q;
             $categoryId = $request->filled('category_id') ? $request->integer('category_id') : null;
             $isSummary = $request->get('view') === 'summary';
@@ -129,14 +129,14 @@ class StockReportController extends Controller implements HasMiddleware
             $variantIds = $all->whereNotNull('variant_id')->pluck('variant_id');
             $groupProductIds = $all->where('is_group', true)->pluck('product_id');
 
-            $simpleBalances = StockMovement::where('site_id', $site->id)
+            $simpleBalances = StockMovement::where('branch_id', $branch->id)
                 ->whereIn('product_id', $simpleProductIds)
                 ->whereNull('product_variant_id')
                 ->selectRaw("product_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
                 ->groupBy('product_id')
                 ->pluck('balance', 'product_id');
 
-            $variantBalances = StockMovement::where('site_id', $site->id)
+            $variantBalances = StockMovement::where('branch_id', $branch->id)
                 ->whereIn('product_variant_id', $variantIds)
                 ->selectRaw("product_variant_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
                 ->groupBy('product_variant_id')
@@ -144,7 +144,7 @@ class StockReportController extends Controller implements HasMiddleware
 
             // Variant movements always carry the parent product_id too, so
             // the group total is just "every variant movement for this product".
-            $groupBalances = StockMovement::where('site_id', $site->id)
+            $groupBalances = StockMovement::where('branch_id', $branch->id)
                 ->whereIn('product_id', $groupProductIds)
                 ->whereNotNull('product_variant_id')
                 ->selectRaw("product_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
@@ -161,7 +161,7 @@ class StockReportController extends Controller implements HasMiddleware
             if ($groupProducts->isNotEmpty()) {
                 $groupVariantIds = $groupProducts->flatMap(fn (Product $p) => $p->variants->pluck('id'));
 
-                $groupVariantBalances = StockMovement::where('site_id', $site->id)
+                $groupVariantBalances = StockMovement::where('branch_id', $branch->id)
                     ->whereIn('product_variant_id', $groupVariantIds)
                     ->selectRaw("product_variant_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
                     ->groupBy('product_variant_id')
@@ -213,6 +213,6 @@ class StockReportController extends Controller implements HasMiddleware
             );
         }
 
-        return view('admin.stock.report', compact('sites', 'categories', 'site', 'products', 'availability'));
+        return view('admin.stock.report', compact('branches', 'categories', 'branch', 'products', 'availability'));
     }
 }

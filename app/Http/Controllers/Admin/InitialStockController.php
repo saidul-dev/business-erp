@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Site;
+use App\Models\Branch;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -24,24 +24,24 @@ class InitialStockController extends Controller implements HasMiddleware
     }
 
     /**
-     * Bulk opening-stock entry: pick a Site, then enter quantity/cost for
+     * Bulk opening-stock entry: pick a Branch, then enter quantity/cost for
      * every eligible product (and, for variable products, every eligible
      * variant) in one form submit.
      */
     public function index(Request $request)
     {
-        $sites = Site::where('status', true)->orderBy('name')->get();
-        $site = $request->filled('site_id') ? Site::findOrFail($request->integer('site_id')) : null;
+        $branches = Branch::where('status', true)->orderBy('name')->get();
+        $branch = $request->filled('branch_id') ? Branch::findOrFail($request->integer('branch_id')) : null;
 
         $products = collect();
         $variantGroups = collect();
 
-        if ($site) {
-            // Once a product/variant has ANY movement at this site (initial
+        if ($branch) {
+            // Once a product/variant has ANY movement at this branch (initial
             // stock, purchase, sale, ...) its history has already started —
             // an initial-stock entry after that would double-count on top of
             // real transactions, so it drops out of this list for good.
-            $movements = StockMovement::where('site_id', $site->id)->get(['product_id', 'product_variant_id']);
+            $movements = StockMovement::where('branch_id', $branch->id)->get(['product_id', 'product_variant_id']);
             $seededProductIds = $movements->whereNull('product_variant_id')->pluck('product_id');
             $seededVariantIds = $movements->whereNotNull('product_variant_id')->pluck('product_variant_id');
 
@@ -69,13 +69,13 @@ class InitialStockController extends Controller implements HasMiddleware
                 ->values();
         }
 
-        return view('admin.stock.initial', compact('sites', 'site', 'products', 'variantGroups'));
+        return view('admin.stock.initial', compact('branches', 'branch', 'products', 'variantGroups'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'site_id' => ['required', 'integer', 'exists:sites,id'],
+            'branch_id' => ['required', 'integer', 'exists:branches,id'],
             'moved_at' => ['required', 'date'],
             'products' => ['nullable', 'array'],
             'products.*.quantity' => ['nullable', 'numeric', 'min:0'],
@@ -102,9 +102,9 @@ class InitialStockController extends Controller implements HasMiddleware
 
         $validVariants = ProductVariant::whereIn('id', $variantRows->keys())->get()->keyBy('id');
 
-        // Never seed a product/variant/site that already has ANY movement —
+        // Never seed a product/variant/branch that already has ANY movement —
         // history is never overwritten or double-counted, only corrected via adjustments.
-        $seeded = StockMovement::where('site_id', $validated['site_id'])
+        $seeded = StockMovement::where('branch_id', $validated['branch_id'])
             ->where(function ($q) use ($validProductIds, $validVariants) {
                 $q->whereIn('product_id', $validProductIds)
                     ->orWhereIn('product_variant_id', $validVariants->keys());
@@ -153,7 +153,7 @@ class InitialStockController extends Controller implements HasMiddleware
             foreach ($productsToInsert as $productId => $row) {
                 StockMovement::create([
                     'product_id' => $productId,
-                    'site_id' => $validated['site_id'],
+                    'branch_id' => $validated['branch_id'],
                     'type' => 'initial_stock',
                     'quantity' => $row['quantity'],
                     'unit_cost' => $row['unit_cost'] ?? null,
@@ -171,7 +171,7 @@ class InitialStockController extends Controller implements HasMiddleware
                 StockMovement::create([
                     'product_id' => $variant->product_id,
                     'product_variant_id' => $variant->id,
-                    'site_id' => $validated['site_id'],
+                    'branch_id' => $validated['branch_id'],
                     'type' => 'initial_stock',
                     'quantity' => $row['quantity'],
                     'unit_cost' => $row['unit_cost'] ?? null,
@@ -186,7 +186,7 @@ class InitialStockController extends Controller implements HasMiddleware
 
         $count = $productsToInsert->count() + $variantsToInsert->count();
 
-        return redirect()->route('stock.initial.index', ['site_id' => $validated['site_id']])
+        return redirect()->route('stock.initial.index', ['branch_id' => $validated['branch_id']])
             ->with('success', "{$count} item(s) opening stock saved.");
     }
 }

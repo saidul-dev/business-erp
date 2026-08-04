@@ -48,7 +48,7 @@
             <div class="text-right">
                 <p class="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ __('Paid From') }}</p>
                 <p class="font-semibold text-slate-800">{{ $item->paidFromAccount?->name ?? '—' }}</p>
-                <p class="text-slate-500">{{ $item->payrollRun->site->name }}</p>
+                <p class="text-slate-500">{{ $item->payrollRun->branch->name }}</p>
             </div>
         </div>
 

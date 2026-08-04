@@ -63,7 +63,7 @@
                 <tr class="border-b border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                     <th class="px-5 py-3 font-semibold">{{ __('Employee') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Department / Designation') }}</th>
-                    <th class="px-5 py-3 font-semibold">{{ __('Site') }}</th>
+                    <th class="px-5 py-3 font-semibold">{{ __('Branch') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Employment') }}</th>
                     <th class="px-5 py-3 font-semibold">{{ __('Login') }}</th>
                     <th class="px-5 py-3 font-semibold text-right">{{ __('Actions') }}</th>
@@ -91,7 +91,7 @@
                         <span class="block">{{ $employee->department?->name ?? '—' }}</span>
                         <span class="block text-xs text-slate-400">{{ $employee->designation?->name ?? '—' }}</span>
                     </td>
-                    <td class="px-5 py-3 text-slate-600">{{ $employee->site?->name ?? '—' }}</td>
+                    <td class="px-5 py-3 text-slate-600">{{ $employee->branch?->name ?? '—' }}</td>
                     <td class="px-5 py-3">
                         <span class="block text-slate-600 capitalize">{{ str_replace('_', ' ', $employee->employment_type) }}</span>
                         <span class="inline-flex mt-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1

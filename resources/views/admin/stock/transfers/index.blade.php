@@ -4,7 +4,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-brand-900">{{ __('Stock Transfers') }}</h2>
-                <p class="text-sm text-slate-500 mt-0.5">{{ __('Dispatch history between Sites.') }}</p>
+                <p class="text-sm text-slate-500 mt-0.5">{{ __('Dispatch history between Branches.') }}</p>
             </div>
             @can('inventory.create')
             <a href="{{ route('stock.transfers.create') }}"
@@ -19,10 +19,10 @@
     <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 mb-6">
         <form method="GET" action="{{ route('stock.transfers.index') }}" class="flex flex-nowrap items-end gap-4 overflow-x-auto">
             <div class="w-56 shrink-0">
-                <x-input-label for="site_id" :value="__('Site')" />
+                <x-input-label for="branch_id" :value="__('Branch')" />
                 <div class="mt-1">
-                    <x-searchable-select name="site_id" :options="$sites" :selected="$siteId"
-                                          placeholder="{{ __('All sites') }}" :auto-submit="true" />
+                    <x-searchable-select name="branch_id" :options="$branches" :selected="$branchId"
+                                          placeholder="{{ __('All branches') }}" :auto-submit="true" />
                 </div>
             </div>
             <div class="w-48 shrink-0">
@@ -55,7 +55,7 @@
                 @forelse ($transfers as $transfer)
                 <tr class="hover:bg-slate-50">
                     <td class="px-5 py-3 font-semibold text-slate-800">{{ $transfer->transfer_no }}</td>
-                    <td class="px-5 py-3 text-slate-600">{{ $transfer->fromSite->name }} → {{ $transfer->toSite->name }}</td>
+                    <td class="px-5 py-3 text-slate-600">{{ $transfer->fromBranch->name }} → {{ $transfer->toBranch->name }}</td>
                     <td class="px-5 py-3 text-slate-600">
                         {{ $transfer->dispatched_at->format('d M, Y') }}
                         <span class="block text-xs text-slate-400">{{ $transfer->dispatchedBy->name ?? '—' }}</span>

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('site_id')->constrained()->restrictOnDelete();
+            $table->foreignId('branch_id')->constrained()->restrictOnDelete();
             $table->foreignId('party_id')->nullable()->constrained('parties')->nullOnDelete();
             $table->foreignId('project_manager_id')->constrained('employees')->restrictOnDelete();
             $table->string('name');
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->index(['site_id', 'status']);
+            $table->index(['branch_id', 'status']);
         });
     }
 

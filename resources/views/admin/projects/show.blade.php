@@ -10,7 +10,7 @@
                         {{ ucfirst(str_replace('_', ' ', $project->status)) }}
                     </span>
                 </div>
-                <p class="text-sm text-slate-500 mt-0.5">{{ $project->party->name ?? __('Internal Project') }} · {{ $project->site->name }}</p>
+                <p class="text-sm text-slate-500 mt-0.5">{{ $project->party->name ?? __('Internal Project') }} · {{ $project->branch->name }}</p>
             </div>
             <div class="flex items-center gap-2">
                 @can('projects.edit')

@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sites', function (Blueprint $table) {
+        Schema::create('user_branches', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('code')->unique();
-            $table->string('type');
-            $table->text('address')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('email')->nullable();
-            $table->boolean('status')->default(true);
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
+
+            $table->unique(['user_id', 'branch_id']);
         });
     }
 
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sites');
+        Schema::dropIfExists('user_branches');
     }
 };

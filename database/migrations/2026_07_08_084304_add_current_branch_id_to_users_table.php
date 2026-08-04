@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('current_site_id')->nullable()->after('id')->constrained('sites')->nullOnDelete();
+            $table->foreignId('current_branch_id')->nullable()->after('id')->constrained('branches')->nullOnDelete();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('current_site_id');
+            $table->dropConstrainedForeignId('current_branch_id');
         });
     }
 };

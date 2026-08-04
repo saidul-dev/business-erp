@@ -19,7 +19,7 @@ class LedgerService
      * @param  array{
      *     type: string,
      *     date?: \DateTimeInterface|string,
-     *     site_id?: int|null,
+     *     branch_id?: int|null,
      *     narration?: string|null,
      *     reference?: \Illuminate\Database\Eloquent\Model|null,
      *     created_by?: int|null,
@@ -53,7 +53,7 @@ class LedgerService
                 'reference_type' => isset($data['reference']) ? $data['reference']->getMorphClass() : null,
                 'reference_id' => $data['reference']?->getKey(),
                 'narration' => $data['narration'] ?? null,
-                'site_id' => $data['site_id'] ?? null,
+                'branch_id' => $data['branch_id'] ?? null,
                 'created_by' => $data['created_by'] ?? auth()->id(),
             ]);
 

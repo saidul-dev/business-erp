@@ -8,7 +8,7 @@ use App\Models\LedgerAccount;
 use App\Models\Milestone;
 use App\Models\Party;
 use App\Models\Project;
-use App\Models\Site;
+use App\Models\Branch;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -31,10 +31,10 @@ class ProjectController extends Controller implements HasMiddleware
 
     public function index(Request $request)
     {
-        $projects = Project::with(['site', 'party', 'projectManager'])
+        $projects = Project::with(['branch', 'party', 'projectManager'])
             ->withCount(['milestones', 'tasks'])
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
-            ->when($request->filled('site_id'), fn ($q) => $q->where('site_id', $request->site_id))
+            ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->branch_id))
             ->when($request->filled('party_id'), fn ($q) => $q->where('party_id', $request->party_id))
             ->when($request->filled('project_manager_id'), fn ($q) => $q->where('project_manager_id', $request->project_manager_id))
             ->orderByDesc('due_date')
@@ -43,7 +43,7 @@ class ProjectController extends Controller implements HasMiddleware
 
         return view('admin.projects.index', [
             'projects' => $projects,
-            'sites' => Site::orderBy('name')->get(),
+            'branches' => Branch::orderBy('name')->get(),
             'parties' => Party::orderBy('name')->get(),
             'managers' => Employee::where('employment_status', 'active')->orderBy('name')->get(),
             'statuses' => $this->statusOptions(),
@@ -79,7 +79,7 @@ class ProjectController extends Controller implements HasMiddleware
 
     public function show(Project $project)
     {
-        $project->load(['site', 'party', 'projectManager', 'milestones.tasks.assignedEmployee', 'collections.account']);
+        $project->load(['branch', 'party', 'projectManager', 'milestones.tasks.assignedEmployee', 'collections.account']);
 
         return view('admin.projects.show', [
             'project' => $project,
@@ -115,7 +115,7 @@ class ProjectController extends Controller implements HasMiddleware
     protected function formData(?Project $project = null): array
     {
         return [
-            'sites' => Site::orderBy('name')->get(),
+            'branches' => Branch::orderBy('name')->get(),
             'parties' => Party::orderBy('name')->get(),
             'managers' => Employee::where('employment_status', 'active')->orderBy('name')->get(),
             'statuses' => $this->statusOptions(),
@@ -125,7 +125,7 @@ class ProjectController extends Controller implements HasMiddleware
     protected function validated(Request $request): array
     {
         $validated = $request->validate([
-            'site_id' => ['required', 'integer', 'exists:sites,id'],
+            'branch_id' => ['required', 'integer', 'exists:branches,id'],
             'party_id' => ['nullable', 'integer', 'exists:parties,id'],
             'project_manager_id' => ['required', 'integer', 'exists:employees,id'],
             'name' => ['required', 'string', 'max:255'],

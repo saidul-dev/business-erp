@@ -26,15 +26,15 @@ return new class extends Migration
             $table->text('narration')->nullable();
 
             // Nullable — most transaction types (Purchase, Sale, Payment,
-            // Expense) happen at a specific Site, but company-wide entries
+            // Expense) happen at a specific Branch, but company-wide entries
             // (a Party's opening balance, a manual Journal correction) have
-            // no single Site to attach to.
-            $table->foreignId('site_id')->nullable()->constrained()->restrictOnDelete();
+            // no single Branch to attach to.
+            $table->foreignId('branch_id')->nullable()->constrained()->restrictOnDelete();
 
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->index(['site_id', 'type']);
+            $table->index(['branch_id', 'type']);
             $table->index('date');
         });
     }

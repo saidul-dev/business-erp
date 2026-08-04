@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Site;
+use App\Models\Branch;
 use App\Models\StockMovement;
 use App\Models\StockTransfer;
 use Illuminate\Http\Request;
@@ -29,18 +29,18 @@ class StockTransferController extends Controller implements HasMiddleware
     }
 
     /**
-     * Dispatch history — every transfer, filterable by Site (either leg)
+     * Dispatch history — every transfer, filterable by Branch (either leg)
      * and status, newest first.
      */
     public function index(Request $request)
     {
-        $sites = Site::where('status', true)->orderBy('name')->get();
+        $branches = Branch::where('status', true)->orderBy('name')->get();
         $status = $request->get('status');
-        $siteId = $request->filled('site_id') ? $request->integer('site_id') : null;
+        $branchId = $request->filled('branch_id') ? $request->integer('branch_id') : null;
 
-        $transfers = StockTransfer::with(['fromSite', 'toSite', 'dispatchedBy', 'receivedBy'])
-            ->when($siteId, fn ($q) => $q->where(function ($q) use ($siteId) {
-                $q->where('from_site_id', $siteId)->orWhere('to_site_id', $siteId);
+        $transfers = StockTransfer::with(['fromBranch', 'toBranch', 'dispatchedBy', 'receivedBy'])
+            ->when($branchId, fn ($q) => $q->where(function ($q) use ($branchId) {
+                $q->where('from_branch_id', $branchId)->orWhere('to_branch_id', $branchId);
             }))
             ->when($status, fn ($q) => $q->where('status', $status))
             ->orderByDesc('dispatched_at')
@@ -48,30 +48,30 @@ class StockTransferController extends Controller implements HasMiddleware
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.stock.transfers.index', compact('transfers', 'sites', 'status', 'siteId'));
+        return view('admin.stock.transfers.index', compact('transfers', 'branches', 'status', 'branchId'));
     }
 
     /**
-     * Dispatch form: From Site + To Site, then a cart-style item picker
+     * Dispatch form: From Branch + To Branch, then a cart-style item picker
      * (search + add) sourced from whatever currently has balance > 0 at
-     * From Site — nothing with zero stock is offered.
+     * From Branch — nothing with zero stock is offered.
      */
     public function create(Request $request)
     {
-        $sites = Site::where('status', true)->orderBy('name')->get();
-        $fromSite = $request->filled('from_site_id') ? Site::findOrFail($request->integer('from_site_id')) : null;
-        $toSite = $request->filled('to_site_id') ? Site::findOrFail($request->integer('to_site_id')) : null;
+        $branches = Branch::where('status', true)->orderBy('name')->get();
+        $fromBranch = $request->filled('from_branch_id') ? Branch::findOrFail($request->integer('from_branch_id')) : null;
+        $toBranch = $request->filled('to_branch_id') ? Branch::findOrFail($request->integer('to_branch_id')) : null;
 
-        $itemOptions = $fromSite ? $this->itemOptions($fromSite->id) : collect();
+        $itemOptions = $fromBranch ? $this->itemOptions($fromBranch->id) : collect();
 
-        return view('admin.stock.transfers.create', compact('sites', 'fromSite', 'toSite', 'itemOptions'));
+        return view('admin.stock.transfers.create', compact('branches', 'fromBranch', 'toBranch', 'itemOptions'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'from_site_id' => ['required', 'integer', 'exists:sites,id'],
-            'to_site_id' => ['required', 'integer', 'exists:sites,id', 'different:from_site_id'],
+            'from_branch_id' => ['required', 'integer', 'exists:branches,id'],
+            'to_branch_id' => ['required', 'integer', 'exists:branches,id', 'different:from_branch_id'],
             'dispatched_at' => ['required', 'date'],
             'note' => ['nullable', 'string', 'max:1000'],
             'items' => ['required', 'array', 'min:1'],
@@ -90,7 +90,7 @@ class StockTransferController extends Controller implements HasMiddleware
                 throw ValidationException::withMessages(["items.{$i}.item" => 'Pick a valid product or variant.']);
             }
 
-            $balance = $this->currentBalance($validated['from_site_id'], $product->id, $variant?->id);
+            $balance = $this->currentBalance($validated['from_branch_id'], $product->id, $variant?->id);
 
             if ((float) $row['quantity'] > $balance) {
                 throw ValidationException::withMessages([
@@ -112,8 +112,8 @@ class StockTransferController extends Controller implements HasMiddleware
         $transfer = DB::transaction(function () use ($validated, $rows) {
             $transfer = StockTransfer::create([
                 'transfer_no' => 'PENDING',
-                'from_site_id' => $validated['from_site_id'],
-                'to_site_id' => $validated['to_site_id'],
+                'from_branch_id' => $validated['from_branch_id'],
+                'to_branch_id' => $validated['to_branch_id'],
                 'status' => 'in_transit',
                 'note' => $validated['note'] ?? null,
                 'dispatched_at' => $validated['dispatched_at'],
@@ -135,7 +135,7 @@ class StockTransferController extends Controller implements HasMiddleware
                 StockMovement::create([
                     'product_id' => $row['product']->id,
                     'product_variant_id' => $row['variant']?->id,
-                    'site_id' => $validated['from_site_id'],
+                    'branch_id' => $validated['from_branch_id'],
                     'type' => 'transfer_out',
                     'quantity' => $row['quantity'],
                     'unit_cost' => $row['unit_cost'],
@@ -159,7 +159,7 @@ class StockTransferController extends Controller implements HasMiddleware
     public function show(StockTransfer $transfer)
     {
         $transfer->load([
-            'fromSite', 'toSite', 'dispatchedBy', 'receivedBy',
+            'fromBranch', 'toBranch', 'dispatchedBy', 'receivedBy',
             'items.product.stockUnit', 'items.productVariant.attributeValues',
         ]);
 
@@ -167,7 +167,7 @@ class StockTransferController extends Controller implements HasMiddleware
     }
 
     /**
-     * Confirm arrival: posts one transfer_in per line item at to_site,
+     * Confirm arrival: posts one transfer_in per line item at to_branch,
      * carrying over exactly what was dispatched (qty/cost/batch/expiry/
      * serial) — nothing is re-entered or editable here.
      */
@@ -182,7 +182,7 @@ class StockTransferController extends Controller implements HasMiddleware
                 StockMovement::create([
                     'product_id' => $item->product_id,
                     'product_variant_id' => $item->product_variant_id,
-                    'site_id' => $transfer->to_site_id,
+                    'branch_id' => $transfer->to_branch_id,
                     'type' => 'transfer_in',
                     'quantity' => $item->quantity,
                     'unit_cost' => $item->unit_cost,
@@ -207,7 +207,7 @@ class StockTransferController extends Controller implements HasMiddleware
     }
 
     /**
-     * Void an in-transit transfer: reverses the stock back at from_site.
+     * Void an in-transit transfer: reverses the stock back at from_branch.
      * The original transfer_out rows are never touched — an offsetting
      * transfer_in is posted instead, same as every other correction in
      * this ledger.
@@ -223,7 +223,7 @@ class StockTransferController extends Controller implements HasMiddleware
                 StockMovement::create([
                     'product_id' => $item->product_id,
                     'product_variant_id' => $item->product_variant_id,
-                    'site_id' => $transfer->from_site_id,
+                    'branch_id' => $transfer->from_branch_id,
                     'type' => 'transfer_in',
                     'quantity' => $item->quantity,
                     'unit_cost' => $item->unit_cost,
@@ -241,14 +241,14 @@ class StockTransferController extends Controller implements HasMiddleware
             $transfer->update(['status' => 'cancelled']);
         });
 
-        return back()->with('success', "Transfer {$transfer->transfer_no} cancelled — stock reversed at {$transfer->fromSite->name}.");
+        return back()->with('success', "Transfer {$transfer->transfer_no} cancelled — stock reversed at {$transfer->fromBranch->name}.");
     }
 
     /**
      * Every active simple product / variant that currently has balance > 0
-     * at $siteId, as options for the cart-builder's item picker.
+     * at $branchId, as options for the cart-builder's item picker.
      */
-    protected function itemOptions(int $siteId): Collection
+    protected function itemOptions(int $branchId): Collection
     {
         $products = Product::with('stockUnit')
             ->where('status', true)->where('has_variants', false)->orderBy('name')->get();
@@ -258,14 +258,14 @@ class StockTransferController extends Controller implements HasMiddleware
             ->whereHas('product', fn ($q) => $q->where('status', true)->where('has_variants', true))
             ->get();
 
-        $simpleBalances = StockMovement::where('site_id', $siteId)
+        $simpleBalances = StockMovement::where('branch_id', $branchId)
             ->whereIn('product_id', $products->pluck('id'))
             ->whereNull('product_variant_id')
             ->selectRaw("product_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
             ->groupBy('product_id')
             ->pluck('balance', 'product_id');
 
-        $variantBalances = StockMovement::where('site_id', $siteId)
+        $variantBalances = StockMovement::where('branch_id', $branchId)
             ->whereIn('product_variant_id', $variants->pluck('id'))
             ->selectRaw("product_variant_id, SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")
             ->groupBy('product_variant_id')
@@ -335,9 +335,9 @@ class StockTransferController extends Controller implements HasMiddleware
         return [null, null];
     }
 
-    protected function currentBalance(int $siteId, int $productId, ?int $variantId): float
+    protected function currentBalance(int $branchId, int $productId, ?int $variantId): float
     {
-        $query = StockMovement::where('site_id', $siteId)->where('product_id', $productId);
+        $query = StockMovement::where('branch_id', $branchId)->where('product_id', $productId);
         $variantId ? $query->where('product_variant_id', $variantId) : $query->whereNull('product_variant_id');
 
         return (float) $query->selectRaw("SUM(CASE WHEN direction = 'in' THEN quantity ELSE -quantity END) as balance")

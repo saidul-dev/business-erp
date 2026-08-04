@@ -41,8 +41,8 @@ class SiteHealthChecker
     protected function dataConsistency(): array
     {
         $balances = DB::table('stock_movements')
-            ->selectRaw('product_id, product_variant_id, site_id, SUM(CASE WHEN direction = \'in\' THEN quantity ELSE -quantity END) as balance')
-            ->groupBy('product_id', 'product_variant_id', 'site_id')
+            ->selectRaw('product_id, product_variant_id, branch_id, SUM(CASE WHEN direction = \'in\' THEN quantity ELSE -quantity END) as balance')
+            ->groupBy('product_id', 'product_variant_id', 'branch_id')
             ->get();
 
         $checks = [

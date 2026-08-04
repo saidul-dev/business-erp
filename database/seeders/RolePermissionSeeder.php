@@ -31,7 +31,7 @@ class RolePermissionSeeder extends Seeder
         'settings'  => ['view', 'edit'],
         'users'     => ['view', 'create', 'edit', 'delete'],
         'roles'     => ['view', 'create', 'edit', 'delete'],
-        'sites'     => ['view', 'create', 'edit', 'delete'],
+        'branches'  => ['view', 'create', 'edit', 'delete'],
     ];
 
     public function run(): void
@@ -47,10 +47,10 @@ class RolePermissionSeeder extends Seeder
         // Super Admin gets everything through Gate::before (see AppServiceProvider)
         Role::findOrCreate('Super Admin');
 
-        // Admin = company owner, full access to every site and every module.
-        // A user becomes a given Site's manager simply by holding the
-        // "Manager" role and being assigned to that Site — no separate
-        // "Site Manager" role is needed.
+        // Admin = company owner, full access to every branch and every module.
+        // A user becomes a given Branch's manager simply by holding the
+        // "Manager" role and being assigned to that Branch — no separate
+        // "Branch Manager" role is needed.
         Role::findOrCreate('Admin')
             ->syncPermissions(Permission::all());
 

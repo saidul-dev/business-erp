@@ -54,6 +54,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Head Accountant', 'password' => 'password']
         )->syncRoles('Accountant');
 
-        $this->call(SiteSeeder::class);
+        $this->call(BranchSeeder::class);
     }
 }

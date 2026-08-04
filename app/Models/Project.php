@@ -15,7 +15,7 @@ class Project extends Model
     public const STATUSES = ['planned', 'in_progress', 'completed', 'on_hold', 'cancelled'];
 
     protected $fillable = [
-        'site_id',
+        'branch_id',
         'party_id',
         'project_manager_id',
         'name',
@@ -33,9 +33,9 @@ class Project extends Model
         'budget_amount' => 'decimal:2',
     ];
 
-    public function site(): BelongsTo
+    public function branch(): BelongsTo
     {
-        return $this->belongsTo(Site::class);
+        return $this->belongsTo(Branch::class);
     }
 
     public function party(): BelongsTo
