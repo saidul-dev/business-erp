@@ -26,7 +26,7 @@
 
     <!-- Feature highlights -->
     <section class="bg-white py-20 sm:py-24">
-        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto">
                 <h2 class="text-2xl sm:text-3xl font-bold text-brand-950">{{ __('Everything a restaurant needs to run') }}</h2>
                 <p class="mt-3 text-slate-500">{{ __('One platform for the floor, the kitchen, the books, and the branches.') }}</p>
@@ -53,7 +53,7 @@
 
     <!-- Pricing -->
     <section class="bg-slate-50 py-20 sm:py-24">
-        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto">
                 <h2 class="text-2xl sm:text-3xl font-bold text-brand-950">{{ __('Simple, branch-based pricing') }}</h2>
                 <p class="mt-3 text-slate-500">{{ __('Start on the free trial. Upgrade only when you open more branches.') }}</p>
