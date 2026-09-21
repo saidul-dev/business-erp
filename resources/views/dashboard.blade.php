@@ -108,9 +108,9 @@
                     <h3 class="font-bold text-brand-900">{{ __('Recent Invoices') }}</h3>
                     <a href="{{ route('sales.index') }}" class="text-xs font-semibold text-accent-600 hover:text-accent-500">{{ __('View all') }} &rarr;</a>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="card-scroll overflow-x-auto overflow-y-auto max-h-80">
                     <table class="w-full min-w-[480px] text-sm">
-                        <thead>
+                        <thead class="sticky top-0 z-10">
                             <tr class="border-y border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                                 <th class="px-5 py-3 font-semibold">{{ __('Invoice') }}</th>
                                 <th class="px-5 py-3 font-semibold">{{ __('Customer') }}</th>
@@ -151,7 +151,7 @@
                 @if ($lowStockItems->isEmpty())
                 <p class="py-10 text-center text-sm text-slate-400">{{ __('Nothing below reorder level.') }}</p>
                 @else
-                <ul class="space-y-3">
+                <ul class="card-scroll space-y-3 max-h-80 overflow-y-auto pr-1">
                     @foreach ($lowStockItems as $item)
                     <li class="flex items-start justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
                         <div>
@@ -170,6 +170,47 @@
                     {{ __('Open Inventory') }} &rarr;
                 </a>
                 @endcan
+            </div>
+        </div>
+
+        <!-- Top selling items -->
+        <div class="grid grid-cols-1 gap-4">
+            <div class="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 overflow-hidden">
+                <div class="flex items-center justify-between px-5 pt-5 pb-3">
+                    <div>
+                        <h3 class="font-bold text-brand-900">{{ __('Top Selling Items') }}</h3>
+                        <p class="text-xs text-slate-400">{{ __('By quantity sold') }}</p>
+                    </div>
+                </div>
+                <div class="card-scroll overflow-x-auto overflow-y-auto max-h-80">
+                    <table class="w-full min-w-[480px] text-sm">
+                        <thead class="sticky top-0 z-10">
+                            <tr class="border-y border-slate-100 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+                                <th class="px-5 py-3 font-semibold">{{ __('Item') }}</th>
+                                <th class="px-5 py-3 font-semibold">{{ __('Qty Sold') }}</th>
+                                <th class="px-5 py-3 font-semibold">{{ __('Revenue') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @forelse ($topSellingItems as $item)
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-5 py-3 font-semibold text-brand-800 whitespace-nowrap">{{ $item->name }}</td>
+                                <td class="px-5 py-3 text-slate-600 whitespace-nowrap">
+                                    {{ rtrim(rtrim(number_format($item->qty, 4), '0'), '.') }}
+                                    @if ($item->unit)
+                                        <span class="text-slate-400">{{ $item->unit }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-3 font-medium text-slate-800 whitespace-nowrap">{{ number_format($item->revenue, 2) }}</td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3" class="px-5 py-10 text-center text-slate-400">{{ __('No sales yet.') }}</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

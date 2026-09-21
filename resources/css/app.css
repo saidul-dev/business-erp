@@ -58,6 +58,31 @@ trix-editor:focus {
     background-color: theme('colors.brand.300 / 60%');
 }
 
+/* Visible slim scrollbar for scrollable dashboard/report cards on light backgrounds */
+.card-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.slate.300') theme('colors.slate.100');
+}
+
+.card-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.card-scroll::-webkit-scrollbar-track {
+    background: theme('colors.slate.100');
+    border-radius: 9999px;
+}
+
+.card-scroll::-webkit-scrollbar-thumb {
+    background-color: theme('colors.slate.300');
+    border-radius: 9999px;
+}
+
+.card-scroll:hover::-webkit-scrollbar-thumb {
+    background-color: theme('colors.slate.400');
+}
+
 /* Shared public-website hero effects (home, about, ...) */
 @keyframes heroFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 .hero-in { opacity: 0; animation: heroFadeUp .7s ease-out forwards; }

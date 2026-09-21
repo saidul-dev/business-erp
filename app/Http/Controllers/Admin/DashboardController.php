@@ -8,6 +8,7 @@ use App\Models\LedgerAccount;
 use App\Models\Party;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\SaleItem;
 use App\Models\StockMovement;
 use Illuminate\Support\Facades\Auth;
 
@@ -48,15 +49,58 @@ class DashboardController extends Controller
             ->when($siteId, fn ($q) => $q->where('site_id', $siteId))
             ->orderByDesc('order_date')
             ->orderByDesc('id')
-            ->take(5)
+            ->take(15)
             ->get();
+
+        $topSellingItems = $this->topSellingItems($siteId);
 
         return view('dashboard', compact(
             'todaySales', 'todayCollection', 'totalReceivable',
             'lowStockItems', 'lowStockCount', 'criticalCount',
             'chartLabels', 'salesSeries', 'collectionSeries',
-            'topOverdueCustomers', 'recentSales',
+            'topOverdueCustomers', 'recentSales', 'topSellingItems',
         ));
+    }
+
+    /**
+     * Best-selling products by quantity sold, summed across every
+     * non-cancelled Sale line (scoped to the current Site same as the rest
+     * of this dashboard). Variant lines are grouped per variant so the list
+     * distinguishes e.g. "T-Shirt — Red / L" from its siblings, matching how
+     * lowStock() presents variants.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    protected function topSellingItems(?int $siteId): \Illuminate\Support\Collection
+    {
+        $rows = SaleItem::query()
+            ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
+            ->where('sales.status', '!=', 'cancelled')
+            ->when($siteId, fn ($q) => $q->where('sales.site_id', $siteId))
+            ->selectRaw('sale_items.product_id, sale_items.product_variant_id, SUM(sale_items.quantity) as qty, SUM(sale_items.subtotal) as revenue')
+            ->groupBy('sale_items.product_id', 'sale_items.product_variant_id')
+            ->orderByDesc('qty')
+            ->take(20)
+            ->get();
+
+        $products = Product::whereIn('id', $rows->pluck('product_id')->unique())
+            ->with(['stockUnit', 'variants.attributeValues'])
+            ->get()
+            ->keyBy('id');
+
+        return $rows->map(function ($row) use ($products) {
+            $product = $products->get($row->product_id);
+            $variant = $row->product_variant_id
+                ? $product?->variants->firstWhere('id', $row->product_variant_id)
+                : null;
+
+            return (object) [
+                'name' => $variant ? "{$product->name} — {$variant->label}" : ($product->name ?? __('Unknown item')),
+                'unit' => $product?->stockUnit?->short_name,
+                'qty' => (float) $row->qty,
+                'revenue' => (float) $row->revenue,
+            ];
+        });
     }
 
     /**
@@ -147,7 +191,7 @@ class DashboardController extends Controller
 
         $rows = $rows->sortBy('balance')->values();
 
-        return [$rows->take(4), $rows->count(), $rows->where('balance', '<=', 0)->count()];
+        return [$rows->take(20), $rows->count(), $rows->where('balance', '<=', 0)->count()];
     }
 
     /**
